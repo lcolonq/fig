@@ -1,0 +1,8 @@
+(add-to-list 'load-path (f-canonical "./"))
+(require 'fig)
+(require 'fig-database)
+(require 'fig-rpg)
+(require 'fig-semi)
+(require 'fig-voice)
+(require 'fig-emotes)
+(require 'fig-bible)
