@@ -49,11 +49,15 @@
     (with-temp-file tmpfile (insert msg))
     (start-process "fig-say" nil "say" tmpfile)))
 
-(defun fig/ask (question k)
-  "Ask QUESTION to ChatGPT and pass the answer to K."
+(defun fig/ask (question k &optional systemprompt user assistant)
+  "Ask QUESTION to ChatGPT and pass the answer to K.
+Optionally use SYSTEMPROMPT and the USER and ASSISTANT prompts."
   (unless fig//current-ask-process
-    (let ((tmpfile (make-temp-file "fig-ask")))
+    (let ((tmpfile (make-temp-file "fig-ask"))
+          (tmpfilesystem (make-temp-file "fig-ask-system")))
       (with-temp-file tmpfile (insert question))
+      (when systemprompt
+        (with-temp-file tmpfilesystem (insert systemprompt)))
       (with-current-buffer (get-buffer-create fig/ask-buffer)
         (setq-local fig//ask-callback k)
         (erase-buffer))
@@ -62,7 +66,14 @@
        (make-process
         :name "fig-ask"
         :buffer (get-buffer-create fig/ask-buffer)
-        :command (list "chatgpt" tmpfile)
+        :command
+        (list
+         "chatgpt"
+         tmpfile
+         (if systemprompt tmpfilesystem "systemprompt.txt")
+         (if user user "What's happening tonight, computer?")
+         (if assistant assistant "We're chilling and grilling on the computer as usual, LCOLONQ.")
+         )
         :stderr (get-buffer-create fig/ask-error-buffer)
         :sentinel
         (lambda (_ _)

@@ -24,6 +24,12 @@
   :type '(string)
   :group 'fig)
 
+(defvar fig/quotes
+  '(("can I transmute your pants into ashes? Kappa" . "Deepwhiffer_00")
+    ("Grown straight cutie sweetie man" . "that_onion")
+    ("yes i wrong basically exclusively in c++" . "maddie_playsz")
+    ))
+
 (defvar fig/recommended-books
   '(("Blood Meridian by Cormac McCarthy" . "JekkZeroZero")
     ("Dracula by Bram Stoker" . "Hexadigital")
@@ -79,6 +85,11 @@
     ("The Last Unicorn by Peter S. Beagle" . "woozle_ch")
     ("Earthsea by Ursula Le Guin" . "woozle_ch")
     ("Discworld by Terry Pratchet" . "woozle_ch")
+    ("The Magus by John Fowles" . "StefiSot")
+    ("A Fire Upon The Deep by Vernor Vinge" . "khlorghaal")
+    ("The Hero With A Thousand Faces by Joseph Campbell" . "exxjob")
+    ("The Alchemist by Paulo Coelho" . "StefiSot")
+    ("How To by Randall Munroe" . "Roboman01851")
     ("Blindsight by Peter Watts" . "LCOLONQ")
     ("Ficciones by Jorge Luis Borges" . "LCOLONQ")
     ("The Luzhin Defense by Vladimir Nabokov" . "LCOLONQ")
@@ -128,12 +139,32 @@
          (lambda (_)
            (fig//write-chat-event "Gamble finished")
            (setq fig//current-prediction-ids nil)))
+   (cons '(monitor twitch follow)
+         (lambda (msg)
+           (let ((user (car msg)))
+             (fig//model-background-text (format "welcome_%s_" user))
+             (fig//write-chat-event (format "New follower: %s" user)))))
+   (cons '(monitor twitch subscribe)
+         (lambda (msg)
+           (let ((user (car msg)))
+             (fig//model-background-text (format "thanks_%s_" user))
+             (fig//write-chat-event (format "New subscriber: %s" user)))))
+   (cons '(monitor twitch gift)
+         (lambda (msg)
+           (let ((user (car msg))
+                 (subs (cadr msg)))
+             (fig//model-background-text (format "GIGACHAD_%s_" user))
+             (fig//write-chat-event (format "%s gifted %d subs" user subs))
+             (soundboard//play-monsterkill subs))))
    ))
 
 (defconst fig//twitch-chat-commands
   (list
-   (cons "ResidentSleeper" (lambda (_ _) (soundboard//play-clip "mrbeast.mp3")))
+   (cons "MRBEAST" (lambda (_ _) (soundboard//play-clip "mrbeast.mp3")))
+   (cons "NICECOCK" (lambda (_ _) (soundboard//play-clip "pantsintoashes.mp3")))
+   (cons "hexadiCoding" (lambda (_ _) (soundboard//play-clip "developers.ogg")))
    (cons "roguelike" (lambda (user _) (fig//twitch-say (format "@%s that's not a roguelike" user))))
+   (cons "arch" (lambda (_ _) (fig//twitch-say "I use nix btw")))
    (cons "!commands"
          (lambda (_ _)
            (fig//twitch-say
@@ -153,11 +184,17 @@
          (lambda (_ _)
            (let ((choice (nth (random (length fig/recommended-books)) fig/recommended-books)))
              (fig//twitch-say (format "%s (recommended by %s)" (car choice) (cdr choice))))))
+   (cons "!quote"
+         (lambda (_ _)
+           (let ((choice (nth (random (length fig/quotes)) fig/quotes)))
+             (fig//twitch-say (format "%s: %s" (cdr choice) (car choice))))))
    (cons "!twitter"
          (lambda (_ _)
            (fig/ask "How do you feel about Twitter? Should viewers follow LCOLONQ on Twitter?" #'fig/say)
            (fig//twitch-say "https://twitter.com/LCOLONQ")))
    (cons "!discord" (lambda (_ _) (fig//twitch-say "https://discord.gg/f4JTbgN7St")))
+   (cons "!irc" (lambda (_ _) (fig//twitch-say "#cyberspace on IRC at colonq.computer:26697 (over TLS)")))
+   (cons "!sponsor" (lambda (_ _) (fig//twitch-say "Like what you see? Don't forget to download GNU emacs at https://www.gnu.org/software/emacs/?code=LCOLONQ")))
    (cons "!specs" (lambda (_ _) (fig//twitch-say "Editor: evil-mode, WM: EXWM, OS: NixOS, hardware: shit laptop")))
    (cons "!coverage" (lambda (_ _) (fig//twitch-say (s-concat "Test coverage: " (number-to-string (random 100)) "%"))))
    (cons "!learnprogramming" (lambda (_ _) (fig//twitch-say "1) program")))
@@ -169,12 +206,20 @@
    (cons "!emacs" (lambda (_ _) (fig//twitch-say "i've tried everything else emacs is best girl")))
    (cons "!fish" (lambda (_ _) (fig//twitch-say "Not even a nibble...")))
    (cons "!roll" (lambda (user _) (fig//twitch-say (fig//character-to-string (fig//roll-character user)))))
+   (cons
+    "!leaderboard"
+    (lambda (_ _)
+      (let* ((users (fig//all-db-users))
+             (user-scores (-filter #'cdr (--map (cons it (alist-get :boost (fig//load-db it))) users)))
+             (sorted (-sort (-on #'> #'cdr) user-scores))
+             (leaders (-take 5 sorted)))
+        (fig//twitch-say (s-join ", " (--map (format "%s: %s" (car it) (cdr it)) leaders))))))
    (cons "!levelup"
          (lambda (user _)
            (fig//update-db-character
             user
             (lambda (c)
-              (cl-incf (fig//rpg-character-level c) )
+              (cl-incf (fig//rpg-character-level c))
               c))
            (fig//twitch-say (fig//character-to-string (fig//get-db-character user)))))
    ))
@@ -185,6 +230,11 @@
          (lambda (user _)
            (fig//write-chat-event (s-concat user " boosted their boost number"))
            (fig//update-db-number user :boost (lambda (x) (+ x 1)))))
+   (cons "MODCLONK LAUGH"
+         (lambda (user _)
+           (fig//write-chat-event "MODCLONK LAUGH DOT OGG")
+           (when (-contains? '("LCOLONQ" "MODCLONK") user)
+             (soundboard//play-clip "seinfeld.ogg"))))
    (cons "lurker check in" (lambda (user _) (fig//write-chat-event (format "%s says hello" user))))
    (cons "take sip strummer" (lambda (_ _) (fig//write-chat-event "drink water dummy")))
    (cons "deslug" (lambda (_ _) (fig//write-chat-event "unfold your spine")))
@@ -197,7 +247,23 @@
            (fig//write-chat-event (s-concat user " reverses the polarity"))
            (soundboard//play-clip "reversepolarity.mp3")
            (fig//model-toggle "reverse")))
-   (cons "super idol" (lambda (_ _) (soundboard//play-clip "superidol.mp3")))
+   (cons "Live LCOLONQ Reaction"
+         (lambda (user _)
+           (fig//write-chat-event (s-concat user " wants to see a live reaction"))
+           (fig/live-reaction)))
+   (cons "gamer"
+         (lambda (user _)
+           (fig//write-chat-event (s-concat user " quickscoped me"))
+           (soundboard//play-clip "videogame.ogg")
+           (fig/thug-life)))
+   (cons "arrow"
+         (lambda (user msg)
+           (fig//write-chat-event (format "%s points and says %S" user msg))
+           (fig/clickbait msg)))
+   (cons "super idol"
+         (lambda (_ _)
+           (fig//twitch-say "SuperIdoldexiaorongdoumeinidetianbayuezhengwudeyangguangdoumeiniyaoyanreai105Cdenididiqingchundezhen")
+           (soundboard//play-clip "superidol.mp3")))
    (cons "SEASICKNESS GENERATOR" (lambda (_ _) (fig//model-toggle "zoom_wave")))
    (cons "change the letters"
          (lambda (user inp)
@@ -217,6 +283,7 @@
            (fig//add-vip user)))
    (cons "crown a king and/or queen"
          (lambda (user inp)
+           (soundboard//play-clip "girlfriend.ogg")
            (fig//write-chat-event (s-concat user " VIPed " inp))
            (fig//add-vip inp)))
    (cons "deVIPPER"
@@ -318,6 +385,15 @@ CALLBACK will be passed the winner when the poll concludes."
     (fig//write-chat-message "LCOLONQ" "866686220" trimmed "#616161")
     (fig/pub '(monitor twitch chat outgoing) (list trimmed))))
 
+(defun fig//discord-say (nm msg)
+  "Write MSG to Discord chat as NM."
+  (let ((trimmed (s-trim msg)))
+    (fig/pub
+     '(monitor discord chat outgoing)
+     (list
+      (base64-encode-string nm t)
+      (base64-encode-string trimmed t)))))
+
 (defun fig//write-chat-event (ev)
   "Write EV to the Twitch chat buffer."
   (let ((inhibit-read-only t))
@@ -344,10 +420,10 @@ CALLBACK will be passed the winner when the poll concludes."
   "Action run on button press for button B."
   (let ((text (get-text-property (button-start b) 'fig-message)))
     (fig/biblical text (lambda (ass) (fig/say (s-concat "Spiritual assessment: " ass))))))
-(defun fig//write-chat-message (user userid text &optional color sigil bible-score)
+(defun fig//write-chat-message (user userid text &optional color sigil bible-score buf)
   "Write TEXT to the Twitch chat buffer as USER with USERID and COLOR."
   (let ((inhibit-read-only t))
-    (with-current-buffer (fig//get-twitch-chat-buffer)
+    (with-current-buffer (or buf (fig//get-twitch-chat-buffer))
       (goto-char (point-max))
       (insert-text-button
        (s-concat (if sigil (s-concat sigil " ") "") user)
@@ -357,17 +433,32 @@ CALLBACK will be passed the winner when the poll concludes."
       (insert ": ")
       (insert text)
       (when bible-score
-        (insert-text-button
-         (format " [%.2f]" bible-score)
-         'face '(:foreground "#bbbbbb")
-         'fig-message text
-         'action #'fig//chat-bible-button-action))
+        (let* ((wwidth (- (window-total-width (get-buffer-window (current-buffer))) 3))
+               (bible-button-text (format "[biblicality: %.2f]" bible-score))
+               (msgwidth
+                (+ (length sigil) (if sigil 1 0)
+                   (length user) (length ": ") (length text)
+                   (length bible-button-text)))
+               (lines (+ 1 (/ msgwidth wwidth))))
+          (insert
+           (propertize
+            " " 'display
+            `(space
+              :align-to
+              ,(- (+ (* wwidth lines) (- lines 1))
+                  (length bible-button-text)
+                  ))))
+          (insert-text-button
+           bible-button-text
+           'face '(:foreground "#bbbbbb")
+           'fig-message text
+           'action #'fig//chat-bible-button-action)))
       (insert "\n"))))
 
 (defun fig//handle-chat-message (msg)
   "Write MSG to the Twitch chat buffer, processing any commands."
   (fig//write-log (format "%s" msg))
-  (let* ((user (car msg))
+  (let* ((user (fig//decode-string (car msg)))
          (tags (cadr msg))
          (userid (car (alist-get "user-id" tags nil nil #'s-equals?)))
          (color (car (alist-get "color" tags nil nil #'s-equals?)))
@@ -378,6 +469,9 @@ CALLBACK will be passed the winner when the poll concludes."
          (text-colored-bible (car text-colored-bible-res))
          (text-with-emotes (fig//process-emote-ranges (s-split "/" emotes) (if fig//assess-chat-spirituality text-colored-bible text)))
          )
+    (push (cons user text) fig//incoming-chat-history)
+    (when (s-equals? user "MODCLONK")
+      (fig//obs-log-modclonk-message))
     (fig//write-chat-message
      user userid text-with-emotes color
      (fig//user-sigil user badges)

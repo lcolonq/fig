@@ -62,7 +62,7 @@
   "Advance all animated emotes in the (visible) chat buffer by 1 frame."
   (cl-incf fig//emote-frame-counter)
   (save-excursion
-    (with-current-buffer (get-buffer-create fig/twitch-chat-buffer)
+    (with-current-buffer (fig//get-twitch-chat-buffer)
       (goto-char (point-max))
       (forward-line -10)
       (goto-char (line-beginning-position))

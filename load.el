@@ -6,3 +6,6 @@
 (require 'fig-voice)
 (require 'fig-emotes)
 (require 'fig-bible)
+(require 'fig-fakechat)
+(require 'fig-obs)
+(fig/connect)

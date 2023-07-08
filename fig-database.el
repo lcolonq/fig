@@ -4,6 +4,7 @@
 
 (require 'dash)
 (require 's)
+(require 'f)
 (require 'ht)
 
 (defcustom fig/database-path "~/src/fig/database/"
@@ -21,6 +22,10 @@
 (defun fig//db-path (user)
   "Get the path of the database file for USER."
   (s-concat fig/database-path user))
+
+(defun fig//all-db-users ()
+  "Get all users in the database."
+  (--map (f-relative it fig/database-path) (f-entries fig/database-path)))
   
 (defun fig//save-db (user data)
   "Save DATA for USER."

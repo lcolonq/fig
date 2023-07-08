@@ -23,6 +23,7 @@
       (let ((old (ht-get ret it)))
         (ht-set! ret it (+ 1 (or old 0)))))
     (setf fig//bible-table ret)))
+(fig//populate-bible-table)
 
 (defun fig//bible-word-score (word)
   "Return a number between 0.0 and 1.0 representing how biblical WORD is."
