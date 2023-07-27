@@ -24,86 +24,31 @@
   :type '(string)
   :group 'fig)
 
-(defvar fig/quotes
-  '(("can I transmute your pants into ashes? Kappa" . "Deepwhiffer_00")
-    ("Grown straight cutie sweetie man" . "that_onion")
-    ("yes i wrong basically exclusively in c++" . "maddie_playsz")
-    ))
+(defvar fig/quotes nil)
+(defun fig//save-quotes ()
+  "Save the quotes database."
+  (fig//save-db "__QUOTES__" fig/quotes))
+(defun fig//load-quotes ()
+  "Load the quotes database."
+  (setf fig/quotes (fig//load-db "__QUOTES__")))
+(defun fig//add-quote (user q)
+  "Add quote Q from USER."
+  (add-to-list 'fig/quotes (cons q user))
+  (fig//save-quotes))
+(fig//load-quotes)
 
-(defvar fig/recommended-books
-  '(("Blood Meridian by Cormac McCarthy" . "JekkZeroZero")
-    ("Dracula by Bram Stoker" . "Hexadigital")
-    ("American Psycho by Bret Easton Ellis" . "AltoVT")
-    ("Gormengast by Mervyn Peake" . "jimmy_mapp")
-    ("The Stranger by Albert Camus" . "NZPIEFACE")
-    ("The Richest Man in Babylon by George S. Clason" . "Hexadigital")
-    ("House of Leaves by Mark Z. Danielweski" . "ABuffSeagull")
-    ("Gardening with Less Water by David A. Bainbridge" . "Hexadigital")
-    ("Great Plays, Sophocles to Brecht by Morton W. Bloomfield" . "jimmy_mapp")
-    ("Compost Everything: The Good Guide to Extreme Composting by David The Good" . "Hexadigital")
-    ("Gödel Escher Bach by Douglas R. Hofstadter" . "saferq")
-    ("John Dies at the End by David Wong" . "NZPIEFACE")
-    ("A Non Programmers Guide to Python 3 (https://en.wikibooks.org/wiki/Non-Programmer%27s_Tutorial_for_Python_3)" . "moonpiedumplings")
-    ("To Catch The Sun by Lonny Grafman and Joshua Pearce" . "Hexadigital (unendorsed!)")
-    ("Mistborn by Brandon Sanderson" . "Kaos_Dragon")
-    ("Naive. Super by Erlend Loe" . "OlgaOkami")
-    ("World War Z by Max Brooks" . "oooEcho")
-    ("The Girl Who Drank The Moon by Kelly Barnhill" . "SweetsRin")
-    ("Dark Matter by Blake Crouch" . "SweetsRin")
-    ("King, Warrior, Magician, Lover by Robert Moore" . "StarlordGG")
-    ("Meditations by Marcus Aurelius" . "oooEcho")
-    ("The Boneless Mercies by April Genevieve Tucholke" . "SweetsRin")
-    ("Currency Wars by James Rickards" . "StarlordGG")
-    ("The Wealth of Nations by Adam Smith" . "StarlordGG")
-    ("Das Kapital by Karl Marx" . "realpattywhack")
-    ("Hyperion by Dan Simmons" . "Kinwoop")
-    ("Taken By The T. Rex by Chuck Tingle" . "realpattywhack")
-    ("The Sisters of the Winter Wood by Rena Rossner" . "SweetsRin")
-    ("Hard to Be a God by Arkadi and Boris Strugatsky" . "LadyVignette")
-    ("Beowulf translated by J.R.R. Tolkien" . "Kinwoop")
-    ("Rashomon and Seventeen Other Stories by Ryunosuke Akutagawa" . "NZPIEFACE")
-    ("The Metamorphosis of Prime Intellect by Roger Williams" . "SigmaHeavyIndustries")
-    ("The Three-Body Problem by Liu Cixin" . "SigmaHeavyIndustries")
-    ("Metamorphosis by Franz Kafka" . "SigmaHeavyIndustries")
-    ("Foundation by Isaac Asimov" . "DanteDaedalusCh")
-    ("Snowcrash by Neal Stephenson" . "DanteDaedalusCh")
-    ("Thus Spoke Zarathustra by Friedrich Nietzsche" . "justchil_l")
-    ("Food of the Gods by Terence McKenna" . "ChessChampTTV")
-    ("The Mote in God's Eye by Larry Niven" . "DanteDaedalusCh")
-    ("Hail Mary by Andy Weir" . "SigmaHeavyIndustries")
-    ("Empires of EVE by Andrew Groen" . "DanteDaedalusCh")
-    ("The Night Land by William Hope Hodgson" . "woozle_ch")
-    ("Speaker of the Dead by Orson Scott Card" . "DanteDaedalusCh")
-    ("The Hobbit by J.R.R. Tolkien" . "woozle_ch")
-    ("Oblomov by Ivan Goncharov" . "MADATLEAD")
-    ("Notes from Underground by Fyodor Dostoevsky" . "woozle_ch")
-    ("Neuromancer by William Gibson" . "DanteDaedalusCh")
-    ("The Difference Engine by William Gibson" . "DanteDaedalusCh")
-    ("I Am Legend by Richard Matheson" . "oooEcho")
-    ("One Flew Over The Cuckoo's Nest by Ken Kesey" . "GenDude")
-    ("The Alchemist by Paulo Coelho" . "saferq")
-    ("The Last Unicorn by Peter S. Beagle" . "woozle_ch")
-    ("Earthsea by Ursula Le Guin" . "woozle_ch")
-    ("Discworld by Terry Pratchet" . "woozle_ch")
-    ("The Magus by John Fowles" . "StefiSot")
-    ("A Fire Upon The Deep by Vernor Vinge" . "khlorghaal")
-    ("The Hero With A Thousand Faces by Joseph Campbell" . "exxjob")
-    ("The Alchemist by Paulo Coelho" . "StefiSot")
-    ("How To by Randall Munroe" . "Roboman01851")
-    ("Blindsight by Peter Watts" . "LCOLONQ")
-    ("Ficciones by Jorge Luis Borges" . "LCOLONQ")
-    ("The Luzhin Defense by Vladimir Nabokov" . "LCOLONQ")
-    ("The Book of the New Sun by Gene Wolfe" . "LCOLONQ")
-    ("The Glass Bead Game by Herman Hesse" . "LCOLONQ")
-    ("The Dying Earth by Jack Vance" . "LCOLONQ")
-    ("The Black Company by Glen Cook" . "LCOLONQ")
-    ("Anathem by Neal Stephenson" . "LCOLONQ")
-    ("The Diamond Age by Neal Stephenson" . "LCOLONQ")
-    ("The Count of Monte Cristo by Alexandre Dumas" . "LCOLONQ")
-    ("The King of Elfland's Daughter by Lord Dunsany" . "LCOLONQ")
-    ("That Hideous Strength by C.S. Lewis" . "LCOLONQ")
-    ("War and Peace by Leo Tolstoy" . "LCOLONQ")
-    ))
+(defvar fig/recommended-books nil)
+(defun fig//save-recommended-books ()
+  "Save the quotes database."
+  (fig//save-db "__BOOKS__" fig/recommended-books))
+(defun fig//load-recommended-books ()
+  "Load the quotes database."
+  (setf fig/recommended-books (fig//load-db "__BOOKS__")))
+(defun fig//add-recommended-book (user b)
+  "Add book B from USER."
+  (add-to-list 'fig/recommended-books (cons b user))
+  (fig//save-recommended-books))
+(fig//load-recommended-books)
 
 (defvar fig//assess-chat-spirituality t
   "Whether or not to print Bible word summary in chat messages.")
@@ -165,6 +110,7 @@
    (cons "hexadiCoding" (lambda (_ _) (soundboard//play-clip "developers.ogg")))
    (cons "roguelike" (lambda (user _) (fig//twitch-say (format "@%s that's not a roguelike" user))))
    (cons "arch" (lambda (_ _) (fig//twitch-say "I use nix btw")))
+   (cons "Adge" (lambda (_ _) (fig//twitch-say "https://github.com/pixeltris/TwitchAdSolutions")))
    (cons "!commands"
          (lambda (_ _)
            (fig//twitch-say
@@ -179,15 +125,39 @@
                (insert-file-contents-literally "~/today.txt")
                (buffer-string))))))
    (cons "!oomfie" (lambda (_ _) (fig//twitch-say "hi!!!!!!!")))
+   (cons "!bible" (lambda (_ _) (fig//twitch-say "https://www.youtube.com/watch?v=G5u23bh29hI")))
    (cons "!drink" (lambda (_ _) (fig//twitch-say "its watah im drinkin it")))
+   (cons "!palettes"
+         (lambda (_ _)
+           (fig//twitch-say
+            (format
+             "Available palettes: %s"
+             (s-join " " (-map #'fig//palette-name fig/palettes))))))
+   (cons "!palette"
+         (lambda (_ inp)
+           (when-let*
+               ((trimmed (s-trim (s-replace "!palette" "" inp)))
+                (pal (fig//get-palette trimmed)))
+             (fig//twitch-say
+              (format "%s" (s-join " " (fig//write-palette pal)))))))
    (cons "!bookrec"
          (lambda (_ _)
            (let ((choice (nth (random (length fig/recommended-books)) fig/recommended-books)))
              (fig//twitch-say (format "%s (recommended by %s)" (car choice) (cdr choice))))))
+   (cons "!addbookrec"
+         (lambda (user inp)
+           (let ((trimmed (s-trim (s-replace "!addbookrec" "" inp))))
+             (fig//write-chat-event (format "%s recommends: %s" user trimmed))
+             (fig//add-recommended-book user trimmed))))
    (cons "!quote"
          (lambda (_ _)
            (let ((choice (nth (random (length fig/quotes)) fig/quotes)))
              (fig//twitch-say (format "%s: %s" (cdr choice) (car choice))))))
+   (cons "!addquote"
+         (lambda (user inp)
+           (let ((trimmed (s-trim (s-replace "!addquote" "" inp))))
+             (fig//write-chat-event (format "%s saves quote: %s" user trimmed))
+             (fig//add-quote user trimmed))))
    (cons "!twitter"
          (lambda (_ _)
            (fig/ask "How do you feel about Twitter? Should viewers follow LCOLONQ on Twitter?" #'fig/say)
@@ -224,18 +194,37 @@
            (fig//twitch-say (fig//character-to-string (fig//get-db-character user)))))
    ))
 
+(defvar fig//current-strength 0
+  "My current strength.")
+
+(defun fig//render-strength ()
+  "Display strength."
+  (with-current-buffer (get-buffer-create "*fig-strength*")
+    (erase-buffer)
+    (fig//write-line (format "Current strength: %s/511" fig//current-strength))))
+
 (defconst fig//twitch-redeems
   (list
    (cons "BOOST"
          (lambda (user _)
            (fig//write-chat-event (s-concat user " boosted their boost number"))
            (fig//update-db-number user :boost (lambda (x) (+ x 1)))))
+   (cons "lend me strength"
+         (lambda (user _)
+           (fig//write-chat-event (s-concat user " lends me their strength"))
+           (cl-incf fig//current-strength)
+           (fig//render-strength)))
    (cons "MODCLONK LAUGH"
          (lambda (user _)
            (fig//write-chat-event "MODCLONK LAUGH DOT OGG")
            (when (-contains? '("LCOLONQ" "MODCLONK") user)
              (soundboard//play-clip "seinfeld.ogg"))))
-   (cons "lurker check in" (lambda (user _) (fig//write-chat-event (format "%s says hello" user))))
+   (cons "bells of bezelea"
+         (lambda (user msg)
+           (when (< (length msg) 256)
+             (fig//write-chat-event (format "%s played the bells (sponsored by Bezelea)" user))
+             (muzak-play-notes msg))))
+   (cons "lurker check in" (lambda (user _) (fig//write-chat-event (format "%s is lurking" user))))
    (cons "take sip strummer" (lambda (_ _) (fig//write-chat-event "drink water dummy")))
    (cons "deslug" (lambda (_ _) (fig//write-chat-event "unfold your spine")))
    (cons "spinne"
@@ -256,6 +245,10 @@
            (fig//write-chat-event (s-concat user " quickscoped me"))
            (soundboard//play-clip "videogame.ogg")
            (fig/thug-life)))
+   (cons "INTJ stare"
+         (lambda (user _)
+           (fig//write-chat-event (s-concat user " stared INTJly"))
+           (fig/intj-stare)))
    (cons "arrow"
          (lambda (user msg)
            (fig//write-chat-event (format "%s points and says %S" user msg))
@@ -269,6 +262,25 @@
          (lambda (user inp)
            (fig//write-chat-event (s-concat user " changes the letters: " inp))
            (fig//model-background-text (s-replace " " "" inp))))
+   (cons "use palette preset"
+         (lambda (user inp)
+           (fig//write-chat-event (s-concat user " changes the palette preset: " inp))
+           (fig//model-use-palette-preset (s-trim inp))))
+   (cons "create palette preset"
+         (lambda (user inp)
+           (when-let*
+               ((split (s-split " " inp))
+                (name (car split))
+                (hair (cadr split))
+                (eyes (caddr split))
+                (highlight (cadddr split)))
+             (when (-every? #'color-defined-p (list hair eyes highlight))
+               (fig//write-chat-event (s-concat user " creates a palette preset: " inp))
+               (fig//add-palette name hair eyes highlight)
+               (fig//model-use-palette-preset name)))))
+   (cons "palette swap (hair)" (fig//handle-redeem-palette-swap "hair" "#bbb1be"))
+   (cons "palette swap (highlight)" (fig//handle-redeem-palette-swap "highlight" "#a096a0"))
+   (cons "palette swap (eyes)" (fig//handle-redeem-palette-swap "eyes" "#61ba87"))
    (cons "ask computer question"
          (lambda (user inp)
            (fig//write-chat-event (s-concat user " asks the computer: " inp))
@@ -367,17 +379,6 @@ CALLBACK will be passed the winner when the poll concludes."
      '(monitor twitch prediction finish)
      (list (car fig//current-prediction-ids)
            (car (alist-get outcome (cadr fig//current-prediction-ids) nil nil #'s-equals?))))))
-
-(defun fig//model-toggle (toggle)
-  "Toggle TOGGLE on model."
-  (fig/pub '(avatar toggle) (list toggle)))
-
-(defun fig//model-background-text (msg)
-  "Change the background text of the model to MSG."
-  (let* ((cleanmsg (s-trim (fig//clean-string msg)))
-         (encoded (fig//encode-string cleanmsg)))
-    (unless (s-blank? cleanmsg)
-      (fig/pub '(avatar text) (list encoded)))))
 
 (defun fig//twitch-say (msg)
   "Write MSG to Twitch chat."

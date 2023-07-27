@@ -12,6 +12,8 @@
 (defvar fig//obs-live-reaction-timer nil "Time to display Live LCOLONQ Reaction.")
 (defvar fig//obs-thug-life-timer nil "Time to display Thug Life.")
 (defvar fig//obs-clickbait-timer nil "Time to display clickbait.")
+(defvar fig//obs-intj-timer nil "Time to display INTJ stare.")
+(defvar fig//obs-crit-timer nil "Time to display critical hit.")
 
 (defun fig//obs-log-modclonk-message ()
   "Record that MODCLONK sent a message."
@@ -32,6 +34,20 @@
   (unless fig//obs-thug-life-timer
     (fig//toggle-thug-life))
   (setf fig//obs-thug-life-timer 17))
+
+(defun fig/intj-stare ()
+  "Enable the INTJ Stare overlay for some time."
+  (interactive)
+  (unless fig//obs-intj-timer
+    (fig//toggle-intj-stare))
+  (setf fig//obs-intj-timer 17))
+
+(defun fig/critical-hit ()
+  "Enable the Critical Hit overlay for some time."
+  (interactive)
+  (unless fig//obs-crit-timer
+    (fig//toggle-critical-hit)
+    (setf fig//obs-crit-timer 3)))
 
 (defun fig/clickbait (msg)
   "Enable the clickbait for some time.
@@ -54,9 +70,29 @@ MSG is displayed above the red arrow."
   "Toggle the Thug Life overlay."
   (fig/pub '(monitor obs toggle) (list "Thug Life" "Thug Life Video")))
 
+(defun fig//toggle-intj-stare ()
+  "Toggle the INTJ Stare overlay."
+  (fig/pub '(monitor obs toggle) (list "INTJ" "INTJ Image")))
+
+(defun fig//toggle-critical-hit ()
+  "Toggle the Critical Hit overlay."
+  (fig/pub '(monitor obs toggle) (list "Critical Hit Wrapper" "Critical Hit")))
+
 (defun fig//toggle-vhs ()
   "Toggle the VHS overlay."
-  (fig/pub '(monitor obs toggle) (list "VHS" "VHS Video")))
+  (fig/pub '(monitor obs toggle) (list "VHS" "VHS Group")))
+
+(defun fig//toggle-saiyan ()
+  "Toggle the Super Saiyan overlay."
+  (fig/pub '(monitor obs toggle) (list "Saiyan" "Saiyan Video")))
+
+(defun fig//toggle-persona4 ()
+  "Toggle the Persona 4 dialogue box."
+  (fig/pub '(monitor obs toggle) (list "Persona 4" "Persona 4 Background")))
+
+(defun fig//toggle-explosion ()
+  "Toggle the explosion effect."
+  (fig/pub '(monitor obs toggle) (list "Explosion" "Explosion Video")))
 
 (defun fig//set-clickbait-text (msg)
   "Change the clickbait text to MSG."
@@ -86,6 +122,16 @@ Optionally, change text to MSG."
     (when (<= fig//obs-thug-life-timer 0)
       (setf fig//obs-thug-life-timer nil)
       (fig//toggle-thug-life)))
+  (when fig//obs-intj-timer
+    (cl-decf fig//obs-intj-timer)
+    (when (<= fig//obs-intj-timer 0)
+      (setf fig//obs-intj-timer nil)
+      (fig//toggle-intj-stare)))
+  (when fig//obs-crit-timer
+    (cl-decf fig//obs-crit-timer)
+    (when (<= fig//obs-crit-timer 0)
+      (setf fig//obs-crit-timer nil)
+      (fig//toggle-critical-hit)))
   (when fig//obs-clickbait-timer
     (cl-decf fig//obs-clickbait-timer)
     (when (<= fig//obs-clickbait-timer 0)

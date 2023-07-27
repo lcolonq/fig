@@ -12,9 +12,6 @@
   :type '(string)
   :group 'fig)
 
-(defvar fig//database-connection nil
-  "The connection to the database.")
-
 (defun fig//initialize-db ()
   "Initialize the database."
   (mkdir fig/database-path t))
