@@ -72,7 +72,7 @@
        (fig//fake-chatter-profile-color prof)
        (fig//fake-chatter-profile-sigil prof)
        bible-score
-       (fig//get-fake-chat-buffer)
+       ;; (fig//get-fake-chat-buffer)
        ))))
 
 (defun fig//select-fake-chatter ()
@@ -397,20 +397,39 @@
         "looking cute today"
         )))))
 
+(defconst fig//fake-chatter-profile-drcolon
+  (fig//make-fake-chatter-profile
+   :username "DrColon"
+   :color "#FFFFFF"
+   :compute-likeliness (lambda (_) 0.01)
+   :send-message
+   (lambda (st)
+     (fig/ask
+      (fig//build-fake-chat-prompt st)
+      (lambda (msg)
+        (fig//fake-chatter-send st msg))
+      (fig//build-fake-chat-system-prompt
+       st
+       "You are a medical doctor who is enthusiastic about homeopathy and alternative medicine. You are an enthusiastic Gentoo Linux user, and you have more than 20,000 posts on the Gentoo Linux forums.")
+      "LCOLONQ: what's happening gamers? tonight we're trying to implement"
+      "Have you had your dilutions today?"
+      ))))
+
 (setq
  fig//fake-chatters
  (list
-  (fig//make-fake-chatter :profile fig//fake-chatter-profile-forsen)
-  (fig//make-fake-chatter :profile fig//fake-chatter-profile-bigwomenbigfun)
-  (fig//make-fake-chatter :profile fig//fake-chatter-profile-whelpless)
-  (fig//make-fake-chatter :profile fig//fake-chatter-profile-dansmith87)
-  (fig//make-fake-chatter :profile fig//fake-chatter-profile-buffybonnet)
-  (fig//make-fake-chatter :profile fig//fake-chatter-profile-chaotix)
-  (fig//make-fake-chatter :profile fig//fake-chatter-profile-mountyesfsck)
-  (fig//make-fake-chatter :profile fig//fake-chatter-profile-candyboxbox)
-  (fig//make-fake-chatter :profile fig//fake-chatter-profile-goofyluffy69)
-  (fig//make-fake-chatter :profile fig//fake-chatter-profile-ettelennur)
-  (fig//make-fake-chatter :profile fig//fake-chatter-profile-deepwhiffer)
+  (fig//make-fake-chatter :profile fig//fake-chatter-profile-drcolon)
+  ;; (fig//make-fake-chatter :profile fig//fake-chatter-profile-forsen)
+  ;; (fig//make-fake-chatter :profile fig//fake-chatter-profile-bigwomenbigfun)
+  ;; (fig//make-fake-chatter :profile fig//fake-chatter-profile-whelpless)
+  ;; (fig//make-fake-chatter :profile fig//fake-chatter-profile-dansmith87)
+  ;; (fig//make-fake-chatter :profile fig//fake-chatter-profile-buffybonnet)
+  ;; (fig//make-fake-chatter :profile fig//fake-chatter-profile-chaotix)
+  ;; (fig//make-fake-chatter :profile fig//fake-chatter-profile-mountyesfsck)
+  ;; (fig//make-fake-chatter :profile fig//fake-chatter-profile-candyboxbox)
+  ;; (fig//make-fake-chatter :profile fig//fake-chatter-profile-goofyluffy69)
+  ;; (fig//make-fake-chatter :profile fig//fake-chatter-profile-ettelennur)
+  ;; (fig//make-fake-chatter :profile fig//fake-chatter-profile-deepwhiffer)
   ))
 
 (provide 'fig-fakechat)

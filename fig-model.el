@@ -30,7 +30,7 @@
    :hair (nth 3 p)
    :eyes (nth 4 p)
    :highlight (nth 4 p)
-   :skin (nth 5 p))))
+   :skin (nth 5 p)))
 
 (defun fig//write-palette (p)
   "Given a palette P, convert to a palette expression."
@@ -105,12 +105,22 @@
          (encodedcol (fig//encode-string (fig//color-to-html-code cleancol))))
     (unless (or (s-blank? cleanmsg) (s-blank? cleancol))
       (fig//model-record-change)
-      (fig/pub '(avatar palette) (list type encodedmsg encodedcol)))))
+      (fig/pub '(avatar palette word) (list type encodedmsg))
+      (fig/pub '(avatar palette color) (list type encodedcol)))))
 
 (defun fig//model-palette-reset ()
   "Reset the model palette."
   (interactive)
   (fig/pub '(avatar reset)))
+
+(defun fig//model-palette-image (type path)
+  "Change the model palette for TYPE to an image at PATH."
+  (interactive)
+  (let* ((cleanpath (s-trim (fig//clean-string path)))
+         (encodedpath (fig//encode-string cleanpath)))
+    (unless (s-blank? cleanpath)
+      (fig//model-record-change)
+      (fig/pub '(avatar palette image) (list type encodedpath)))))
 
 (defun fig//model-further-beyond ()
   "Go even further beyond."

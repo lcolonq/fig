@@ -109,7 +109,7 @@
    (cons "NICECOCK" (lambda (_ _) (soundboard//play-clip "pantsintoashes.mp3")))
    (cons "hexadiCoding" (lambda (_ _) (soundboard//play-clip "developers.ogg")))
    (cons "roguelike" (lambda (user _) (fig//twitch-say (format "@%s that's not a roguelike" user))))
-   (cons "arch" (lambda (_ _) (fig//twitch-say "I use nix btw")))
+   (cons "Arch" (lambda (_ _) (fig//twitch-say "I use nix btw")))
    (cons "Adge" (lambda (_ _) (fig//twitch-say "https://github.com/pixeltris/TwitchAdSolutions")))
    (cons "!commands"
          (lambda (_ _)
@@ -328,7 +328,7 @@
 
 (defun fig//encode-string (s)
   "Decode the base64 UTF-8 string S."
-  (base64-encode-string (encode-coding-string s 'utf-8)))
+  (base64-encode-string (encode-coding-string s 'utf-8) t))
 
 (defun fig//clean-string (s)
   "Remove special characters from S."
@@ -435,7 +435,7 @@ CALLBACK will be passed the winner when the poll concludes."
       (insert text)
       (when bible-score
         (let* ((wwidth (- (window-total-width (get-buffer-window (current-buffer))) 3))
-               (bible-button-text (format "[biblicality: %.2f]" bible-score))
+               (bible-button-text (format "[biblicality %.2f]" bible-score))
                (msgwidth
                 (+ (length sigil) (if sigil 1 0)
                    (length user) (length ": ") (length text)
@@ -474,9 +474,13 @@ CALLBACK will be passed the winner when the poll concludes."
     (when (s-equals? user "MODCLONK")
       (fig//obs-log-modclonk-message))
     (fig//write-chat-message
-     user userid text-with-emotes color
+     user userid (s-replace "bald" "ball" text-with-emotes) color
      (fig//user-sigil user badges)
      (and fig//assess-chat-spirituality (cdr text-colored-bible-res)))
+
+    (when (s-contains? "!hairstyle" text)
+      (fig//model-palette-image "hair" (fig//emote-path (car (s-split ":" emotes)))))
+    
     (--each fig//twitch-chat-commands
       (when (s-contains? (car it) text)
         (funcall (cdr it) user text)))))
