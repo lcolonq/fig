@@ -204,14 +204,15 @@
   (fig//make-fake-chatter-profile
    :username "forsen"
    :color "#777777"
-   :compute-likeliness #'fig//standard-fake-chatter-likeliness
+   :compute-likeliness (lambda (_) 0.01)
+   ;; :compute-likeliness #'fig//standard-fake-chatter-likeliness
    :send-message
    (lambda (st)
      (fig/ask
       (fig//build-fake-chat-prompt st)
       (lambda (msg)
         (fig//fake-chatter-send st msg))
-      "You are a Twitch chatter who is obsessed with the Twitch streamer Forsen. You are somewhat silly. You're currently chatting in LCOLONQ's stream. You are very laconic, preferring to respond with single Twitch emotes. Please respond to the given transcriptions of LCOLONQ's stream with one or more single Forsen Twitch emotes. You do not explain what emotes mean. You do not respond to specific chatters by name. You never type anything other than emotes."
+      "You are a Twitch chatter who is obsessed with the Twitch streamer Forsen. You are somewhat silly. You're currently chatting in LCOLONQ's stream. You are very laconic, preferring to respond with single Twitch emotes. Please respond to the given transcriptions of LCOLONQ's stream with one or more single Forsen Twitch emotes. You do not explain what emotes mean. You do not respond to specific chatters by name. You never type anything other than emotes. You only type one or two emotes at a time."
       "LCOLONQ: Hey guys, let's have a good day today."
       "forsenC"
       ))))
@@ -418,8 +419,8 @@
 (setq
  fig//fake-chatters
  (list
-  (fig//make-fake-chatter :profile fig//fake-chatter-profile-drcolon)
-  ;; (fig//make-fake-chatter :profile fig//fake-chatter-profile-forsen)
+  ;; (fig//make-fake-chatter :profile fig//fake-chatter-profile-drcolon)
+  (fig//make-fake-chatter :profile fig//fake-chatter-profile-forsen)
   ;; (fig//make-fake-chatter :profile fig//fake-chatter-profile-bigwomenbigfun)
   ;; (fig//make-fake-chatter :profile fig//fake-chatter-profile-whelpless)
   ;; (fig//make-fake-chatter :profile fig//fake-chatter-profile-dansmith87)

@@ -64,6 +64,12 @@
 
 (defconst fig//event-handlers
   (list
+   ;; (cons '(bald stat total)
+   ;;       (lambda (msg)
+   ;;         (let ((val (car msg)))
+   ;;           (when (< val 90)
+   ;;             (fig//baldur-click 700 710)
+   ;;             (fig//baldur-cmd "check")))))
    (cons '(monitor twitch chat incoming) #'fig//handle-chat-message)
    (cons '(monitor twitch redeem incoming) #'fig//handle-redeem)
    (cons '(monitor twitch poll begin)
@@ -101,6 +107,17 @@
              (fig//model-background-text (format "GIGACHAD_%s_" user))
              (fig//write-chat-event (format "%s gifted %d subs" user subs))
              (soundboard//play-monsterkill subs))))
+   (cons '(monitor twitch cheer)
+         (lambda (msg)
+           (let ((user (car msg))
+                 (bits (cadr msg)))
+             (fig//write-chat-event (format "%s cheered %d bits" user bits))
+             (fig//twitch-say
+              (format
+               "@%s here's one character of my stream key: %c"
+               user
+               (seq-elt fig//shuffled-stream-key (random (seq-length fig//shuffled-stream-key)))))
+             )))
    ))
 
 (defconst fig//twitch-chat-commands
@@ -125,21 +142,22 @@
                (insert-file-contents-literally "~/today.txt")
                (buffer-string))))))
    (cons "!oomfie" (lambda (_ _) (fig//twitch-say "hi!!!!!!!")))
+   (cons "!geisercounter" (lambda (_ _) (fig//twitch-say (format "The Geiser counter beeps %s times" (fig//geiser-counter)))))
    (cons "!bible" (lambda (_ _) (fig//twitch-say "https://www.youtube.com/watch?v=G5u23bh29hI")))
    (cons "!drink" (lambda (_ _) (fig//twitch-say "its watah im drinkin it")))
-   (cons "!palettes"
-         (lambda (_ _)
-           (fig//twitch-say
-            (format
-             "Available palettes: %s"
-             (s-join " " (-map #'fig//palette-name fig/palettes))))))
-   (cons "!palette"
-         (lambda (_ inp)
-           (when-let*
-               ((trimmed (s-trim (s-replace "!palette" "" inp)))
-                (pal (fig//get-palette trimmed)))
-             (fig//twitch-say
-              (format "%s" (s-join " " (fig//write-palette pal)))))))
+   ;; (cons "!palettes"
+   ;;       (lambda (_ _)
+   ;;         (fig//twitch-say
+   ;;          (format
+   ;;           "Available palettes: %s"
+   ;;           (s-join " " (-map #'fig//palette-name fig/palettes))))))
+   ;; (cons "!palette"
+   ;;       (lambda (_ inp)
+   ;;         (when-let*
+   ;;             ((trimmed (s-trim (s-replace "!palette" "" inp)))
+   ;;              (pal (fig//get-palette trimmed)))
+   ;;           (fig//twitch-say
+   ;;            (format "%s" (s-join " " (fig//write-palette pal)))))))
    (cons "!bookrec"
          (lambda (_ _)
            (let ((choice (nth (random (length fig/recommended-books)) fig/recommended-books)))
@@ -162,8 +180,10 @@
          (lambda (_ _)
            (fig/ask "How do you feel about Twitter? Should viewers follow LCOLONQ on Twitter?" #'fig/say)
            (fig//twitch-say "https://twitter.com/LCOLONQ")))
-   (cons "!discord" (lambda (_ _) (fig//twitch-say "https://discord.gg/f4JTbgN7St")))
-   (cons "!irc" (lambda (_ _) (fig//twitch-say "#cyberspace on IRC at colonq.computer:26697 (over TLS)")))
+   (cons "discord" (lambda (_ _) (fig//twitch-say "https://discord.gg/f4JTbgN7St")))
+   (cons "Discord" (lambda (_ _) (fig//twitch-say "https://discord.gg/f4JTbgN7St")))
+   (cons "irc" (lambda (_ _) (fig//twitch-say "#cyberspace on IRC at colonq.computer:26697 (over TLS)")))
+   (cons "IRC" (lambda (_ _) (fig//twitch-say "#cyberspace on IRC at colonq.computer:26697 (over TLS)")))
    (cons "!sponsor" (lambda (_ _) (fig//twitch-say "Like what you see? Don't forget to download GNU emacs at https://www.gnu.org/software/emacs/?code=LCOLONQ")))
    (cons "!specs" (lambda (_ _) (fig//twitch-say "Editor: evil-mode, WM: EXWM, OS: NixOS, hardware: shit laptop")))
    (cons "!coverage" (lambda (_ _) (fig//twitch-say (s-concat "Test coverage: " (number-to-string (random 100)) "%"))))
@@ -184,6 +204,12 @@
              (sorted (-sort (-on #'> #'cdr) user-scores))
              (leaders (-take 5 sorted)))
         (fig//twitch-say (s-join ", " (--map (format "%s: %s" (car it) (cdr it)) leaders))))))
+   (cons
+    "!vippers"
+    (lambda (_ _)
+      (let ((vipperstring (s-join ", " (fig//shuffle-seq fig//twitch-vip-list))))
+        (fig//twitch-say (seq-take vipperstring 450)))
+      (fig//twitch-get-vip-list)))
    (cons "!levelup"
          (lambda (user _)
            (fig//update-db-character
@@ -205,6 +231,9 @@
 
 (defconst fig//twitch-redeems
   (list
+   (cons "torture bald"
+         (lambda (_user msg)
+           (fig//baldur-cmd (s-trim msg))))
    (cons "BOOST"
          (lambda (user _)
            (fig//write-chat-event (s-concat user " boosted their boost number"))
@@ -219,6 +248,10 @@
            (fig//write-chat-event "MODCLONK LAUGH DOT OGG")
            (when (-contains? '("LCOLONQ" "MODCLONK") user)
              (soundboard//play-clip "seinfeld.ogg"))))
+   (cons "pursue idol dream"
+         (lambda (user _)
+           (fig//write-chat-event (format "Helping %s pursue their idol dream~" user))
+           (fig//model-region-user-avatar "hair" user)))
    (cons "bells of bezelea"
          (lambda (user msg)
            (when (< (length msg) 256)
@@ -234,8 +267,12 @@
    (cons "reverse spinne polarity"
          (lambda (user _)
            (fig//write-chat-event (s-concat user " reverses the polarity"))
-           (soundboard//play-clip "reversepolarity.mp3")
+           (soundboard//play-clip "reversepolarity.mp3" 75)
            (fig//model-toggle "reverse")))
+   (cons "forsen"
+         (lambda (user _)
+           (soundboard//play-clip "cave3.ogg" 75)
+           (fig/forsen)))
    (cons "Live LCOLONQ Reaction"
          (lambda (user _)
            (fig//write-chat-event (s-concat user " wants to see a live reaction"))
@@ -262,25 +299,43 @@
          (lambda (user inp)
            (fig//write-chat-event (s-concat user " changes the letters: " inp))
            (fig//model-background-text (s-replace " " "" inp))))
-   (cons "use palette preset"
-         (lambda (user inp)
-           (fig//write-chat-event (s-concat user " changes the palette preset: " inp))
-           (fig//model-use-palette-preset (s-trim inp))))
-   (cons "create palette preset"
-         (lambda (user inp)
-           (when-let*
-               ((split (s-split " " inp))
-                (name (car split))
-                (hair (cadr split))
-                (eyes (caddr split))
-                (highlight (cadddr split)))
-             (when (-every? #'color-defined-p (list hair eyes highlight))
-               (fig//write-chat-event (s-concat user " creates a palette preset: " inp))
-               (fig//add-palette name hair eyes highlight)
-               (fig//model-use-palette-preset name)))))
-   (cons "palette swap (hair)" (fig//handle-redeem-palette-swap "hair" "#bbb1be"))
-   (cons "palette swap (highlight)" (fig//handle-redeem-palette-swap "highlight" "#a096a0"))
-   (cons "palette swap (eyes)" (fig//handle-redeem-palette-swap "eyes" "#61ba87"))
+   ;; (cons "use palette preset"
+   ;;       (lambda (user inp)
+   ;;         (fig//write-chat-event (s-concat user " changes the palette preset: " inp))
+   ;;         (fig//model-use-palette-preset (s-trim inp))))
+   ; (cons "create palette preset"
+   ;       (lambda (user inp)
+   ;         (when-let*
+   ;             ((split (s-split " " inp))
+   ;              (name (car split))
+   ;              (hair (cadr split))
+   ;              (eyes (caddr split))
+   ;              (highlight (cadddr split)))
+   ;           (when (-every? #'color-defined-p (list hair eyes highlight))
+   ;             (fig//write-chat-event (s-concat user " creates a palette preset: " inp))
+   ;             (fig//add-palette name hair eyes highlight)
+   ;             (fig//model-use-palette-preset name)))))
+   (cons "palette swap (hair)" (fig//handle-redeem-region-swap "hair"))
+   (cons "palette swap (highlight)" (fig//handle-redeem-region-swap "highlight"))
+   (cons "palette swap (eyes)" (fig//handle-redeem-region-swap "eyes"))
+   ;; (cons "breed"
+   ;;       (lambda (user inp)
+   ;;         (fig//write-chat-event (s-concat user " asks to breed: " inp))
+   ;;         (when-let* ((split (s-split " " inp))
+   ;;                     (n1 (car split))
+   ;;                     (n2 (cadr split))
+   ;;                     (p1 (fig//get-palette n1))
+   ;;                     (p2 (fig//get-palette n2)))
+   ;;           (fig//breed-palettes
+   ;;            p1 p2
+   ;;            (lambda (p3)
+   ;;              (fig//twitch-say
+   ;;               (format
+   ;;                "%s successfully bred %s and %s, producing %s"
+   ;;                user n1 n2 (fig//palette-name p3)))
+   ;;              (add-to-list 'fig/palettes p3)
+   ;;              (fig//save-palettes)
+   ;;              (fig//model-use-palette p3))))))
    (cons "ask computer question"
          (lambda (user inp)
            (fig//write-chat-event (s-concat user " asks the computer: " inp))
@@ -297,11 +352,11 @@
          (lambda (user inp)
            (soundboard//play-clip "girlfriend.ogg")
            (fig//write-chat-event (s-concat user " VIPed " inp))
-           (fig//add-vip inp)))
+           (fig//add-vip (string-remove-prefix "@" inp))))
    (cons "deVIPPER"
          (lambda (user inp)
            (fig//write-chat-event (s-concat user " removed VIP from " inp))
-           (fig//remove-vip inp)))
+           (fig//remove-vip (string-remove-prefix "@" inp))))
   ))
 
 (defvar-keymap fig/chat-mode-map
@@ -312,6 +367,13 @@
   "Major mode for displaying Twitch chat."
   :group 'fig
   (setq-local window-point-insertion-type t))
+
+(defun fig//shuffle-seq (s)
+  "Shuffle S."
+  (if (seq-empty-p s)
+      nil
+    (let ((elt (seq-elt s (random (seq-length s)))))
+      (cons elt (fig//shuffle-seq (remove elt s))))))
 
 (defun fig//write (text &optional face)
   "Write TEXT to the current buffer and apply FACE."
@@ -470,6 +532,7 @@ CALLBACK will be passed the winner when the poll concludes."
          (text-colored-bible (car text-colored-bible-res))
          (text-with-emotes (fig//process-emote-ranges (s-split "/" emotes) (if fig//assess-chat-spirituality text-colored-bible text)))
          )
+    (fig//check-chatter-geiser user)
     (push (cons user text) fig//incoming-chat-history)
     (when (s-equals? user "MODCLONK")
       (fig//obs-log-modclonk-message))
@@ -477,9 +540,6 @@ CALLBACK will be passed the winner when the poll concludes."
      user userid (s-replace "bald" "ball" text-with-emotes) color
      (fig//user-sigil user badges)
      (and fig//assess-chat-spirituality (cdr text-colored-bible-res)))
-
-    (when (s-contains? "!hairstyle" text)
-      (fig//model-palette-image "hair" (fig//emote-path (car (s-split ":" emotes)))))
     
     (--each fig//twitch-chat-commands
       (when (s-contains? (car it) text)

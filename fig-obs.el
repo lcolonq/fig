@@ -13,6 +13,7 @@
 (defvar fig//obs-thug-life-timer nil "Time to display Thug Life.")
 (defvar fig//obs-clickbait-timer nil "Time to display clickbait.")
 (defvar fig//obs-intj-timer nil "Time to display INTJ stare.")
+(defvar fig//obs-forsen-timer nil "Time to display Forsen.")
 (defvar fig//obs-crit-timer nil "Time to display critical hit.")
 
 (defun fig//obs-log-modclonk-message ()
@@ -41,6 +42,13 @@
   (unless fig//obs-intj-timer
     (fig//toggle-intj-stare))
   (setf fig//obs-intj-timer 17))
+
+(defun fig/forsen ()
+  "Enable Forsen mode for some time."
+  (interactive)
+  (unless fig//obs-forsen-timer
+    (fig//model-toggle "forsen"))
+  (setf fig//obs-forsen-timer 60))
 
 (defun fig/critical-hit ()
   "Enable the Critical Hit overlay for some time."
@@ -96,7 +104,7 @@ MSG is displayed above the red arrow."
 
 (defun fig//set-clickbait-text (msg)
   "Change the clickbait text to MSG."
-  (fig/pub '(monitor obs set-text) (list "Red Arrow Text" (s-trim msg))))
+  (fig/pub '(monitor obs set-text) (list "Red Arrow Text" (fig//encode-string (s-trim msg)))))
 
 (defun fig//toggle-clickbait (&optional msg)
   "Toggle the clickbait arrow.
@@ -127,6 +135,11 @@ Optionally, change text to MSG."
     (when (<= fig//obs-intj-timer 0)
       (setf fig//obs-intj-timer nil)
       (fig//toggle-intj-stare)))
+  (when fig//obs-forsen-timer
+    (cl-decf fig//obs-forsen-timer)
+    (when (<= fig//obs-forsen-timer 0)
+      (setf fig//obs-forsen-timer nil)
+      (fig//model-toggle "forsen")))
   (when fig//obs-crit-timer
     (cl-decf fig//obs-crit-timer)
     (when (<= fig//obs-crit-timer 0)

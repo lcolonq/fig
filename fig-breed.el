@@ -7,6 +7,77 @@
 (require 'f)
 (require 'ht)
 (require 'color)
+(require 'cl-lib)
+
+(cl-defstruct
+    (fig//palette
+     (:constructor fig//make-palette))
+  pedigree
+  usage
+  name
+  hair
+  eyes
+  highlight
+  skin)
+
+(defun fig//read-palette (p)
+  "Given a palette expression P, convert to a `fig//palette' struct."
+  (fig//make-palette
+   :pedigree (nth 0 p)
+   :usage (nth 1 p)
+   :name (nth 2 p)
+   :hair (nth 3 p)
+   :eyes (nth 4 p)
+   :highlight (nth 4 p)
+   :skin (nth 5 p)))
+
+(defun fig//write-palette (p)
+  "Given a palette P, convert to a palette expression."
+   (list
+    (fig//palette-pedigree p)
+    (fig//palette-usage p)
+    (fig//palette-name p)
+    (fig//palette-hair p)
+    (fig//palette-eyes p)
+    (fig//palette-highlight p)
+    (fig//palette-skin p)))
+
+(defvar fig/palettes nil)
+(defun fig//save-palettes ()
+  "Save the quotes database."
+  (fig//save-db "__PALETTES__" (-map #'fig//write-palette fig/palettes)))
+(defun fig//load-palettes ()
+  "Load the quotes database."
+  (setf fig/palettes (-map #'fig//read-palette (fig//load-db "__PALETTES__"))))
+(defun fig//get-palette (name)
+  "Retrieve the palette named NAME."
+  (--find (s-equals? name (fig//palette-name it)) fig/palettes))
+(defun fig//add-palette (name hair eyes highlight)
+  "Add palette named NAME with colors for HAIR EYES and HIGHLIGHT."
+  (unless (fig//get-palette name)
+    (add-to-list
+     'fig/palettes
+     (fig//make-palette
+      :name name
+      :hair hair
+      :eyes eyes
+      :highlight highlight)))
+  (fig//save-palettes))
+(fig//load-palettes)
+
+(defun fig//model-use-palette (pal)
+  "Use the palette PAL."
+  (fig//model-palette "hair" "lcolonq" (fig//palette-hair pal))
+  (fig//model-palette "eyes" "lcolonq" (fig//palette-eyes pal))
+  (fig//model-palette "highlight" "lcolonq" (fig//palette-highlight pal)))
+(defun fig//model-use-palette-preset (name)
+  "Use the palette preset named NAME."
+  (when-let ((pal (fig//get-palette name)))
+    (setf
+     (fig//palette-usage pal)
+     (+ 1 (or (fig//palette-usage pal) 0)))
+    (fig//save-palettes)
+    (fig//model-use-palette pal)))
 
 (defun fig//color16-to-color8 (c16)
   "Convert C16 to a single-byte color component."
@@ -82,7 +153,7 @@
   "Breed palettes P1 and P2, passing the new palette to K."
   (let* ((u1 (fig//palette-usage p1))
          (u2 (fig//palette-usage p2))
-         (utotal (+ u1 u2))
+         (utotal (max 1 (+ u1 u2)))
          (scheme
           (lambda (c1 c2)
             (when (and c1 c2)

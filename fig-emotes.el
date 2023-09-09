@@ -37,6 +37,22 @@
        :command (list "curl" "-L" url "-o" path)
       ))))
 
+(defvar fig/emotes nil)
+(defun fig//save-emotes ()
+  "Save the emotes database."
+  (fig//save-db "__EMOTES__" fig/emotes))
+(defun fig//load-emotes ()
+  "Load the emotes database."
+  (setf fig/emotes (fig//load-db "__EMOTES__")))
+(defun fig//add-emote (enm eid)
+  "Add emote ENM with EID."
+  (add-to-list 'fig/emotes (cons (substring-no-properties enm) eid))
+  (fig//save-emotes))
+(defun fig//get-emote (enm)
+  "Get the ID for ENM."
+  (alist-get enm fig/emotes nil nil #'s-equals?))
+(fig//load-emotes)
+
 (defun fig//process-emote-range (er msg)
   "Given a string ER of form emoteid:start-end, add the emote MSG."
   (if (string-empty-p er)
@@ -46,7 +62,9 @@
                 (range-split (s-split "-" (cadr er-split)))
                 (start (string-to-number (car range-split)))
                 (end (string-to-number (cadr range-split)))
+                (emotemsg (substring msg start (+ end 1)))
                 (path (fig//emote-path emoteid)))
+      (fig//add-emote emotemsg emoteid)
       (fig//download-emote emoteid)
       (let ((img (create-image path)))
         (fig//add-image-over img msg (+ start 1) (+ end 2))
