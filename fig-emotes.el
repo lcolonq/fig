@@ -11,6 +11,11 @@
   :type '(string)
   :group 'fig)
 
+(defcustom fig/7tv-emote-cache-dir "/home/llll/src/fig/7tv-emotes/"
+  "The directory in which to store downloaded 7TV emote images."
+  :type '(string)
+  :group 'fig)
+
 (defun fig//add-image-over (image msg start end)
   "Add IMAGE to MSG between START and END."
   (with-temp-buffer
@@ -23,11 +28,15 @@
     (buffer-string)))
 
 (defun fig//emote-path (emoteid)
-  "Get the canonical path EMOTEID."
+  "Get the canonical path for EMOTEID."
   (s-concat fig/emote-cache-dir emoteid))
 
-(defun fig//download-emote (emoteid)
-  "Ensure that EMOTEID exists in the cache."
+(defun fig//7tv-emote-path (emoteid)
+  "Get the canonical path for EMOTEID."
+  (s-concat fig/7tv-emote-cache-dir emoteid))
+
+(defun fig//download-emote-then (emoteid k)
+  "Ensure that EMOTEID exists in the cache and then call K."
   (let* ((path (fig//emote-path emoteid))
          (url (format "https://static-cdn.jtvnw.net/emoticons/v2/%s/default/dark/1.0" emoteid)))
     (unless (f-exists? path)
@@ -35,7 +44,37 @@
        :name "fig-download-emote"
        :buffer nil
        :command (list "curl" "-L" url "-o" path)
+       :sentinel
+       (lambda (_ _)
+         (funcall k))
       ))))
+
+(defun fig//download-7tv-emote-then (emoteid k)
+  "Ensure that EMOTEID exists in the cache and then call K."
+  (let* ((path (fig//7tv-emote-path emoteid))
+         (url (format "https://cdn.7tv.app/emote/%s/1x.webp" emoteid)))
+    (unless (f-exists? path)
+      (make-process
+       :name "fig-download-emote"
+       :buffer nil
+       :command (list "get_7tv_fixed" url path)
+       :sentinel
+       (lambda (_ _)
+         (funcall k))
+      ))))
+
+(defun fig//download-emote (emoteid)
+  "Ensure that EMOTEID exists in the cache."
+  (fig//download-emote-then emoteid (lambda () nil)))
+
+(defun fig//download-7tv-emote (emoteid)
+  "Ensure that EMOTEID exists in the cache."
+  (fig//download-7tv-emote-then emoteid (lambda () nil)))
+
+;; (defun fig//download-all-7tv-emotes ()
+;;   "Download every 7TV emote that is enabled."
+;;   (--each (ht-values fig//7tv-emote-map)
+;;     (fig//download-7tv-emote it)))
 
 (defvar fig/emotes nil)
 (defun fig//save-emotes ()
@@ -52,6 +91,24 @@
   "Get the ID for ENM."
   (alist-get enm fig/emotes nil nil #'s-equals?))
 (fig//load-emotes)
+
+(defun fig//add-7tv-emotes (msg)
+  "Propertize MSG with images corresponding to 7TV emotes."
+  (let* ((sp (s-split " " msg)))
+    (s-join
+     " "
+     (--map
+      (if-let* ((eid (fig//get-7tv-emote it))
+                (path (fig//7tv-emote-path eid))
+                (img (create-image path)))
+          (progn
+            (propertize
+             it
+             'display
+             img
+             'rear-nonsticky t))
+        it)
+      sp))))
 
 (defun fig//process-emote-range (er msg)
   "Given a string ER of form emoteid:start-end, add the emote MSG."

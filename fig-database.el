@@ -29,12 +29,17 @@
   (write-region (format "%S" data) nil (fig//db-path user)))
 
 (defun fig//load-db (user)
-  "Load DATA for USER."
+  "Load data for USER."
   (when-let* ((path (fig//db-path user))
               (exists (file-exists-p path)))
     (with-temp-buffer
       (insert-file-contents-literally path)
       (read (buffer-string)))))
+
+(defun fig//load-db-entry (user attrib)
+  "Load ATTRIB for USER."
+  (let ((data (fig//load-db user)))
+    (alist-get attrib data)))
 
 (defun fig//update-db (user f)
   "Apply F to the database data for USER."

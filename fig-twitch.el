@@ -19,8 +19,15 @@
   :type '(string)
   :group 'fig)
 
+(defcustom fig//7tv-api-server "https://7tv.io/v3"
+  "Server URL for 7TV API."
+  :type '(string)
+  :group 'fig)
+
 (defvar fig//twitch-last-response nil)
+(defvar fig//7tv-last-response nil)
 (defvar fig//twitch-vip-list nil)
+(defvar fig//7tv-emote-map nil)
 
 (defun fig//twitch-api-get (loc k)
   "Get LOC from the Twitch API, passing the returned JSON to K."
@@ -38,6 +45,36 @@
        (setq fig//twitch-last-response data)
        (funcall k data))))
   t)
+
+(defun fig//7tv-api-get (loc k)
+  "Get LOC from the 7TV API, passing the returned JSON to K."
+  (request
+    (s-concat fig//7tv-api-server loc)
+    :type "GET"
+    :headers
+    `(("Content-Type" . "application/json"))
+    :parser #'json-parse-buffer
+    :success
+    (cl-function
+     (lambda (&key data &allow-other-keys)
+       (setq fig//7tv-last-response data)
+       (funcall k data))))
+  t)
+
+(defun fig//7tv-update-emotes ()
+  "Download the current list of 7TV emotes and populate `fig//7tv-emote-map'."
+  (fig//7tv-api-get
+   (s-concat "/users/twitch/" fig//twitch-broadcaster-id)
+   (lambda (data)
+     (let* ((emotes (ht-get (ht-get data "emote_set") "emotes")))
+       (setq fig//7tv-emote-map (ht-create))
+       (--each (seq-into emotes 'list)
+         (ht-set! fig//7tv-emote-map (ht-get it "name") (ht-get it "id")))))))
+(fig//7tv-update-emotes)
+
+(defun fig//get-7tv-emote (name)
+  "Retrieve the 7TV emote ID for NAME."
+  (ht-get fig//7tv-emote-map name))
 
 (defun fig//twitch-user-avatar-path (user)
   "Get the path to USER's avatar."

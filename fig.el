@@ -90,21 +90,32 @@
          (lambda (_)
            (fig//write-chat-event "Gamble finished")
            (setq fig//current-prediction-ids nil)))
+   (cons '(monitor twitch raid)
+         (lambda (msg)
+           (let ((user (car msg)))
+             (soundboard//play-clip "rampage.mp3")
+             (fig//write-chat-event (format "%s just raided!" user))
+             (run-with-timer
+              15 nil
+              (lambda ()
+                (fig//twitch-spotlight-streamer user))))))
    (cons '(monitor twitch follow)
          (lambda (msg)
            (let ((user (car msg)))
-             (fig//model-background-text (format "welcome_%s_" user))
+             (soundboard//play-clip "firstblood.mp3")
+             (fig//model-region-word "skin" (format "welcome_%s_" user))
              (fig//write-chat-event (format "New follower: %s" user)))))
    (cons '(monitor twitch subscribe)
          (lambda (msg)
            (let ((user (car msg)))
-             (fig//model-background-text (format "thanks_%s_" user))
+             (soundboard//play-clip "holyshit.mp3")
+             (fig//model-region-word "skin" (format "thanks_%s_" user))
              (fig//write-chat-event (format "New subscriber: %s" user)))))
    (cons '(monitor twitch gift)
          (lambda (msg)
            (let ((user (car msg))
                  (subs (cadr msg)))
-             (fig//model-background-text (format "GIGACHAD_%s_" user))
+             (fig//model-region-word "skin" (format "GIGACHAD_%s_" user))
              (fig//write-chat-event (format "%s gifted %d subs" user subs))
              (soundboard//play-monsterkill subs))))
    (cons '(monitor twitch cheer)
@@ -116,8 +127,7 @@
               (format
                "@%s here's one character of my stream key: %c"
                user
-               (seq-elt fig//shuffled-stream-key (random (seq-length fig//shuffled-stream-key)))))
-             )))
+               (seq-elt fig//shuffled-stream-key (random (seq-length fig//shuffled-stream-key))))))))
    ))
 
 (defconst fig//twitch-chat-commands
@@ -142,6 +152,18 @@
                (insert-file-contents-literally "~/today.txt")
                (buffer-string))))))
    (cons "!oomfie" (lambda (_ _) (fig//twitch-say "hi!!!!!!!")))
+   (cons "!faction"
+         (lambda (user _)
+           (fig//twitch-say (format "faction for %s: %s" user (fig//get-chatter-faction user)))))
+   (cons "!lore"
+         (lambda (_ _)
+           (fig/ask
+            "ITEM"
+            (lambda (msg) (fig//twitch-say msg))
+            "Please produce a Dark Souls style item name and description related to LCOLONQ. Please limit your response to one sentence maximum. The sentence should be vague and incorporate archaic words that are not commonly used. LCOLONQ is a spirit that lives inside the computer. LCOLONQ is associated with: the moon, snakes, the color grey, dolls and puppets, amber, the wind, and GNU Emacs. The description should mostly describe the item, but with vague insinuations about the true nature of LCOLONQ."
+            "ITEM"
+            "Ring of Favor and Protection - A ring symbolizing the favor and protection of the goddess Fina, known in legend to possess fateful beauty."
+            )))
    (cons "!geisercounter" (lambda (_ _) (fig//twitch-say (format "The Geiser counter beeps %s times" (fig//geiser-counter)))))
    (cons "!bible" (lambda (_ _) (fig//twitch-say "https://www.youtube.com/watch?v=G5u23bh29hI")))
    (cons "!drink" (lambda (_ _) (fig//twitch-say "its watah im drinkin it")))
@@ -236,8 +258,10 @@
            (fig//baldur-cmd (s-trim msg))))
    (cons "BOOST"
          (lambda (user _)
+           (soundboard//play-clip "yougotboostpower.ogg")
            (fig//write-chat-event (s-concat user " boosted their boost number"))
-           (fig//update-db-number user :boost (lambda (x) (+ x 1)))))
+           (fig//update-db-number user :boost (lambda (x) (+ x 1)))
+           (fig//update-chat-boost-tally)))
    (cons "lend me strength"
          (lambda (user _)
            (fig//write-chat-event (s-concat user " lends me their strength"))
@@ -257,8 +281,20 @@
            (when (< (length msg) 256)
              (fig//write-chat-event (format "%s played the bells (sponsored by Bezelea)" user))
              (muzak-play-notes msg))))
+   (cons "switch faction: nate"
+         (lambda (user _)
+           (fig//write-chat-event (format "%s switched faction to: nate" user))
+           (fig//set-chatter-faction user 'nate)))
+   (cons "switch faction: tony"
+         (lambda (user _)
+           (fig//write-chat-event (format "%s switched faction to: tony" user))
+           (fig//set-chatter-faction user 'tony)))
+   (cons "switch faction: lever"
+         (lambda (user _)
+           (fig//write-chat-event (format "%s switched faction to: lever" user))
+           (fig//set-chatter-faction user 'lever)))
    (cons "lurker check in" (lambda (user _) (fig//write-chat-event (format "%s is lurking" user))))
-   (cons "take sip strummer" (lambda (_ _) (fig//write-chat-event "drink water dummy")))
+   (cons "allow streamer to drink" (lambda (_ _) (fig//write-chat-event "drink water dummy")))
    (cons "deslug" (lambda (_ _) (fig//write-chat-event "unfold your spine")))
    (cons "spinne"
          (lambda (user _)
@@ -347,11 +383,16 @@
    (cons "VIPPER"
          (lambda (user _)
            (fig//write-chat-event (s-concat user " VIPed themself"))
-           (fig//add-vip user)))
+           (when (>= (length fig//twitch-vip-list) 49)
+             (fig//remove-random-vip))
+           (fig//add-vip user)
+           (fig//twitch-get-vip-list)))
    (cons "crown a king and/or queen"
          (lambda (user inp)
            (soundboard//play-clip "girlfriend.ogg")
            (fig//write-chat-event (s-concat user " VIPed " inp))
+           (when (>= (length fig//twitch-vip-list) 49)
+             (fig//remove-random-vip))
            (fig//add-vip (string-remove-prefix "@" inp))))
    (cons "deVIPPER"
          (lambda (user inp)
@@ -359,6 +400,7 @@
            (fig//remove-vip (string-remove-prefix "@" inp))))
   ))
 
+(defvar fig//chat-header-line "")
 (defvar-keymap fig/chat-mode-map
   :suppress t
   "C-l" #'fig//clear-chat
@@ -366,7 +408,8 @@
 (define-derived-mode fig/chat-mode special-mode "Twitch Chat"
   "Major mode for displaying Twitch chat."
   :group 'fig
-  (setq-local window-point-insertion-type t))
+  (setq-local window-point-insertion-type t)
+  (setq-local header-line-format '(:eval fig//chat-header-line)))
 
 (defun fig//shuffle-seq (s)
   "Shuffle S."
@@ -419,6 +462,12 @@
 (defun fig//remove-vip (user)
   "Remove VIP status from USER."
   (fig/pub '(monitor twitch vip remove) (list user)))
+
+(defun fig//remove-random-vip ()
+  "Remove VIP status from a random user."
+  (let ((user (nth (random (length fig//twitch-vip-list)) fig//twitch-vip-list)))
+    (fig//write-chat-event (format "Removing VIP randomly from: %s" user))
+    (fig/pub '(monitor twitch vip remove) (list user))))
 
 (defun fig//create-poll (title options &optional callback)
   "Create a poll with TITLE and OPTIONS.
@@ -493,7 +542,19 @@ CALLBACK will be passed the winner when the poll concludes."
        'face (list :foreground color :weight 'bold)
        'fig-user-id userid
        'action #'fig//chat-button-action)
-      (insert ": ")
+      (insert
+       (propertize
+        ": "
+        'face
+        (list
+         :foreground
+         (cl-case (fig//get-chatter-faction user)
+           (nate "pink")
+           (lever "lightblue")
+           (tony "lightgreen")
+           (t "white"))
+         )
+        ))
       (insert text)
       (when bible-score
         (let* ((wwidth (- (window-total-width (get-buffer-window (current-buffer))) 3))
@@ -530,8 +591,13 @@ CALLBACK will be passed the winner when the poll concludes."
          (text (fig//decode-string (caddr msg)))
          (text-colored-bible-res (fig//bible-colorize-sentence text))
          (text-colored-bible (car text-colored-bible-res))
-         (text-with-emotes (fig//process-emote-ranges (s-split "/" emotes) (if fig//assess-chat-spirituality text-colored-bible text)))
+         (text-with-emotes
+          (fig//add-7tv-emotes
+           (fig//process-emote-ranges
+            (s-split "/" emotes)
+            (if fig//assess-chat-spirituality text-colored-bible text))))
          )
+    (fig//assign-chatter-faction user)
     (fig//check-chatter-geiser user)
     (push (cons user text) fig//incoming-chat-history)
     (when (s-equals? user "MODCLONK")

@@ -50,12 +50,13 @@
 (cl-defstruct
     (fig//color-source
      (:constructor fig//make-color-source))
-  type ;; 'color or 'twitch-emote or 'video-url
+  type ;; 'color or 'twitch-emote or '7tv-emote or 'video-url
   value)
 
 (defun fig//string-to-color-source (s)
   "Convert S to a color source."
   (let ((emote (fig//get-emote s))
+        (7tv-emote (fig//get-7tv-emote s))
         (color (color-values s))
         (url
          (-contains?
@@ -64,6 +65,7 @@
     (cond
      (url (fig//make-color-source :type 'video-url :value s))
      (emote (fig//make-color-source :type 'twitch-emote :value emote))
+     (7tv-emote (fig//make-color-source :type '7tv-emote :value 7tv-emote))
      (color (fig//make-color-source :type 'color :value color))
      (t nil))))
 
@@ -118,22 +120,48 @@
      (fig//model-region-image
       type
       (fig//emote-path (fig//color-source-value cs))))
+    (7tv-emote
+     (fig//model-region-image
+      type
+      (fig//7tv-emote-path (fig//color-source-value cs))))
     (video-url
      (fig//model-region-video
       type
       (fig//color-source-value cs)))
     (t nil)))
 
+(defvar fig//video-redeem-whitelist
+  (list
+   "Bezelea"
+   "fn_lumi"
+   "MxOwlex"
+   "NikolaRHristov"
+   "goofysystem"
+   "MoMoMoVT"
+   "SnorlaxBud"
+   "GenDude"
+   "zulleyy3"
+   "freedrull_"
+   "theUnseenMystic"
+   "MNKN844"
+   "fartingle"
+   ))
 (defun fig//handle-redeem-region-swap (type)
   "Return a redeem callback for region swap of TYPE.
 If the color is unspecified, use DEFCOLOR."
   (lambda (user inp)
-    (let* ((splinp (s-split-up-to " " inp 1))
+    (let* ((splinp (s-split-up-to " " (s-trim inp) 1))
            (cs (fig//string-to-color-source (car splinp)))
-           (text (cadr splinp)))
+           (db (fig//load-db user))
+           (boost (alist-get :boost db 0))
+           (text (if cs (cadr splinp) (s-join " " splinp))))
       (fig//write-chat-event (format "%s changes my %s to %s" user type inp))
       (when cs
-        (fig//model-region-color-source type cs))
+        (if (or (> boost 2)
+                (-contains? fig//video-redeem-whitelist user)
+                (not (eq 'video-url (fig//color-source-type cs))))
+            (fig//model-region-color-source type cs)
+          (fig//write-chat-event (format "%s is not authorized to play video, boost harder" user))))
       (when text
         (fig//model-region-word type text)))))
 
