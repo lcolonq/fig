@@ -41,6 +41,12 @@
   (let ((data (fig//load-db user)))
     (alist-get attrib data)))
 
+(defun fig//set-db-entry (user attrib val)
+  "Set ATTRIB to VAL for USER."
+  (let ((data (fig//load-db user)))
+    (setf (alist-get attrib data) val)
+    (fig//save-db user data)))
+
 (defun fig//update-db (user f)
   "Apply F to the database data for USER."
   (let ((data (fig//load-db user)))

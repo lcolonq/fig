@@ -1,1 +1,1 @@
-((:faction . nate) (:boost . 20))
+((:room 30 (((1 . 0) . "hexadiCoding") ((1 . 0) . "daiyadSpin") ((1 . 1) . "TriHard") ((2 . 1) . "cvnkaRats") ((2 . 3) . "cvnkaPainpatchy") ((0 . 2) . "Joel") ((1 . 1) . "pastaThat") ((0 . 0) . "AlienDance") ((0 . 2) . "SSSsss") ((2 . 3) . "SSSsss") ((3 . 3) . "daiyadCheer") ((0 . 2) . "AlienDance") ((3 . 0) . "SSSsss"))) (:faction . nate) (:boost . 24))

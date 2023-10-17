@@ -1,1 +1,1 @@
-((:faction . "Determine the initial faction for USER."))
+((:boost . 2) (:faction . "Determine the initial faction for USER."))

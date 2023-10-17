@@ -1,1 +1,1 @@
-((:faction . lever) (:boost . 3) (:note . 69))
+((:room 31 (((3 . 3) . "hazmat23Smolrave") ((0 . 3) . "jvpeekHeart0") ((3 . 2) . "OSFrog") ((0 . 3) . "hazmat23Smolrave") ((0 . 3) . "jvpeekHeart0") ((1 . 3) . "geegaCreature") ((2 . 2) . "SabaPing") ((1 . 1) . "PunchTrees") ((2 . 2) . "SSSsss") ((1 . 2) . "SSSsss") ((0 . 2) . "PunchTrees"))) (:faction . lever) (:boost . 4) (:note . 69))

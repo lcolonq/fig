@@ -31,13 +31,14 @@
 
 (defun fig//assign-chatter-faction (user)
   "If USER doesn't have a faction, assign them a faction."
-  (fig//update-db-default
-   user
-   :faction
-   (lambda (f)
-     (if (and f (symbolp f)) f
-       (fig//determine-initial-faction user)))
-   nil))
+  (unless (fig//get-chatter-faction user)
+    (fig//update-db-default
+     user
+     :faction
+     (lambda (f)
+       (if (and f (symbolp f)) f
+         (fig//determine-initial-faction user)))
+     nil)))
 
 (defun fig//get-chatter-faction (user)
   "Get the faction for USER."
@@ -72,7 +73,7 @@
        (propertize "tony" 'face '(:foreground "green"))
        ": %s"
        " | "
-       (propertize "lever" 'face '(:foreground "blue"))
+       (propertize "lever" 'face '(:foreground "lightblue"))
        ": %s")
       (car tally) (cadr tally) (caddr tally)))))
 (fig//update-chat-boost-tally)
@@ -80,6 +81,11 @@
 (defun fig//geiser-counter ()
   "Return the number of Geisers seen this stream."
   (length fig//geisers-seen))
+
+(defun fig//stock-price (s)
+  "Get the current stock price for S."
+  (string-to-number
+   (s-replace "$" "" (s-trim (shell-command-to-string (format "stock %s" s))))))
 
 (provide 'fig-geiser)
 ;;; fig-geiser.el ends here

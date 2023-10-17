@@ -1,1 +1,1 @@
-((:faction . lever) (:note . 60))
+((:boost . 1) (:faction . lever) (:note . 60))

@@ -23,6 +23,8 @@
 
 (defvar fig//incoming-chat-history nil
   "List of (user . msg) pairs for recent chat messages.")
+(defvar fig//chatter-colors nil
+  "List of (user . color) pairs.")
 (defvar fig//fake-chatters nil
   "List of all active fake chatters.")
 
@@ -105,7 +107,7 @@
   (fig//handle-fake-chatters)
   (setq
    fig//fake-chatter-timer
-   (run-with-timer 10 nil #'fig//run-fake-chatter-timer)))
+   (run-with-timer 30 nil #'fig//run-fake-chatter-timer)))
 
 (defun fig/enable-fake-chatters ()
   "Enable fake chatters."
@@ -188,7 +190,7 @@
      " "
      (list
       (format
-       "You are a Twitch chatter named %s talking in LCOLONQ's chat. LCOLONQ streams programming, but the conversation is sometimes off-topic. Your responses are brief, never more than one sentence. You type in all lowercase with no punctuation. You speak informally and casually, and address the streamer directly but not by name."
+       "You are a Twitch chatter named %s talking in LCOLONQ's chat. LCOLONQ streams programming, but the conversation is sometimes off-topic. Your responses are brief, never more than one sentence. You type in all lowercase with no punctuation. You speak informally and casually, and address the streamer directly but not by name. Your messages should be at most two sentences."
        nm)
       custom))))
 

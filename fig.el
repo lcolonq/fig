@@ -74,7 +74,8 @@
    (cons '(monitor twitch redeem incoming) #'fig//handle-redeem)
    (cons '(monitor twitch poll begin)
          (lambda (_)
-           (fig//write-chat-event "Poll started")))
+           (fig//write-chat-event "Poll started")
+           (fig//friend-respond "The chatters are doing a poll")))
    (cons '(monitor twitch poll end)
          (lambda (msg)
            (let ((winner (car (-max-by (-on #'> #'cadr) (cadr msg)))))
@@ -85,6 +86,7 @@
    (cons '(monitor twitch prediction begin)
          (lambda (msg)
            (fig//write-chat-event "Gamble started")
+           (fig//friend-respond "The chatters are gambling")
            (setq fig//current-prediction-ids msg)))
    (cons '(monitor twitch prediction end)
          (lambda (_)
@@ -95,6 +97,7 @@
            (let ((user (car msg)))
              (soundboard//play-clip "rampage.mp3")
              (fig//write-chat-event (format "%s just raided!" user))
+             (fig//friend-respond (format "%s just came to visit" user))
              (run-with-timer
               15 nil
               (lambda ()
@@ -104,24 +107,28 @@
            (let ((user (car msg)))
              (soundboard//play-clip "firstblood.mp3")
              (fig//model-region-word "skin" (format "welcome_%s_" user))
+             (fig//friend-respond (format "%s just followed the stream" user))
              (fig//write-chat-event (format "New follower: %s" user)))))
    (cons '(monitor twitch subscribe)
          (lambda (msg)
            (let ((user (car msg)))
              (soundboard//play-clip "holyshit.mp3")
              (fig//model-region-word "skin" (format "thanks_%s_" user))
+             (fig//friend-respond (format "%s just subscribed to the stream" user))
              (fig//write-chat-event (format "New subscriber: %s" user)))))
    (cons '(monitor twitch gift)
          (lambda (msg)
            (let ((user (car msg))
                  (subs (cadr msg)))
              (fig//model-region-word "skin" (format "GIGACHAD_%s_" user))
+             (fig//friend-respond (format "%s just gifted subscriptions" user))
              (fig//write-chat-event (format "%s gifted %d subs" user subs))
              (soundboard//play-monsterkill subs))))
    (cons '(monitor twitch cheer)
          (lambda (msg)
            (let ((user (car msg))
                  (bits (cadr msg)))
+             (fig//friend-respond (format "%s just donated money" user))
              (fig//write-chat-event (format "%s cheered %d bits" user bits))
              (fig//twitch-say
               (format
@@ -136,8 +143,7 @@
    (cons "NICECOCK" (lambda (_ _) (soundboard//play-clip "pantsintoashes.mp3")))
    (cons "hexadiCoding" (lambda (_ _) (soundboard//play-clip "developers.ogg")))
    (cons "roguelike" (lambda (user _) (fig//twitch-say (format "@%s that's not a roguelike" user))))
-   (cons "Arch" (lambda (_ _) (fig//twitch-say "I use nix btw")))
-   (cons "Adge" (lambda (_ _) (fig//twitch-say "https://github.com/pixeltris/TwitchAdSolutions")))
+   (cons "arch btw" (lambda (_ _) (fig//twitch-say "I use nix btw")))
    (cons "!commands"
          (lambda (_ _)
            (fig//twitch-say
@@ -152,6 +158,8 @@
                (insert-file-contents-literally "~/today.txt")
                (buffer-string))))))
    (cons "!oomfie" (lambda (_ _) (fig//twitch-say "hi!!!!!!!")))
+   (cons "!forth" (lambda (_ _) (fig//twitch-say "https://gforth.org")))
+   (cons "!game" (lambda (_ _) (fig//twitch-say "https://oub.colonq.computer")))
    (cons "!faction"
          (lambda (user _)
            (fig//twitch-say (format "faction for %s: %s" user (fig//get-chatter-faction user)))))
@@ -204,7 +212,7 @@
            (fig//twitch-say "https://twitter.com/LCOLONQ")))
    (cons "discord" (lambda (_ _) (fig//twitch-say "https://discord.gg/f4JTbgN7St")))
    (cons "Discord" (lambda (_ _) (fig//twitch-say "https://discord.gg/f4JTbgN7St")))
-   (cons "irc" (lambda (_ _) (fig//twitch-say "#cyberspace on IRC at colonq.computer:26697 (over TLS)")))
+   (cons "!irc" (lambda (_ _) (fig//twitch-say "#cyberspace on IRC at colonq.computer:26697 (over TLS)")))
    (cons "IRC" (lambda (_ _) (fig//twitch-say "#cyberspace on IRC at colonq.computer:26697 (over TLS)")))
    (cons "!sponsor" (lambda (_ _) (fig//twitch-say "Like what you see? Don't forget to download GNU emacs at https://www.gnu.org/software/emacs/?code=LCOLONQ")))
    (cons "!specs" (lambda (_ _) (fig//twitch-say "Editor: evil-mode, WM: EXWM, OS: NixOS, hardware: shit laptop")))
@@ -253,9 +261,38 @@
 
 (defconst fig//twitch-redeems
   (list
+   (cons "decorate room"
+         (lambda (user inp)
+           (let* ((sp (s-split " " (s-trim inp)))
+                  (emote (car sp))
+                  (xs (cadr sp))
+                  (ys (caddr sp)))
+             (fig//write-chat-event (format "%s decorated: %s" user inp))
+             (fig//mansion-place-emote-cell
+              emote
+              (if xs (string-to-number xs) (random 4))
+              (if ys (string-to-number ys) (random 4))
+              (lambda () nil)))))
    (cons "torture bald"
          (lambda (_user msg)
            (fig//baldur-cmd (s-trim msg))))
+   (cons "activate faction lighting"
+         (lambda (user _)
+           (when-let ((faction (format "%s" (fig//get-chatter-faction user))))
+             (fig//write-chat-event (s-concat user " changed faction lighting: " faction))
+             (fig//bullfrog-set "faction" faction))))
+   (cons "FUSION"
+         (lambda (user1 user2)
+           (fig//write-chat-event (s-concat user1 " fused with " user2))
+           (fig//fuse-chatters user1 user2)))
+   (cons "feed friend"
+         (lambda (user inp)
+           (fig//write-chat-event (s-concat user " feeds \"friend\" " inp))
+           (fig//friend-feed user inp)))
+   (cons "talk to friend"
+         (lambda (user inp)
+           (fig//write-chat-event (s-concat user " talks to \"friend\": " inp))
+           (fig//friend-respond (format "%s says: %s" user inp))))
    (cons "BOOST"
          (lambda (user _)
            (soundboard//play-clip "yougotboostpower.ogg")
@@ -380,6 +417,10 @@
          (lambda (user inp)
            (fig//write-chat-event (s-concat user " sends TTS: " inp))
            (fig/say (s-trim inp))))
+   (cons "haunt unit"
+         (lambda (user inp)
+           (fig//write-chat-event (format "%s is now haunting %s" user inp))
+           (fe8//associate-user-character user inp)))
    (cons "VIPPER"
          (lambda (user _)
            (fig//write-chat-event (s-concat user " VIPed themself"))
@@ -579,6 +620,13 @@ CALLBACK will be passed the winner when the poll concludes."
            'action #'fig//chat-bible-button-action)))
       (insert "\n"))))
 
+(defconst fig//godot-logo
+  (propertize
+   "godot"
+   'display
+   (create-image "/home/llll/src/fig/misc/godot.png")
+   'rear-nonsticky t))
+
 (defun fig//handle-chat-message (msg)
   "Write MSG to the Twitch chat buffer, processing any commands."
   (fig//write-log (format "%s" msg))
@@ -592,14 +640,18 @@ CALLBACK will be passed the winner when the poll concludes."
          (text-colored-bible-res (fig//bible-colorize-sentence text))
          (text-colored-bible (car text-colored-bible-res))
          (text-with-emotes
-          (fig//add-7tv-emotes
-           (fig//process-emote-ranges
-            (s-split "/" emotes)
-            (if fig//assess-chat-spirituality text-colored-bible text))))
+          (s-replace
+           "[i](this was sent from godot)[/i]"
+           fig//godot-logo
+           (fig//add-7tv-emotes
+            (fig//process-emote-ranges
+             (s-split "/" emotes)
+             (if fig//assess-chat-spirituality text-colored-bible text)))))
          )
     (fig//assign-chatter-faction user)
     (fig//check-chatter-geiser user)
     (push (cons user text) fig//incoming-chat-history)
+    (setf (alist-get user fig//chatter-colors nil nil #'s-equals?) color)
     (when (s-equals? user "MODCLONK")
       (fig//obs-log-modclonk-message))
     (fig//write-chat-message

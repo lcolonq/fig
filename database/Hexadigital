@@ -1,1 +1,1 @@
-((:faction . lever) (:note . 60) (:boost . 3))
+((:room 26 (((1 . 2) . "hexadiCoding") ((0 . 3) . "Joel") ((0 . 3) . "plink") ((0 . 1) . "vesper55Berry") ((0 . 1) . "chocojGob") ((3 . 0) . "jnprusYo") ((0 . 3) . "voiceuFingerGuns") ((2 . 0) . "x6horn5") ((3 . 2) . "drawth23") ((0 . 3) . "BLAHAJ") ((2 . 0) . "voiceuFingerGuns") ((3 . 2) . "chocojGob") ((3 . 1) . "corpse53Heart") ((1 . 0) . "alices18Point") ((0 . 3) . "hexadiHello") ((3 . 0) . "voiceuFingerGuns") ((0 . 3) . "hexadiHello"))) (:faction . lever) (:note . 60) (:boost . 4))

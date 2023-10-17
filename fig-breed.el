@@ -123,20 +123,12 @@
      "#%02x%02x%02x"
      red green blue)))
 
-(defvar fig/breeding-schemes
-  (list
-   ;; #'logior
-   ;; #'logand
-   (lambda (g1 g2)
-     (when (and g1 g2)
-       (/ (+ g1 g2) 2)))
-   )
-  "Available functions for producing child genotypes.")
-
-(defun fig//breed-colors (c1 c2 scheme)
+(defun fig//breed-colors (c1 c2)
   "Breed colors C1 and C2 using SCHEME."
-  (when (and c1 c2)
-    (funcall scheme c1 c2)))
+  (let ((g1 (fig//color-to-genotype c1))
+        (g2 (fig//color-to-genotype c2)))
+    (fig//genotype-to-color
+     (truncate (* (+ g1 g2) 0.5)))))
 
 (defun fig//breed-names (n1 n2 k)
   "Breed names N1 and N2, passing the new name to K."
@@ -153,17 +145,8 @@
   "Breed palettes P1 and P2, passing the new palette to K."
   (let* ((u1 (fig//palette-usage p1))
          (u2 (fig//palette-usage p2))
-         (utotal (max 1 (+ u1 u2)))
-         (scheme
-          (lambda (c1 c2)
-            (when (and c1 c2)
-              (let ((g1 (fig//color-to-genotype c1))
-                    (g2 (fig//color-to-genotype c2)))
-                (fig//genotype-to-color
-                 (truncate (* (+ g1 g2) (/ (* 1.0 u1) utotal)))
-                 )))))
-         (hair (fig//breed-colors (fig//palette-hair p1) (fig//palette-hair p2) scheme))
-         (eyes (fig//breed-colors (fig//palette-eyes p1) (fig//palette-eyes p2) scheme))
+         (hair (fig//breed-colors (fig//palette-hair p1) (fig//palette-hair p2)))
+         (eyes (fig//breed-colors (fig//palette-eyes p1) (fig//palette-eyes p2)))
          (highlight (fig//breed-colors (fig//palette-highlight p1) (fig//palette-highlight p2) scheme)))
     (fig//breed-names
      (fig//palette-name p1)
