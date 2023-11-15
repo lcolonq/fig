@@ -71,6 +71,25 @@
    "happy | yum apple so good"
    ))
 
+(defun fig//enemy-personality (msg k)
+  "Given MSG, pass a string with more personality (enemy mode) to K."
+  (fig/ask
+   (s-concat fig//friend-emotion " | " msg)
+   (lambda (new)
+     (let ((sp (s-split "|" (s-trim new))))
+       (when (= 2 (length sp))
+         (when (stringp (car sp))
+           (setf fig//friend-emotion (s-trim (car sp))))
+         (when (stringp (cadr sp))
+           (funcall k (s-trim (cadr sp)))))))
+   (s-concat
+    "You are the personality of a desktop buddy named \"enemy\". \"enemy\" is irreverant and rude. You are very intelligent in a cute way and mean like a snake. You live in the corner of LCOLONQ's stream and provide commentary on events. Given an emotional state and a description of an event that happened to you, please respond with a new emotional state and a short message in response considering your emotional state. The message should only be one clause."
+    fig//friend-tastes
+    )
+   "neutral | notgeiser fed you bone hurting juice."
+   "disdainful | I really dislike you strongly, notgeiser."
+   ))
+
 (defun fig//friend-set-state (st &optional time)
   "Set \"friend\"'s state to ST for TIME seconds."
   (setf fig//friend-state st)
@@ -89,11 +108,17 @@
 
 (defun fig//friend-feed (user food)
   "Call when USER fed FOOD to \"friend\"."
-  (fig//friend-personality
-   (format "%s fed you %s" user food)
-   (lambda (msg)
-     (fig//friend-set-speech msg 6)
-     (fig//friend-set-state 'eating 6))))
+  (if (-contains? fig//geiser-alts user)
+      (fig//enemy-personality
+       (format "You dislike %s and they are your enemy. %s fed you %s" user user food)
+       (lambda (msg)
+         (fig//friend-set-speech msg 6)
+         (fig//friend-set-state 'eating 6)))
+    (fig//friend-personality
+     (format "%s fed you %s" user food)
+     (lambda (msg)
+       (fig//friend-set-speech msg 6)
+       (fig//friend-set-state 'eating 6)))))
 
 (defun fig//friend-respond (ev)
   "Call when an event EV happens to \"friend\"."
@@ -102,6 +127,16 @@
    (lambda (msg)
      (fig//friend-set-speech msg 10)
      (fig//friend-set-state 'chatting 10))))
+
+(defun fig//friend-chat (user msg)
+  "Call when USER sends MSG to \"friend\"."
+  (if (-contains? fig//geiser-alts user)
+      (fig//enemy-personality
+       (format "You dislike %s and they are your enemy. %s says: %s" user user msg)
+       (lambda (msg)
+         (fig//friend-set-speech msg 10)
+         (fig//friend-set-state 'chatting 10)))
+    (fig//friend-respond (format "%s says: %s" user msg))))
 
 (defun fig//callout-flycheck-error ()
   "Call to respond to a random Flycheck error in the current buffer."
@@ -112,7 +147,41 @@
       "LCOLONQ made an error while programming: "
       (flycheck-error-message err)))))
 
-(fig//callout-flycheck-error)
+(defun fig//callout-blackjack ()
+  "Call to respond to the current blackjack game state."
+  (fig//friend-respond
+   (format
+    "We're playing blackjack, and the current hand value is %s."
+    (fig//bj-hand-value fig//bj-current-hand))))
+
+(defun fig//callout-halloween ()
+  "Call to respond to Halloween."
+  (fig//friend-respond
+   (format
+    "It's Halloween today! Say something spooky!")))
+
+(defun fig//callout-hexamedia ()
+  "Call to respond to a random recent chatter's Hexamedia card collection."
+  (let* ((users (-filter #'cdr (--map (cons (car it) (fig//load-db-entry (car it) :hexamedia-cards)) (-take 10 fig//incoming-chat-history))))
+         (user (and users (nth (random (length users)) users)))
+         (cards (cdr user))
+         (coll (and cards (nth (random (length cards)) cards))))
+    (when coll
+      (fig//friend-respond
+       (format
+        "%s has collected %s out of 20 cards in the %s collection. Please mention the collection name and the person collecting."
+        (car user)
+        (cdr coll)
+        (car coll))))))
+
+(defun fig//callout-gcp ()
+  "Call to respond to the current GCP dot."
+  (fig//gcp-dot
+   (lambda (d)
+     (fig//friend-respond
+      (format
+       "The Global Consciousness Project indicator is currently as follows: %s"
+       (fig//gcp-describe d))))))
 
 (defun fig//get-friend-offset ()
   "Return the number of newlines to print before \"friend\"."
@@ -143,8 +212,10 @@
 
 (defun fig//friend-random-event ()
   "Activate a random \"friend\" event."
-  (cl-case (random 2)
+  (cl-case (random 4)
     (0 (fig//callout-flycheck-error))
+    (1 (fig//callout-gcp))
+    (2 (fig//callout-hexamedia))
     (t (fig//friend-set-state 'jumping))))
 
 (defun fig//update-friend ()
@@ -155,7 +226,7 @@
     (setf fig//friend-state 'default))
   (if (> fig//friend-speech-timer 0)
       (cl-decf fig//friend-speech-timer))
-  (when (= (random 60) 0)
+  (when (= (random 120) 0)
     (fig//friend-random-event))
   (cl-case fig//friend-state
     (eating (setf fig//friend-state 'eating0))
@@ -185,6 +256,16 @@
  \\  %m  /
   +----+\
 "
+;;           "%a\
+;;     /\\      
+;;    / *\\     
+;;   / *  \\    
+;;  / *  * \\   
+;; ----------   
+;;  / %l  %r \\ 
+;;  \\  %m  /
+;;   +----+\
+;; "
           `((?a . ,(s-repeat (fig//get-friend-offset) "          \n"))
             (?l . ,(car face))
             (?r . ,(cadr face))
@@ -207,8 +288,17 @@
   (setq
    fig//friend-timer
    (run-with-timer 1 nil #'fig//run-friend-timer)))
-(fig//run-friend-timer)
-;; (cancel-timer fig//friend-timer)
+
+(defun fig/start-friend ()
+  "Launch \"friend\"."
+  (interactive)
+  (fig//run-friend-timer))
+
+(defun fig/stop-friend ()
+  "Stop \"friend\"."
+  (interactive)
+  (cancel-timer fig//friend-timer)
+  (message "\"friend\" is going to sleep!"))
 
 (provide 'fig-friend)
 ;;; fig-friend.el ends here

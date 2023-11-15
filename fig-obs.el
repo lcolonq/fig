@@ -10,6 +10,7 @@
 
 (defvar fig//obs-modclonk-timer nil "Time since last MODCLONK message.")
 (defvar fig//obs-live-reaction-timer nil "Time to display Live LCOLONQ Reaction.")
+(defvar fig//obs-live-friend-reaction-timer nil "Time to display Live Friend Reaction.")
 (defvar fig//obs-thug-life-timer nil "Time to display Thug Life.")
 (defvar fig//obs-clickbait-timer nil "Time to display clickbait.")
 (defvar fig//obs-intj-timer nil "Time to display INTJ stare.")
@@ -28,6 +29,13 @@
   (unless fig//obs-live-reaction-timer
     (fig//toggle-live-reaction))
   (setf fig//obs-live-reaction-timer 17))
+
+(defun fig/live-friend-reaction ()
+  "Enable the Live LCOLONQ Reaction for some time."
+  (interactive)
+  (unless fig//obs-live-friend-reaction-timer
+    (fig//toggle-live-friend-reaction))
+  (setf fig//obs-live-friend-reaction-timer 17))
 
 (defun fig/thug-life ()
   "Enable the Thug Life overlay for some time."
@@ -69,6 +77,10 @@ MSG is displayed above the red arrow."
 (defun fig//toggle-live-reaction ()
   "Toggle the Live LCOLONQ Reaction panel."
   (fig/pub '(monitor obs toggle) (list "Live LCOLONQ Reaction" "Live Reaction")))
+
+(defun fig//toggle-live-friend-reaction ()
+  "Toggle the Live Friend Reaction panel."
+  (fig/pub '(monitor obs toggle) (list "Live Friend Reaction" "Live Friend Reaction Group")))
 
 (defun fig//toggle-modclonk ()
   "Toggle the MODCLONK panel."
@@ -125,6 +137,11 @@ Optionally, change text to MSG."
     (when (<= fig//obs-live-reaction-timer 0)
       (setf fig//obs-live-reaction-timer nil)
       (fig//toggle-live-reaction)))
+  (when fig//obs-live-friend-reaction-timer
+    (cl-decf fig//obs-live-friend-reaction-timer)
+    (when (<= fig//obs-live-friend-reaction-timer 0)
+      (setf fig//obs-live-friend-reaction-timer nil)
+      (fig//toggle-live-friend-reaction)))
   (when fig//obs-thug-life-timer
     (cl-decf fig//obs-thug-life-timer)
     (when (<= fig//obs-thug-life-timer 0)

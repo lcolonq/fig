@@ -8,21 +8,13 @@
 (require 'ht)
 
 (defcustom fig/stopwatch-buffer "*fig-stopwatch*"
-  "Name of buffer used to store fake chat transcription output."
+  "Name of buffer used to store stopwatch output."
   :type '(string)
   :group 'fig)
 
 (defconst fig//speedrun-route
-  '(("Partitioning" . 3600)
-    ("Filesystems" . 3600)
-    ("Download Stage3" . 3600)
-    ("Chroot" . 3600)
-    ("Portage" . 3600)
-    ("Kernel" . 3600)
-    ("Init" . 3600)
-    ("Bootloader" . 3600)
-    ("Reboot" . 3600)
-    ("Curl" . 3600)))
+  '(("Mat" . 1000)
+    ("Pat" . 1000)))
 
 (define-derived-mode fig/stopwatch-mode special-mode "My Insane Pace"
   "Major mode for displaying speedrun stopwatch."

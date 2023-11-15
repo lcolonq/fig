@@ -87,5 +87,68 @@
   (string-to-number
    (s-replace "$" "" (s-trim (shell-command-to-string (format "stock %s" s))))))
 
+(defun fig//change-theme (theme)
+  "Change the current theme to THEME."
+  (ef-themes-select theme)
+  (ef-themes-with-colors
+    (setenv "COLONQ_BGCOLOR" bg-main)
+    (set-face-attribute 'vertical-border nil
+                        :foreground bg-alt
+                        :background bg-alt)
+    (set-face-attribute 'fringe nil
+                        :foreground bg-alt
+                        :background bg-alt))
+  (ef-themes-with-colors
+    (set-face-attribute 'eshell-prompt nil
+                        :foreground fg-main
+                        :background bg-alt
+                        :weight 'bold
+                        :extend t)))
+
+(defun fig//get-load ()
+  "Get the current CPU load."
+  (let ((res (shell-command-to-string "uptime")))
+    (string-to-number (s-trim (car (s-split "," (cadr (s-split "load average:" res))))))))
+
+(defun fig//get-heartrate ()
+  "Get the streamer's heart rate."
+  (* 100 (fig//get-load)))
+
+(defcustom fig/heartrate-buffer "*fig-heartrate*"
+  "Name of buffer used to ."
+  :type '(string)
+  :group 'fig)
+
+(define-derived-mode fig/heartrate-mode special-mode "heartrate"
+  "Major mode for displaying heartrate."
+  :group 'fig
+  (setq-local cursor-type nil))
+
+(defun fig//get-heartrate-buffer ()
+  "Return the heartrate buffer."
+  (unless (get-buffer fig/heartrate-buffer)
+    (with-current-buffer (get-buffer-create fig/heartrate-buffer)
+      (fig/heartrate-mode)))
+  (get-buffer fig/heartrate-buffer))
+
+(defun fig//render-heartrate ()
+  "Render the heartrate buffer."
+  (with-current-buffer (fig//get-heartrate-buffer)
+    (setq-local cursor-type nil)
+    (let* ((inhibit-read-only t))
+      (erase-buffer)
+      (fig//write (format "%3d bpm" (fig//get-heartrate))))))
+
+(defvar fig//heartrate-timer nil)
+(defun fig//run-heartrate-timer ()
+  "Run the heartrate timer."
+  (when fig//heartrate-timer
+    (cancel-timer fig//heartrate-timer))
+  (fig//render-heartrate)
+  (setq
+   fig//heartrate-timer
+   (run-with-timer 1 nil #'fig//run-heartrate-timer)))
+(fig//run-heartrate-timer)
+
 (provide 'fig-geiser)
 ;;; fig-geiser.el ends here

@@ -3,6 +3,7 @@
 ;;; Code:
 
 (require 's)
+(require 'dash)
 
 (defcustom fig/transcribe-buffer " *fig-transcribe*"
   "Name of buffer used to store transcription output."
@@ -54,10 +55,24 @@
 Optionally use SYSTEMPROMPT and the USER and ASSISTANT prompts."
   (unless fig//current-ask-process
     (let ((tmpfile (make-temp-file "fig-ask"))
-          (tmpfilesystem (make-temp-file "fig-ask-system")))
+          (tmpfilesystem (make-temp-file "fig-ask-system"))
+          (tmpfileuser (make-temp-file "fig-ask-user"))
+          (tmpfileassistant (make-temp-file "fig-ask-assistant")))
       (with-temp-file tmpfile (insert question))
       (when systemprompt
         (with-temp-file tmpfilesystem (insert systemprompt)))
+      (when user
+        (with-temp-file tmpfileuser
+          (if (stringp user)
+              (insert (s-concat user "\n"))
+            (--each user
+              (insert (s-concat it "\n"))))))
+      (when assistant
+        (with-temp-file tmpfileassistant
+          (if (stringp assistant)
+              (insert (s-concat assistant "\n"))
+            (--each assistant
+              (insert (s-concat it "\n"))))))
       (with-current-buffer (get-buffer-create fig/ask-buffer)
         (setq-local fig//ask-callback k)
         (erase-buffer))
@@ -71,8 +86,9 @@ Optionally use SYSTEMPROMPT and the USER and ASSISTANT prompts."
          "chatgpt"
          tmpfile
          (if systemprompt tmpfilesystem "systemprompt.txt")
-         (if user user "What's happening tonight, computer?")
-         (if assistant assistant "We're chilling and grilling on the computer as usual, LCOLONQ.")
+         (if user tmpfileuser "userprompt.txt")
+         (if assistant tmpfileassistant "assistantprompt.txt")
+         ;;hiiiiiiii)
          )
         :stderr (get-buffer-create fig/ask-error-buffer)
         :sentinel
@@ -144,6 +160,46 @@ Optionally use SYSTEMPROMPT and the USER and ASSISTANT prompts."
   (fig/begin-transcribe
    (lambda (msg)
      (fig//twitch-say msg))))
+
+(defun fig//play-audio (clip &optional k volume)
+  "Play CLIP using mpv.
+Call K when done.
+If VOLUME is specified, use it :)."
+  (make-process
+   :name "fig-play-audio"
+   :buffer nil
+   :command (list "mpv" "--ao=alsa" "--no-video" (format "--volume=%s" (or volume 100)) clip)
+   :sentinel
+   (lambda (_ _)
+     (when k
+       (funcall k)))))
+
+(defun fig//say-chatter-name (user &optional volume k)
+  "Pronounce USER's name in using mpv.
+Call K when done.
+If VOLUME is specified, use it :)."
+  (fig//play-audio (s-concat "/home/llll/src/fig/rats/users/" user ".wav") k volume))
+
+(defun fig//rats-rats-we-are-the-rats (user)
+  "Rats rats we are the rats.
+Celebrating yet another birthday bash.
+USER it's your birthday today."
+  (fig//play-audio
+   "/home/llll/src/fig/rats/rats1.ogg"
+   (lambda ()
+     (fig//say-chatter-name
+      user
+      120
+      (lambda ()
+        (fig//play-audio
+         "/home/llll/src/fig/rats/rats2.ogg"
+         (lambda ()
+           (fig//say-chatter-name
+            user
+            120
+            (lambda ()
+              (fig//play-audio
+               "/home/llll/src/fig/rats/rats3.ogg"))))))))))
 
 (defhydra fig/voice-hydra (:color blue :hint nil)
   "Voice-related commands"

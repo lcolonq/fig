@@ -206,7 +206,7 @@
   (fig//make-fake-chatter-profile
    :username "forsen"
    :color "#777777"
-   :compute-likeliness (lambda (_) 0.01)
+   :compute-likeliness (lambda (_) 0.1)
    ;; :compute-likeliness #'fig//standard-fake-chatter-likeliness
    :send-message
    (lambda (st)

@@ -59,7 +59,8 @@
 (defvar fig//current-prediction-ids nil
   "Prediction and outcome identifiers for the current prediction.")
 
-(defconst fig/host "shiro")
+;; (defconst fig/host "shiro")
+(defconst fig/host "localhost")
 (defconst fig/port 32050)
 
 (defconst fig//event-handlers
@@ -112,7 +113,7 @@
    (cons '(monitor twitch subscribe)
          (lambda (msg)
            (let ((user (car msg)))
-             (soundboard//play-clip "holyshit.mp3")
+             (fig//rats-rats-we-are-the-rats user)
              (fig//model-region-word "skin" (format "thanks_%s_" user))
              (fig//friend-respond (format "%s just subscribed to the stream" user))
              (fig//write-chat-event (format "New subscriber: %s" user)))))
@@ -157,9 +158,11 @@
              (with-temp-buffer
                (insert-file-contents-literally "~/today.txt")
                (buffer-string))))))
+   (cons "!nc" (lambda (_ _) (fig//twitch-say "try: nc colonq.computer 31340")))
    (cons "!oomfie" (lambda (_ _) (fig//twitch-say "hi!!!!!!!")))
    (cons "!forth" (lambda (_ _) (fig//twitch-say "https://gforth.org")))
    (cons "!game" (lambda (_ _) (fig//twitch-say "https://oub.colonq.computer")))
+   (cons "!webring" (lambda (_ _) (fig//twitch-say "https://pub.colonq.computer")))
    (cons "!faction"
          (lambda (user _)
            (fig//twitch-say (format "faction for %s: %s" user (fig//get-chatter-faction user)))))
@@ -235,6 +238,14 @@
              (leaders (-take 5 sorted)))
         (fig//twitch-say (s-join ", " (--map (format "%s: %s" (car it) (cdr it)) leaders))))))
    (cons
+    "draobredael!"
+    (lambda (_ _)
+      (let* ((users (fig//all-db-users))
+             (user-scores (-filter #'cdr (--map (cons it (alist-get :boost (fig//load-db it))) users)))
+             (sorted (-sort (-on #'< #'cdr) user-scores))
+             (leaders (-take 5 sorted)))
+        (fig//twitch-say (s-join ", " (--map (format "%s: %s" (reverse (car it)) (cdr it)) leaders))))))
+   (cons
     "!vippers"
     (lambda (_ _)
       (let ((vipperstring (s-join ", " (fig//shuffle-seq fig//twitch-vip-list))))
@@ -261,6 +272,22 @@
 
 (defconst fig//twitch-redeems
   (list
+   (cons "theme: autumn"
+         (lambda (user _)
+           (fig//write-chat-event (format "%s changed the theme: autumn" user))
+           (fig//change-theme 'ef-autumn)))
+   (cons "theme: tritanopia-dark"
+         (lambda (user _)
+           (fig//write-chat-event (format "%s changed the theme: tritanopia-dark" user))
+           (fig//change-theme 'ef-tritanopia-dark)))
+   (cons "theme: duo-dark"
+         (lambda (user _)
+           (fig//write-chat-event (format "%s changed the theme: duo-dark" user))
+           (fig//change-theme 'ef-duo-dark)))
+   (cons "theme: bio"
+         (lambda (user _)
+           (fig//write-chat-event (format "%s changed the theme: bio" user))
+           (fig//change-theme 'ef-bio)))
    (cons "decorate room"
          (lambda (user inp)
            (let* ((sp (s-split " " (s-trim inp)))
@@ -273,6 +300,19 @@
               (if xs (string-to-number xs) (random 4))
               (if ys (string-to-number ys) (random 4))
               (lambda () nil)))))
+   (cons "carve pumpkin"
+         (lambda (user inp)
+           (let* ((sp (s-split " " (s-trim inp)))
+                  (emote (car sp))
+                  (xs (cadr sp))
+                  (ys (caddr sp)))
+             (fig//write-chat-event (format "%s carved the pumpkin: %s" user inp))
+             (fig//pumpkin-carve
+              (if xs (string-to-number xs) (random 100))
+              (if ys (string-to-number ys) (random 100))
+              emote
+              (lambda ()
+                (fig//reload-pumpkin))))))
    (cons "torture bald"
          (lambda (_user msg)
            (fig//baldur-cmd (s-trim msg))))
@@ -285,6 +325,22 @@
          (lambda (user1 user2)
            (fig//write-chat-event (s-concat user1 " fused with " user2))
            (fig//fuse-chatters user1 user2)))
+   (cons "gamba"
+         (lambda (user _)
+           (fig//write-chat-event (s-concat user " spins the slots"))
+           (fig//slots-pull-lever)))
+   (cons "start bj"
+         (lambda (user _)
+           (fig//write-chat-event (s-concat user " starts a game of blackjack"))
+           (fig//bj-start)))
+   (cons "bj: hit"
+         (lambda (user _)
+           (fig//write-chat-event (s-concat user " hits"))
+           (fig//bj-hit)))
+   (cons "bj: stand"
+         (lambda (user _)
+           (fig//write-chat-event (s-concat user " stands"))
+           (fig//bj-stand)))
    (cons "feed friend"
          (lambda (user inp)
            (fig//write-chat-event (s-concat user " feeds \"friend\" " inp))
@@ -292,12 +348,18 @@
    (cons "talk to friend"
          (lambda (user inp)
            (fig//write-chat-event (s-concat user " talks to \"friend\": " inp))
-           (fig//friend-respond (format "%s says: %s" user inp))))
+           (fig//friend-chat user inp)))
    (cons "BOOST"
          (lambda (user _)
            (soundboard//play-clip "yougotboostpower.ogg")
            (fig//write-chat-event (s-concat user " boosted their boost number"))
            (fig//update-db-number user :boost (lambda (x) (+ x 1)))
+           (fig//update-chat-boost-tally)))
+   (cons "TSOOB"
+         (lambda (user _)
+           (soundboard//play-clip "rewoptsoobtoguoy.ogg" 140)
+           (fig//write-chat-event (s-reverse (s-concat user " boosted their boost number")))
+           (fig//update-db-number user :boost (lambda (x) (- x 1)))
            (fig//update-chat-boost-tally)))
    (cons "lend me strength"
          (lambda (user _)
@@ -350,6 +412,10 @@
          (lambda (user _)
            (fig//write-chat-event (s-concat user " wants to see a live reaction"))
            (fig/live-reaction)))
+   (cons "Live friend Reaction"
+         (lambda (user _)
+           (fig//write-chat-event (s-concat user " wants to see a live reaction (from friend)"))
+           (fig/live-friend-reaction)))
    (cons "gamer"
          (lambda (user _)
            (fig//write-chat-event (s-concat user " quickscoped me"))
@@ -557,13 +623,14 @@ CALLBACK will be passed the winner when the poll concludes."
 
 (defun fig//user-sigil (user &optional badges)
   "Return the sigil character for USER with BADGES."
-  (ignore user)
-  (cond
-   ((-contains? badges "broadcaster/1") "(it me)")
-   ((-contains? badges "moderator/1") "⚔")
-   ((-contains? badges "vip/1") "💎")
-   ((-contains? badges "subscriber/0") "💻")
-   ))
+  (let ((equity (fig//load-db-entry user :equity)))
+    (cond
+     ((-contains? badges "broadcaster/1") "(it me)")
+     ((-contains? badges "moderator/1") "⚔")
+     ((and equity (> equity 0)) "♿")
+     ((-contains? badges "vip/1") "💎")
+     ((-contains? badges "subscriber/0") "💻")
+     )))
 
 (defun fig//chat-button-action (b)
   "Action run on button press for button B."
@@ -600,6 +667,7 @@ CALLBACK will be passed the winner when the poll concludes."
       (when bible-score
         (let* ((wwidth (- (window-total-width (get-buffer-window (current-buffer))) 3))
                (bible-button-text (format "[biblicality %.2f]" bible-score))
+               ;; (bible-button-text "[biblicality -666]")
                (msgwidth
                 (+ (length sigil) (if sigil 1 0)
                    (length user) (length ": ") (length text)
@@ -650,6 +718,7 @@ CALLBACK will be passed the winner when the poll concludes."
          )
     (fig//assign-chatter-faction user)
     (fig//check-chatter-geiser user)
+    (fig//hexamedia-update-user user)
     (push (cons user text) fig//incoming-chat-history)
     (setf (alist-get user fig//chatter-colors nil nil #'s-equals?) color)
     (when (s-equals? user "MODCLONK")

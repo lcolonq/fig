@@ -167,6 +167,23 @@
    "VortisLoste"
    "duxies_"
    "SsJsSs"
+   "flyann"
+   "Wina"
+   "morgvn_"
+   "TheIdOfAlan"
+   "DoctorGlitchy"
+   "body_without_blorgans"
+   "cbtcaptain"
+   "iLoidtupo"
+   "shwasteddd"
+   "acher0_"
+   "badcop_"
+   "Hat_Knight"
+   "crazy_stewie"
+   "OrdinaryClover_oc"
+   "Soymilk"
+   "37LN37"
+   "Kopadot"
    ))
 (defun fig//handle-redeem-region-swap (type)
   "Return a redeem callback for region swap of TYPE.
