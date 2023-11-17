@@ -1,0 +1,50 @@
+cabal-version: 3.4
+name: fig-monitor-discord
+version: 0.1.0.0
+
+common defaults
+  ghc-options: -Wall
+  default-language: GHC2021
+  default-extensions: NoImplicitPrelude PackageImports LambdaCase MultiWayIf OverloadedStrings OverloadedLists OverloadedRecordDot DuplicateRecordFields RecordWildCards NoFieldSelectors BlockArguments ViewPatterns TypeFamilies DataKinds GADTs
+
+common deps
+  build-depends:
+      base
+    , aeson
+    , base64
+    , binary
+    , bytestring
+    , containers
+    , data-default-class
+    , discord-haskell
+    , directory
+    , filepath
+    , megaparsec
+    , mtl
+    , network
+    , pcre-heavy
+    , safe-exceptions
+    , text
+    , time
+    , tomland
+    , transformers
+    , unordered-containers
+    , vector
+    , fig-utils
+    , fig-bus
+
+library
+  import: defaults
+  import: deps
+  hs-source-dirs: src
+  exposed-modules:
+    Fig.Monitor.Discord
+    Fig.Monitor.Discord.Utils
+
+executable fig-monitor-discord
+  import: defaults
+  import: deps
+  build-depends: fig-monitor-discord, optparse-applicative
+  hs-source-dirs:
+    main
+  main-is: Main.hs

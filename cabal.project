@@ -1,0 +1,10 @@
+packages:
+  fig-utils/
+  fig-bus/
+  fig-monitor-twitch/
+  fig-monitor-discord/
+  fig-monitor-irc/
+  fig-monitor-bullfrog/
+  fig-bridge-irc-discord/
+  deps/irc-client/
+  deps/irc-conduit/

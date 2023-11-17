@@ -1,0 +1,36 @@
+cabal-version: 3.4
+name: fig-utils
+version: 0.1.0.0
+
+common defaults
+  ghc-options: -Wall
+  default-language: GHC2021
+  default-extensions: NoImplicitPrelude PackageImports LambdaCase MultiWayIf OverloadedStrings OverloadedLists OverloadedRecordDot DuplicateRecordFields RecordWildCards NoFieldSelectors BlockArguments ViewPatterns TypeFamilies DataKinds GADTs
+
+library
+  import: defaults
+  hs-source-dirs: src
+  exposed-modules:
+    Fig.Prelude
+    Fig.Utils
+    Fig.Utils.Net
+    Fig.Utils.SExpr
+  build-depends:
+      base
+    , binary
+    , bytestring
+    , containers
+    , directory
+    , containers
+    , directory
+    , filepath
+    , megaparsec
+    , mtl
+    , network
+    , safe-exceptions
+    , template-haskell
+    , text
+    , time
+    , transformers
+    , unordered-containers
+    , vector

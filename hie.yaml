@@ -1,0 +1,28 @@
+cradle:
+  multi:
+    - path: "./fig-utils/src/"
+      config: { cradle: { cabal: { component: "fig-utils:lib:fig-utils" } } }
+    - path: "./fig-bus/src/"
+      config: { cradle: { cabal: { component: "fig-bus:lib:fig-bus" } } }
+    - path: "./fig-bus/main/"
+      config: { cradle: { cabal: { component: "fig-bus:exe:fig-bus" } } }
+    - path: "./fig-monitor-twitch/src/"
+      config: { cradle: { cabal: { component: "fig-monitor-twitch:lib:fig-monitor-twitch" } } }
+    - path: "./fig-monitor-twitch/main/"
+      config: { cradle: { cabal: { component: "fig-monitor-twitch:exe:fig-monitor-twitch" } } }
+    - path: "./fig-monitor-discord/src/"
+      config: { cradle: { cabal: { component: "fig-monitor-discord:lib:fig-monitor-discord" } } }
+    - path: "./fig-monitor-discord/main/"
+      config: { cradle: { cabal: { component: "fig-monitor-discord:exe:fig-monitor-discord" } } }
+    - path: "./fig-monitor-irc/src/"
+      config: { cradle: { cabal: { component: "fig-monitor-irc:lib:fig-monitor-irc" } } }
+    - path: "./fig-monitor-irc/main/"
+      config: { cradle: { cabal: { component: "fig-monitor-irc:exe:fig-monitor-irc" } } }
+    - path: "./fig-monitor-bullfrog/src/"
+      config: { cradle: { cabal: { component: "fig-monitor-bullfrog:lib:fig-monitor-bullfrog" } } }
+    - path: "./fig-monitor-bullfrog/main/"
+      config: { cradle: { cabal: { component: "fig-monitor-bullfrog:exe:fig-monitor-bullfrog" } } }
+    - path: "./fig-bridge-irc-discord/src/"
+      config: { cradle: { cabal: { component: "fig-bridge-irc-discord:lib:fig-bridge-irc-discord" } } }
+    - path: "./fig-bridge-irc-discord/main/"
+      config: { cradle: { cabal: { component: "fig-bridge-irc-discord:exe:fig-bridge-irc-discord" } } }

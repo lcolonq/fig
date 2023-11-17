@@ -1,0 +1,7 @@
+flags: {}
+packages:
+- '.'
+resolver: lts-20.0
+nix:
+  enable: false
+  packages: [zlib]
