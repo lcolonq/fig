@@ -27,11 +27,13 @@
 
 (defun fig//bible-word-score (word)
   "Return a number between 0.0 and 1.0 representing how biblical WORD is."
-  (let ((occs (ht-get fig//bible-table (downcase (s-trim word))))
-        (thresh 0.6))
-    (if occs
-        (+ thresh (/ (min occs 1000.0) (/ 1000.0 (- 1.0 thresh))))
-      0.0)))
+  (if (-contains? '("Sam" "Altman") word)
+      -666.0
+    (let ((occs (ht-get fig//bible-table (downcase (s-trim word))))
+          (thresh 0.6))
+      (if occs
+          (+ thresh (/ (min occs 1000.0) (/ 1000.0 (- 1.0 thresh))))
+        0.0))))
 
 (defun fig//bible-word-color (word)
   "Given a WORD, return an appropriate color string."

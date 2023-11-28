@@ -18,7 +18,7 @@
 (defvar fig//gcp-last-response nil)
 
 (defun fig//gcp-get (loc k)
-  "Get LOC from Hexamedia, passing the returned HTML to K."
+  "Get LOC from GCP, passing the returned HTML to K."
   (setf request-message-level -1)
   (request
     (s-concat fig//gcp-server loc)

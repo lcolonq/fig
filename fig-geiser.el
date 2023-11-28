@@ -8,7 +8,7 @@
 (require 'ht)
 (require 'lunar)
 
-(defvar fig//geiser-alts (list "notgeiser" "cbtcaptain" "mahjongpilled" "infant_yeetah" "mindgoblindeeznutslmao"))
+(defvar fig//geiser-alts (list "imgeiser" "notgeiser" "cbtcaptain" "mahjongpilled" "infant_yeetah" "mindgoblindeeznutslmao"))
 
 (defvar fig//geisers-seen (list))
 
@@ -115,7 +115,7 @@
   (* 100 (fig//get-load)))
 
 (defcustom fig/heartrate-buffer "*fig-heartrate*"
-  "Name of buffer used to ."
+  "Name of buffer used to display heartrate."
   :type '(string)
   :group 'fig)
 

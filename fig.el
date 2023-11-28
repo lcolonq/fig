@@ -71,7 +71,9 @@
    ;;           (when (< val 90)
    ;;             (fig//baldur-click 700 710)
    ;;             (fig//baldur-cmd "check")))))
-   (cons '(monitor twitch chat incoming) #'fig//handle-chat-message)
+   (cons '(monitor twitch chat incoming) #'fig//handle-twitch-message)
+   (cons '(monitor discord chat incoming) #'fig//handle-discord-message)
+   (cons '(monitor irc chat incoming) #'fig//handle-discord-message)
    (cons '(monitor twitch redeem incoming) #'fig//handle-redeem)
    (cons '(monitor twitch poll begin)
          (lambda (_)
@@ -158,7 +160,7 @@
              (with-temp-buffer
                (insert-file-contents-literally "~/today.txt")
                (buffer-string))))))
-   (cons "!nc" (lambda (_ _) (fig//twitch-say "try: nc colonq.computer 31340")))
+   (cons "!nc" (lambda (_ _) (fig//twitch-say "try: \"nc colonq.computer 31340\", if nc doesn't work try ncat or telnet")))
    (cons "!oomfie" (lambda (_ _) (fig//twitch-say "hi!!!!!!!")))
    (cons "!forth" (lambda (_ _) (fig//twitch-say "https://gforth.org")))
    (cons "!game" (lambda (_ _) (fig//twitch-say "https://oub.colonq.computer")))
@@ -217,7 +219,7 @@
    (cons "Discord" (lambda (_ _) (fig//twitch-say "https://discord.gg/f4JTbgN7St")))
    (cons "!irc" (lambda (_ _) (fig//twitch-say "#cyberspace on IRC at colonq.computer:26697 (over TLS)")))
    (cons "IRC" (lambda (_ _) (fig//twitch-say "#cyberspace on IRC at colonq.computer:26697 (over TLS)")))
-   (cons "!sponsor" (lambda (_ _) (fig//twitch-say "Like what you see? Don't forget to download GNU emacs at https://www.gnu.org/software/emacs/?code=LCOLONQ")))
+   (cons "!sponsor" (lambda (_ _) (fig//twitch-say "Like what you see? Don't forget to download GNU Emacs at https://www.gnu.org/software/emacs/?code=LCOLONQ")))
    (cons "!specs" (lambda (_ _) (fig//twitch-say "Editor: evil-mode, WM: EXWM, OS: NixOS, hardware: shit laptop")))
    (cons "!coverage" (lambda (_ _) (fig//twitch-say (s-concat "Test coverage: " (number-to-string (random 100)) "%"))))
    (cons "!learnprogramming" (lambda (_ _) (fig//twitch-say "1) program")))
@@ -272,6 +274,10 @@
 
 (defconst fig//twitch-redeems
   (list
+   (cons "mental clarity"
+         (lambda (user _)
+           (fig//write-chat-event (format "%s established mental clarity" user))
+           (fig/mental-clarity)))
    (cons "theme: autumn"
          (lambda (user _)
            (fig//write-chat-event (format "%s changed the theme: autumn" user))
@@ -341,6 +347,11 @@
          (lambda (user _)
            (fig//write-chat-event (s-concat user " stands"))
            (fig//bj-stand)))
+   (cons "run program"
+         (lambda (user prog)
+           (fig//write-chat-event (s-concat user " runs program: " prog))
+           (when (eq 'out-of-fuel (fig/bless-run (fig/bless prog)))
+             (fig//write-chat-event (s-concat user " ran out of fuel")))))
    (cons "feed friend"
          (lambda (user inp)
            (fig//write-chat-event (s-concat user " feeds \"friend\" " inp))
@@ -695,8 +706,15 @@ CALLBACK will be passed the winner when the poll concludes."
    (create-image "/home/llll/src/fig/misc/godot.png")
    'rear-nonsticky t))
 
-(defun fig//handle-chat-message (msg)
-  "Write MSG to the Twitch chat buffer, processing any commands."
+(defconst fig//powershell-logo
+  (propertize
+   "powershell"
+   'display
+   (create-image "/home/llll/src/fig/misc/powershell_small.png")
+   'rear-nonsticky t))
+
+(defun fig//handle-twitch-message (msg)
+  "Write MSG to the chat buffer, processing any commands."
   (fig//write-log (format "%s" msg))
   (let* ((user (fig//decode-string (car msg)))
          (tags (cadr msg))
@@ -731,6 +749,23 @@ CALLBACK will be passed the winner when the poll concludes."
     (--each fig//twitch-chat-commands
       (when (s-contains? (car it) text)
         (funcall (cdr it) user text)))))
+
+(defun fig//handle-discord-message (msg)
+  "Write MSG to the chat buffer, processing any commands."
+  (let* ((user (fig//decode-string (car msg)))
+         (text (fig//decode-string (caddr msg)))
+         (text-colored-bible-res (fig//bible-colorize-sentence text))
+         (text-colored-bible (car text-colored-bible-res))
+         (text-with-emotes
+          (s-replace
+           "*(this was sent from PowerShell)*"
+           fig//powershell-logo
+           (fig//add-7tv-emotes
+            (if fig//assess-chat-spirituality text-colored-bible text)))))
+    (fig//write-chat-message
+     user "none" (s-replace "bald" "ball" text-with-emotes) nil
+     (fig//user-sigil user nil)
+     (and fig//assess-chat-spirituality (cdr text-colored-bible-res)))))
 
 (defun fig//handle-redeem (r)
   "Handle the channel point redeem R."

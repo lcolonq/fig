@@ -184,6 +184,14 @@
    "Soymilk"
    "37LN37"
    "Kopadot"
+   "Hixrabbit"
+   "prodzpod"
+   "DocMaho"
+   "Celeste_Kyra"
+   "fighting_annelids"
+   "eientei95"
+   "GyrosGeier"
+   "FoggyRoses"
    ))
 (defun fig//handle-redeem-region-swap (type)
   "Return a redeem callback for region swap of TYPE.

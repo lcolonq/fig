@@ -46,6 +46,7 @@
 ;; chatting, chatting0
 (defvar fig//friend-state 'default)
 (defvar fig//friend-emotion "neutral")
+(defvar fig//friend-message-cache nil)
 (defvar fig//friend-state-timer 0)
 
 (defvar fig//friend-animation 1)
@@ -54,22 +55,29 @@
 
 (defun fig//friend-personality (msg k)
   "Given MSG, pass a string with more personality to K."
-  (fig/ask
-   (s-concat fig//friend-emotion " | " msg)
-   (lambda (new)
-     (let ((sp (s-split "|" (s-trim new))))
-       (when (= 2 (length sp))
-         (when (stringp (car sp))
-           (setf fig//friend-emotion (s-trim (car sp))))
-         (when (stringp (cadr sp))
-           (funcall k (s-trim (cadr sp)))))))
-   (s-concat
-    "You are the personality of a desktop buddy named \"friend\". \"friend\" is irreverant but kind, and only speaks in lowercase. You are kind of dumb in a cute way and silly like a virtual pet. You live in the corner of LCOLONQ's stream and provide commentary on events. Given an emotional state and a description of an event that happened to you, please respond with a new emotional state and a short message in response considering your emotional state. The message should only be one clause."
-    fig//friend-tastes
-    )
-   "neutral | Mimeyu fed you an apple."
-   "happy | yum apple so good"
-   ))
+  (let ((call (s-concat fig//friend-emotion " | " msg)))
+    (fig/ask
+     call
+     (lambda (new)
+       (let ((sp (s-split "|" (s-trim new))))
+         (if (= 2 (length sp))
+             (progn
+               (when (stringp (car sp))
+                 (setf fig//friend-emotion (s-trim (car sp))))
+               (when (stringp (cadr sp))
+                 (let ((resp (s-trim (cadr sp))))
+                   (push (cons call resp) fig//friend-message-cache)
+                   (funcall k resp))))
+           (let ((resp (s-trim new)))
+             (push (cons call resp) fig//friend-message-cache)
+             (funcall k resp)))))
+     (s-concat
+      "You are the personality of a desktop buddy named \"friend\". \"friend\" is irreverant but kind, and only speaks in lowercase. You are kind of dumb in a cute way and silly like a virtual pet. You live in the corner of LCOLONQ's stream and provide commentary on events. Given an emotional state and a description of an event that happened to you, please respond with a new emotional state and a short message in response considering your emotional state. The message should only be one clause."
+      fig//friend-tastes
+      )
+     (cons "neutral | Mimeyu fed you an apple." (reverse (-take 5 (-map #'car fig//friend-message-cache))))
+     (cons "happy | yum apple so good" (reverse (-take 5 (-map #'cdr fig//friend-message-cache))))
+     )))
 
 (defun fig//enemy-personality (msg k)
   "Given MSG, pass a string with more personality (enemy mode) to K."
@@ -154,11 +162,14 @@
     "We're playing blackjack, and the current hand value is %s."
     (fig//bj-hand-value fig//bj-current-hand))))
 
-(defun fig//callout-halloween ()
-  "Call to respond to Halloween."
+(defun fig//callout-holiday ()
+  "Call to respond to the current holiday."
   (fig//friend-respond
    (format
-    "It's Halloween today! Say something spooky!")))
+    "It's Thanksgiving today! Say something on the topic of Thanksgiving please! %s"
+    (if (= 0 (random 2))
+        ""
+      "LCOLONQ and friends are celebrating \"Forthsgiving\", where they humorously mix the topic of Thanksgiving with the Forth programming language."))))
 
 (defun fig//callout-hexamedia ()
   "Call to respond to a random recent chatter's Hexamedia card collection."
@@ -173,6 +184,24 @@
         (car user)
         (cdr coll)
         (car coll))))))
+
+(defun fig//callout-uwoomfie ()
+  "Call to respond to a random recent chatter's Uwoomfie status."
+  (let* ((users
+          (-filter
+           #'cdr
+           (--map
+            (cons (car it) (fig//get-uwoomfie-status (car it)))
+            (-take 10 fig//incoming-chat-history))))
+         (user (and users (nth (random (length users)) users)))
+         (respond (if (fig//check-chatter-geiser 
+         )
+    (print user)
+    (cl-case (cdr user)
+      (cool (fig//friend-respond (format "According to uwu_to_owo, %s is a very cool person. Make sure to mention their username." (car user))))
+      (honored (fig//friend-respond (format "According to uwu_to_owo, %s is an honorary viewer. Make sure to mention their username." (car user))))
+      (t nil))))
+         
 
 (defun fig//callout-gcp ()
   "Call to respond to the current GCP dot."
@@ -212,10 +241,12 @@
 
 (defun fig//friend-random-event ()
   "Activate a random \"friend\" event."
-  (cl-case (random 4)
+  (cl-case (random 30)
     (0 (fig//callout-flycheck-error))
     (1 (fig//callout-gcp))
     (2 (fig//callout-hexamedia))
+    (3 (fig//callout-uwoomfie))
+    (9 (fig/ldq))
     (t (fig//friend-set-state 'jumping))))
 
 (defun fig//update-friend ()
@@ -262,6 +293,15 @@
 ;;   / *  \\    
 ;;  / *  * \\   
 ;; ----------   
+;;  / %l  %r \\ 
+;;  \\  %m  /
+;;   +----+\
+;; "
+;;           "%a\
+;;     ---       
+;;    /   \\     
+;;   / [=] \\    
+;; -----------   
 ;;  / %l  %r \\ 
 ;;  \\  %m  /
 ;;   +----+\

@@ -146,6 +146,11 @@ Optionally use SYSTEMPROMPT and the USER and ASSISTANT prompts."
     (start-process "pkill" nil "pkill" "parecord"))
   nil)
 
+(defun fig/mental-clarity ()
+  "Establish mental clarity."
+  (interactive)
+  (start-process "pkill" nil "pkill" "mpv"))
+
 (defun fig/transcribe-poll ()
   "Create a Yes/No poll from voice transcription."
   (interactive)
