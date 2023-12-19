@@ -6,5 +6,6 @@ packages:
   fig-monitor-irc/
   fig-monitor-bullfrog/
   fig-bridge-irc-discord/
+  fig-frontend/
   deps/irc-client/
   deps/irc-conduit/

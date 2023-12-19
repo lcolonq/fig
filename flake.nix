@@ -17,6 +17,7 @@
           fig-monitor-irc = self.callCabal2nix "fig-monitor-irc" ./fig-monitor-irc {};
           fig-monitor-bullfrog = self.callCabal2nix "fig-monitor-bullfrog" ./fig-monitor-bullfrog {};
           fig-bridge-irc-discord = self.callCabal2nix "fig-bridge-irc-discord" ./fig-bridge-irc-discord {};
+          fig-frontend = self.callCabal2nix "fig-frontend" ./fig-frontend {};
         };
       };
       figBusModule = { config, lib, ... }:
@@ -187,9 +188,11 @@
           fig-monitor-irc
           fig-monitor-bullfrog
           fig-bridge-irc-discord
+          fig-frontend
         ];
         withHoogle = true;
         buildInputs = [
+          haskellPackages.haskell-language-server
         ];
       };
       packages.x86_64-linux = {
@@ -199,6 +202,7 @@
         figMonitorIRC = haskellPackages.fig-monitor-irc;
         figMonitorBullfrog = haskellPackages.fig-monitor-bullfrog;
         figBridgeIRCDiscord = haskellPackages.fig-bridge-irc-discord;
+        figFrontend = haskellPackages.fig-frontend;
       };
       apps.x86_64-linux.default = {
         type = "app";

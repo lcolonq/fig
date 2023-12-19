@@ -1,3 +1,6 @@
 .direnv
 dist-newstyle
+node_modules
 fig-monitor-*.toml
+fig-frontend.toml
+fig-frontend-assets

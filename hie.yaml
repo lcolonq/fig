@@ -26,3 +26,7 @@ cradle:
       config: { cradle: { cabal: { component: "fig-bridge-irc-discord:lib:fig-bridge-irc-discord" } } }
     - path: "./fig-bridge-irc-discord/main/"
       config: { cradle: { cabal: { component: "fig-bridge-irc-discord:exe:fig-bridge-irc-discord" } } }
+    - path: "./fig-frontend/src/"
+      config: { cradle: { cabal: { component: "fig-frontend:lib:fig-frontend" } } }
+    - path: "./fig-frontend/main/"
+      config: { cradle: { cabal: { component: "fig-frontend:exe:fig-frontend" } } }
