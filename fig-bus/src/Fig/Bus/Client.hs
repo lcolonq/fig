@@ -62,5 +62,5 @@ _testClient = busClient ("localhost", "32050")
         Conc.threadDelay 1000000
         cmds.publish [sexp|bar|] [[sexp|42|]]
   )
-  (\_cmds d -> putStrLn $ "Received: " <> pretty d)
+  (\_cmds d -> log $ "Received: " <> pretty d)
   (pure ())
