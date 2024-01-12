@@ -179,6 +179,40 @@
             };
           };
         };
+      figFrontendModule = { config, lib, ... }:
+        let
+          cfg = config.colonq.services.fig-frontend;
+        in {
+          options.colonq.services.fig-frontend = {
+            enable = lib.mkEnableOption "Enable the fig web frontend";
+            configFile = lib.mkOption {
+              type = lib.types.path;
+              description = "Path to config file";
+              default = pkgs.writeText "fig-frontend.toml" ''
+                port = 8000
+                asset_path = "./fig-frontend-assets"
+                client_id = ""
+                auth_token = ""
+              '';
+            };
+          };
+          config = lib.mkIf cfg.enable {
+            systemd.services."colonq.fig-frontend" = {
+              wantedBy = ["multi-user.target"];
+              serviceConfig = {
+                Restart = "on-failure";
+                ExecStart = "${haskellPackages.fig-frontend}/bin/fig-frontend --config ${cfg.configFile}";
+                DynamicUser = "yes";
+                RuntimeDirectory = "colonq.fig-frontend";
+                RuntimeDirectoryMode = "0755";
+                StateDirectory = "colonq.fig-frontend";
+                StateDirectoryMode = "0700";
+                CacheDirectory = "colonq.fig-frontend";
+                CacheDirectoryMode = "0750";
+              };
+            };
+          };
+        };
     in {
       devShells.x86_64-linux.default = haskellPackages.shellFor {
         packages = hspkgs: with hspkgs; [
@@ -213,6 +247,7 @@
         figMonitorDiscord = figMonitorDiscordModule;
         figMonitorIRC = figMonitorIRCModule;
         figBridgeIRCDiscord = figBridgeIRCDiscordModule;
+        figFrontend = figFrontendModule;
       };
     };
 }
