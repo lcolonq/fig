@@ -4,7 +4,7 @@ import Fig.Prelude
 
 import Control.Lens (use)
 
-import qualified Network.Wai.Middleware.Static as Wai.Static
+-- import qualified Network.Wai.Middleware.Static as Wai.Static
 import qualified Network.Wai.Handler.Warp as Warp
 
 import qualified Web.Twain as Tw
@@ -15,6 +15,7 @@ import qualified Lucid.Base as L
 import Fig.Frontend.Utils
 import Fig.Frontend.Auth
 import Fig.Frontend.State
+import qualified Fig.Frontend.DB as DB
 
 server :: Config -> IO ()
 server cfg = do
@@ -28,11 +29,12 @@ window id_ title body =
 
 app :: Config -> IO Tw.Application
 app cfg = do
+  db <- DB.connect
   st <- stateRef
   pure $ foldr' @[] ($)
     (Tw.notFound . Tw.send $ Tw.text "not found")
-    [ Wai.Static.staticPolicy $ Wai.Static.addBase cfg.assetPath
-    , Tw.get "/"
+    -- [ Wai.Static.staticPolicy $ Wai.Static.addBase cfg.assetPath
+    [ Tw.get "/"
       . Tw.send . Tw.html
       . L.renderBS
       $ L.doctypehtml_ do
@@ -46,4 +48,9 @@ app cfg = do
     , Tw.put "/api/buffer" do
         buf <- withState st $ use buffer 
         Tw.send $ Tw.text buf
+    , Tw.get "/api/user/:name" do
+        name <- Tw.param "name"
+        DB.get db ("user:" <> encodeUtf8 name) >>= \case
+          Nothing -> Tw.send . Tw.status Tw.status404 $ Tw.text "user not found"
+          Just val -> Tw.send . Tw.text $ decodeUtf8 val
     ]
