@@ -61,7 +61,7 @@ import Data.Bool (Bool(..), otherwise, not, (&&), (||))
 import Data.Char (Char, isUpper)
 import Data.Int (Int)
 import Data.Text (Text, pack, unpack, unwords)
-import Data.Text.IO (putStrLn)
+import Data.Text.IO (hPutStrLn)
 import Data.Text.Encoding (decodeUtf8, decodeUtf8', encodeUtf8)
 import Data.ByteString (ByteString, readFile, writeFile)
 import Data.Tuple (fst, snd, curry, uncurry, swap)
@@ -110,7 +110,7 @@ log :: MonadIO m => Text -> m ()
 log msg = do
   t <- liftIO Time.getCurrentTime
   let time = Time.formatTime Time.defaultTimeLocale "[%F %T] " t
-  liftIO . putStrLn $ pack time <> msg
+  liftIO . hPutStrLn stderr $ pack time <> msg
 
 class Pretty a where
   pretty :: a -> Text
