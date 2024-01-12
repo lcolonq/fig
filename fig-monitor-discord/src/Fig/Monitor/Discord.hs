@@ -9,7 +9,7 @@ import GHC.Real (fromIntegral)
 import Control.Arrow ((>>>))
 import Control.Monad (unless)
 import Control.Monad.Reader (runReaderT)
-import Control.Concurrent (forkIO)
+import qualified Control.Concurrent.Async as Async
 import qualified Control.Concurrent.Chan as Chan
 
 import qualified Data.Text as Text
@@ -32,29 +32,36 @@ data OutgoingMessage = OutgoingMessage
   , msg :: Text
   }
 
+stickerUrl :: Text -> Dis.StickerFormatType -> Text
+stickerUrl sid ty = base <> sid <> "." <> ext
+  where
+    base = "https://media.discordapp.net/stickers/"
+    ext = case ty of
+      Dis.StickerFormatTypeAPNG -> "png"
+      Dis.StickerFormatTypeLOTTIE -> "png"
+      Dis.StickerFormatTypePNG -> "png"
+      Dis.StickerFormatTypeGIF -> "gif"
+
 discordBot :: Config -> (Text, Text) -> IO ()
 discordBot cfg busAddr = do
   outgoing <- Chan.newChan @OutgoingMessage
-  let cid = Dis.DiscordId $ fromIntegral cfg.channel
+  let cid = Dis.DiscordId $ Dis.Snowflake $ fromIntegral cfg.channel
   busClient busAddr
     (\cmds -> do
         cmds.subscribe [sexp|(monitor discord chat outgoing)|]
         err <- Dis.runDiscord Dis.def
           { Dis.discordToken = cfg.authToken
           , Dis.discordOnStart = do
-              let activity = Dis.def
-                    { Dis.activityName = "LCOLONQ"
-                    , Dis.activityType = Dis.ActivityTypeCompeting
-                    }
+              let activity = Dis.mkActivity "LCOLONQ" Dis.ActivityTypeCompeting
               let opts = Dis.UpdateStatusOpts
                     { updateStatusOptsSince = Nothing
-                    , updateStatusOptsGame = Just activity
+                    , updateStatusOptsActivities = [activity]
                     , updateStatusOptsNewStatus = Dis.UpdateStatusOnline
                     , updateStatusOptsAFK = False
                     }
               Dis.sendCommand (Dis.UpdateStatus opts)
               dst <- ask
-              liftIO . void . forkIO . forever $ flip runReaderT dst do
+              liftIO . void . Async.async . forever $ flip runReaderT dst do
                 o <- liftIO $ Chan.readChan outgoing
                 void . Dis.restCall . Dis.CreateMessage cid $ mconcat
                   [ "`<", o.user, ">` "
@@ -75,6 +82,7 @@ discordBot cfg busAddr = do
                 let
                   auth = Dis.messageAuthor m
                   mmemb = Dis.messageMember m
+                  msticker = Dis.messageStickerItems m >>= headMay
                   name = fromMaybe (Dis.userName auth) (Dis.memberNick =<< mmemb)
                   attach = Dis.attachmentProxy <$> Dis.messageAttachments m
                   reply = Dis.messageReferencedMessage m
@@ -102,18 +110,24 @@ discordBot cfg busAddr = do
                         "mrred" -> "🔴"
                         "mrblue" -> "🔵"
                         _ -> ":" <> emotename <> ":"
-                          -- "https://cdn.discordapp.com/emojis/" <> num <> ".webp"
                       _ -> "<unknown emote>"
                     )
                     msg
+                  processedMsg = case msticker of
+                    Just sticker ->
+                      (case Dis.stickerItemName sticker of
+                         "Eval Apply" -> "☯︎"
+                         snm -> snm
+                      ) <> " (" <> stickerUrl (tshow . Dis.unId $ Dis.stickerItemId sticker) (Dis.stickerItemFormatType sticker) <> ")"
+                    _ -> msgReplacedEmotes
                 in unless (Dis.userIsBot auth) do
-                  log $ "Received: " <> msg <> " (from " <> name <> ")"
+                  log $ "Received: " <> processedMsg <> " (from " <> name <> ")"
                   liftIO $ cmds.publish [sexp|(monitor discord chat incoming)|]
                     [ SExprString . BS.Base64.encodeBase64 $ encodeUtf8 name
                     , SExprList []
                     , SExprString . BS.Base64.encodeBase64 . encodeUtf8 . Text.intercalate " "
                       $ maybe [] ((:[]) . (<>":")) replyStr <>
-                        [ msgReplacedEmotes
+                        [ processedMsg
                         , Text.intercalate " "
                           $ Text.takeWhile (/='?')
                           <$> attach

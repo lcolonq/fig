@@ -54,15 +54,11 @@ interactionCommandExample = do
 --     Use place to execute commands you know you want to complete
 startHandler :: GuildId -> DiscordHandler ()
 startHandler testserverid = do
-  let activity =
-        def
-          { activityName = "ping-pong",
-            activityType = ActivityTypeGame
-          }
+  let activity = mkActivity "interaction-commands" ActivityTypeGame
   let opts =
         UpdateStatusOpts
           { updateStatusOptsSince = Nothing,
-            updateStatusOptsGame = Just activity,
+            updateStatusOptsActivities = [activity],
             updateStatusOptsNewStatus = UpdateStatusOnline,
             updateStatusOptsAFK = False
           }
@@ -394,7 +390,7 @@ eventHandler testserverid event = case event of
     void
       ( do
           exampleImage <- liftIO getImage
-          aid <- readCache <&> cacheApplication <&> partialApplicationID
+          aid <- readCache <&> cacheApplication <&> fullApplicationID
           _ <- restCall (R.CreateInteractionResponse interactionId interactionToken InteractionResponseDeferChannelMessage)
           restCall
             ( R.CreateFollowupInteractionMessage

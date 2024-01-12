@@ -22,7 +22,7 @@ module Discord.Internal.Rest.Channel
 
 import Data.Aeson
 import Data.Default (Default, def)
-import Data.Emoji (unicodeByName)
+import Text.Emoji (emojiFromAlias)
 import qualified Data.Text as T
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as BL
@@ -159,16 +159,14 @@ instance Default MessageDetailedOpts where
                             }
 
 -- | Data constructor for `GetReactions` requests
-data ReactionTiming = BeforeReaction MessageId
-                    | AfterReaction MessageId
-                    | LatestReaction
+data ReactionTiming = AfterUser UserId
+                    | FirstUsers
   deriving (Show, Read, Eq, Ord)
 
 reactionTimingToQuery :: ReactionTiming -> R.Option 'R.Https
 reactionTimingToQuery t = case t of
-  (BeforeReaction snow) -> "before" R.=: show snow
-  (AfterReaction snow) -> "after"  R.=: show snow
-  LatestReaction -> mempty
+  (AfterUser snow) -> "after"  R.=: show snow
+  FirstUsers -> mempty
 
 -- | Data constructor for `GetChannelMessages` requests.
 -- 
@@ -310,6 +308,12 @@ instance ToJSON StartThreadOpts where
       , "rate_limit_per_user" .=? startThreadRateLimit
       ]
 
+instance Default StartThreadOpts where
+  def = StartThreadOpts { startThreadName        = "New Thread"
+                        , startThreadAutoArchive = Nothing
+                        , startThreadRateLimit   = Nothing
+                        }
+
 -- | Options for `StartThreadNoMessage` request
 data StartThreadNoMessageOpts = StartThreadNoMessageOpts
   { -- | Base options for the thread
@@ -401,11 +405,25 @@ channelMajorRoute c = case c of
 cleanupEmoji :: T.Text -> T.Text
 cleanupEmoji emoji =
   let noAngles = T.replace "<" "" (T.replace ">" "" emoji)
-      byName = T.pack <$> unicodeByName (T.unpack (T.replace ":" "" emoji))
-  in case (byName, T.stripPrefix ":" noAngles) of
-    (Just e, _) -> e
-    (_, Just a) -> "custom:" <> a
-    (_, Nothing) -> noAngles
+      noColons = T.replace ":" "" emoji
+      toneModifier s = case s of
+        "tone1" -> Just "\x1f3fb"
+        "tone2" -> Just "\x1f3fc"
+        "tone3" -> Just "\x1f3fd"
+        "tone4" -> Just "\x1f3fe"
+        "tone5" -> Just "\x1f3ff"
+        _ -> Nothing
+      byName = case emojiFromAlias noColons of
+        Just e -> Just e
+        Nothing ->
+          let (prefix, tone) = T.breakOnEnd "_" noColons
+           in case ((fst <$> T.unsnoc prefix) >>= emojiFromAlias, toneModifier tone) of
+                (Just p, Just t) -> Just (p <> t)
+                _ -> Nothing
+   in case (byName, T.stripPrefix ":" noAngles) of
+        (Just e, _) -> e
+        (_, Just a) -> "custom:" <> a
+        (_, Nothing) -> noAngles
 
 channels :: R.Url 'R.Https
 channels = baseUrl /: "channels"
@@ -566,7 +584,7 @@ channelJsonRequest c = case c of
            mempty
 
   (StartThreadNoMessage chan sto) ->
-      Post (channels /~ chan /: "messages" /: "threads")
+      Post (channels /~ chan /: "threads")
            (pure $ R.ReqBodyJson $ toJSON sto)
            mempty
 

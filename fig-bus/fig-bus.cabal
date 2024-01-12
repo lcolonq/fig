@@ -10,10 +10,9 @@ common defaults
 common deps
   build-depends:
       base
+    , async
     , binary
     , bytestring
-    , containers
-    , directory
     , containers
     , directory
     , filepath

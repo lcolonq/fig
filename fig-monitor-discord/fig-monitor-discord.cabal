@@ -11,6 +11,7 @@ common deps
   build-depends:
       base
     , aeson
+    , async
     , base64
     , binary
     , bytestring

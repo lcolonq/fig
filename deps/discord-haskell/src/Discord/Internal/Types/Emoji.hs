@@ -152,6 +152,7 @@ data StickerFormatType
   = StickerFormatTypePNG
   | StickerFormatTypeAPNG
   | StickerFormatTypeLOTTIE
+  | StickerFormatTypeGIF
   deriving (Show, Read, Eq, Ord, Data)
 
 instance InternalDiscordEnum StickerFormatType where
@@ -159,6 +160,7 @@ instance InternalDiscordEnum StickerFormatType where
   fromDiscordType StickerFormatTypePNG = 1
   fromDiscordType StickerFormatTypeAPNG = 2
   fromDiscordType StickerFormatTypeLOTTIE = 3
+  fromDiscordType StickerFormatTypeGIF = 4
 
 instance ToJSON StickerFormatType where
   toJSON = toJSON . fromDiscordType

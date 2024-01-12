@@ -1,6 +1,7 @@
 -- | Re-export ALL the internal type modules. Hiding is in Discord.Types
 module Discord.Internal.Types
   ( module Discord.Internal.Types.Prelude,
+    module Discord.Internal.Types.ApplicationInfo,
     module Discord.Internal.Types.Channel,
     module Discord.Internal.Types.Color,
     module Discord.Internal.Types.Events,
@@ -19,6 +20,7 @@ where
 
 import Data.Aeson (Object, ToJSON (toJSON))
 import Data.Time.Clock (UTCTime (..))
+import Discord.Internal.Types.ApplicationInfo
 import Discord.Internal.Types.Channel
 import Discord.Internal.Types.Color
 import Discord.Internal.Types.Components
@@ -41,6 +43,7 @@ userFacingEvent event = case event of
   InternalChannelDelete a -> ChannelDelete a
   InternalThreadCreate a -> ThreadCreate a
   InternalThreadUpdate a -> ThreadUpdate a
+  InternalThreadMemberUpdate a -> ThreadMemberUpdate a
   InternalThreadDelete a -> ThreadDelete a
   InternalThreadListSync a -> ThreadListSync a
   InternalThreadMembersUpdate a -> ThreadMembersUpdate a

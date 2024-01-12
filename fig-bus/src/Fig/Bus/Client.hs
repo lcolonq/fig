@@ -7,6 +7,7 @@ import Fig.Prelude
 import System.Exit (exitFailure)
 
 import qualified Control.Concurrent as Conc
+import qualified Control.Concurrent.Async as Async
 
 import Data.ByteString (hPut, hGetLine)
 
@@ -40,18 +41,18 @@ busClient loc@(host, port) onConn onData onQuit = catchFailure . client loc $ pu
       }
   in
     ( do
-        liftIO . void . Conc.forkIO $ onConn cmds
-        forever do
-          line <- throwLeft id . decodeUtf8' =<< liftIO (hGetLine h)
-          case parseSExpr line of
-            Nothing -> throwM . FigBusClientException $ "Server sent malformed s-expression: " <> line
-            Just x -> liftIO $ onData cmds x
+        liftIO $ Async.concurrently_ (onConn cmds) do
+          forever do
+            line <- throwLeft id . decodeUtf8' =<< liftIO (hGetLine h)
+            case parseSExpr line of
+              Nothing -> throwM . FigBusClientException $ "Server sent malformed s-expression: " <> line
+              Just x -> liftIO $ onData cmds x
     , liftIO onQuit
     )
   where
     catchFailure body = catch body \(e :: IOException) -> do
       log $ "Failed to connect to bus at " <> host <> ":" <> port <> ": " <> tshow e
-      liftIO $ exitFailure
+      liftIO exitFailure
 
 _testClient :: IO ()
 _testClient = busClient ("localhost", "32050")
