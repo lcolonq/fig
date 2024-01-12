@@ -73,6 +73,7 @@ ircBot cfg busAddr = do
               )
               ()
             Conc.putMVar mircst ircst
+            log "Connecting to IRC server..."
             IRC.runClientWith ircst
         )
         (\_cmds d -> do
