@@ -22,6 +22,7 @@ data Config = Config
   { port :: Int
   , assetPath :: FilePath
   , clientId :: Text
+  , authToken :: Text
   } deriving (Show, Eq, Ord)
 
 configCodec :: Toml.TomlCodec Config
@@ -29,6 +30,7 @@ configCodec = do
   port <- Toml.int "port" Toml..= (\a -> a.port)
   assetPath <- Toml.string "asset_path" Toml..= (\a -> a.assetPath)
   clientId <- Toml.text "client_id" Toml..= (\a -> a.clientId)
+  authToken <- Toml.text "auth_token" Toml..= (\a -> a.authToken)
   pure $ Config{..}
 
 loadConfig :: FilePath -> IO Config

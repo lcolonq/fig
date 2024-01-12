@@ -22,6 +22,7 @@ common deps
     , http-client
     , http-client-tls
     , jose-jwt
+    , lens
     , lucid2
     , megaparsec
     , mtl
@@ -52,6 +53,7 @@ library
     Fig.Frontend
     Fig.Frontend.Utils
     Fig.Frontend.Auth
+    Fig.Frontend.State
 
 executable fig-frontend
   import: defaults
