@@ -4,6 +4,8 @@ import Fig.Prelude
 
 import Control.Lens (use)
 
+import Data.Text (toLower)
+
 -- import qualified Network.Wai.Middleware.Static as Wai.Static
 import qualified Network.Wai.Handler.Warp as Warp
 
@@ -49,7 +51,7 @@ app cfg = do
         buf <- withState st $ use buffer 
         Tw.send $ Tw.text buf
     , Tw.get "/api/user/:name" do
-        name <- Tw.param "name"
+        name <- toLower <$> Tw.param "name"
         DB.get db ("user:" <> encodeUtf8 name) >>= \case
           Nothing -> Tw.send . Tw.status Tw.status404 $ Tw.text "user not found"
           Just val -> Tw.send . Tw.text $ decodeUtf8 val
