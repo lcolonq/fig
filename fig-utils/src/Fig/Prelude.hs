@@ -1,3 +1,5 @@
+{-# Language UndecidableInstances #-}
+
 module Fig.Prelude
   ( quot, mod, rem, quotRem
   , module GHC.Num
@@ -45,6 +47,7 @@ module Fig.Prelude
   , log
 
   , Pretty(..)
+  , Fix(..), unFix
   ) where
 
 import Prelude (quot, mod, rem, quotRem)
@@ -117,3 +120,11 @@ class Pretty a where
 
 instance Pretty Void where
   pretty _ = ""
+
+newtype Fix f = Fix { unFix :: f (Fix f) }
+unFix :: Fix f -> f (Fix f)
+unFix (Fix x) = x
+instance Pretty (f (Fix f)) => Pretty (Fix f) where
+  pretty (Fix x) = pretty x
+instance Show (f (Fix f)) => Show (Fix f) where
+  show (Fix x) = show x

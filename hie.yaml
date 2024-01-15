@@ -30,3 +30,7 @@ cradle:
       config: { cradle: { cabal: { component: "fig-frontend:lib:fig-frontend" } } }
     - path: "./fig-frontend/main/"
       config: { cradle: { cabal: { component: "fig-frontend:exe:fig-frontend" } } }
+    - path: "./fig-bless/src/"
+      config: { cradle: { cabal: { component: "fig-bless:lib:fig-bless" } } }
+    - path: "./fig-bless/main/"
+      config: { cradle: { cabal: { component: "fig-bless:exe:fig-bless" } } }
