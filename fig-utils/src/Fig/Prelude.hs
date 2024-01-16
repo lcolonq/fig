@@ -2,6 +2,7 @@
 
 module Fig.Prelude
   ( quot, mod, rem, quotRem
+  , module GHC.Generics
   , module GHC.Num
   , module GHC.Float
 
@@ -52,6 +53,7 @@ module Fig.Prelude
 
 import Prelude (quot, mod, rem, quotRem)
 
+import GHC.Generics (Generic)
 import GHC.Num (Num(..), Integer)
 import GHC.Float (Double)
 

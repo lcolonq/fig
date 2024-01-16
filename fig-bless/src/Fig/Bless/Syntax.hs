@@ -9,6 +9,7 @@ module Fig.Bless.Syntax
   , Term
   , DictionaryF(..)
   , Dictionary
+  , Extractor
   , word, literal, termF, term, programF, program, dictionaryF, dictionary, P.eof
   , Spanning(..), unSpanning, spanning
   , ParseError(..)
@@ -18,8 +19,6 @@ module Fig.Bless.Syntax
 import Fig.Prelude
 
 import Data.Char (isSpace)
-import Data.Map.Strict (Map)
-import qualified Data.Map.Strict as Map
 import Data.Functor ((<&>))
 import Data.Text (unlines)
 import Data.String (IsString(..))
@@ -63,15 +62,17 @@ instance Pretty t => Pretty (TermF t) where
 type Term = TermF (Fix TermF)
 
 newtype DictionaryF t = Dictionary
-  { defs :: Map Word (ProgramF t)
+  { defs :: [(Word, ProgramF t)]
   } deriving (Show, Eq, Ord)
 instance Pretty t => Pretty (DictionaryF t) where
-  pretty d = unlines $ Map.toList d.defs <&> \(w, p) -> mconcat
+  pretty d = unlines $ d.defs <&> \(w, p) -> mconcat
     [ pretty w
     , " = "
     , pretty p
     ]
 type Dictionary = DictionaryF (Fix TermF)
+
+type Extractor m t = t -> m (TermF t)
 
 type Parser = P.Parsec Void Text
 
@@ -88,6 +89,9 @@ word = Word . pack <$> P.some (P.satisfy wordChar)
 
 literal :: Parser Literal
 literal =
+  P.try ( (LiteralDouble <$> P.C.L.signed (pure ()) P.C.L.float)
+    P.<?> "floating-point literal"
+  ) P.<|>
   (
     ( LiteralInteger <$>
       P.C.L.signed (pure ())
@@ -97,9 +101,6 @@ literal =
         P.C.L.decimal
       )
     ) P.<?> "integer literal"
-  ) P.<|>
-  ( (LiteralDouble <$> P.C.L.signed (pure ()) P.C.L.float)
-    P.<?> "floating-point literal"
   ) P.<|>
   ( (LiteralString . pack <$> (P.C.char '"' *> P.manyTill P.C.L.charLiteral (P.C.char '"')))
     P.<?> "string literal"
@@ -122,7 +123,7 @@ term :: Parser Term
 term = termF $ Fix <$> term
 
 dictionaryF :: Parser t -> Parser (DictionaryF t)
-dictionaryF pt = Dictionary . Map.fromList <$> P.many
+dictionaryF pt = Dictionary <$> P.many
   ( (,)
     <$> (ws *> word <* ws <* P.C.char '=')
     <*> (ws *> programF pt <* ws <* P.C.char ';')
@@ -132,7 +133,7 @@ dictionary :: Parser Dictionary
 dictionary = dictionaryF $ Fix <$> term
 
 newtype ParseError = ParseError (P.ParseErrorBundle Text Void)
-  deriving Show
+  deriving (Show)
 instance Exception ParseError
 instance Pretty ParseError where
   pretty (ParseError b) = mconcat

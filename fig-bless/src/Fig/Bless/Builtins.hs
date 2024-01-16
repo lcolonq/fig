@@ -1,22 +1,22 @@
 {-# Language ImplicitParams #-}
 
 module Fig.Bless.Builtins
-  ( arithmetic
+  ( builtins
   ) where
 
 import Fig.Prelude
 
 import Control.Monad.State.Strict (execStateT, StateT)
 
-import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 
 import qualified Fig.Bless.Syntax as Syn
+import Fig.Bless.Types
 import Fig.Bless.Runtime
 
 -- * Helper functions
-stateful :: Running m t v => StateT (VM m t v) m a -> Builtin m t v
-stateful = execStateT
+stateful :: Running m t v => [BType] -> [BType] -> StateT (VM m t v) m a -> Builtin m t v
+stateful inp out f = (execStateT f, BProgType {..})
 
 push :: (Running m t v, MonadState (VM m' t v) m) => ValueF t v -> m ()
 push v = state \vm -> ((), vm { stack = v : vm.stack })
@@ -48,27 +48,43 @@ array :: Running m t v => ValueF t v -> m [v]
 array (ValueArray a) = pure a
 array v = throwM $ RuntimeErrorSortMismatch ?term ValueSortProgram (valueSort v)
 
+-- * Stack operations
+stackops :: RunningTop m t v => Builtins m t v
+stackops t = let ?term = t in Map.fromList
+  [ ( "dup", stateful [BTypeVariable "a"] [BTypeVariable "a", BTypeVariable "a"] do
+        x <- pop
+        push x
+        push x
+    )
+  , ( "swap", stateful [BTypeVariable "a", BTypeVariable "b"] [BTypeVariable "b", BTypeVariable "a"] do
+        x <- pop
+        y <- pop
+        push x
+        push y
+    )
+  ]
+
 -- * Arithmetic builtins
 add :: Running m t v => Builtin m t v
-add = stateful do
+add = stateful [BTypeInteger, BTypeInteger] [BTypeInteger] do
   y <- int =<< pop
   x <- int =<< pop
   push . ValueInteger $ x + y
 
 mul :: Running m t v => Builtin m t v
-mul = stateful do
+mul = stateful [BTypeInteger, BTypeInteger] [BTypeInteger] do
   y <- int =<< pop
   x <- int =<< pop
   push . ValueInteger $ x * y
 
 sub :: Running m t v => Builtin m t v
-sub = stateful do
+sub = stateful [BTypeInteger, BTypeInteger] [BTypeInteger] do
   y <- int =<< pop
   x <- int =<< pop
   push . ValueInteger $ x - y
 
 div :: Running m t v => Builtin m t v
-div = stateful do
+div = stateful [BTypeInteger, BTypeInteger] [BTypeInteger] do
   y <- int =<< pop
   x <- int =<< pop
   push . ValueInteger $ quot x y
@@ -79,4 +95,11 @@ arithmetic t = let ?term = t in Map.fromList
   , ("*", mul)
   , ("-", sub)
   , ("/", div)
+  ]
+
+-- * All builtins
+builtins :: RunningTop m t v => Builtins m t v
+builtins t = Map.unions @[]
+  [ stackops t
+  , arithmetic t
   ]

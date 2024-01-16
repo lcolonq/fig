@@ -5,8 +5,7 @@ module Fig.Bless.Runtime
   , ValueSort(..), valueSort
   , RuntimeError(..)
   , RunningTop, Running
-  , Builtin, Builtins
-  , Extractor
+  , BuiltinProgram, Builtin, Builtins
   , VM(..)
   , initialize
   , runProgram, runWord, run
@@ -20,13 +19,13 @@ import qualified Data.Text as Text
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 
+import Fig.Bless.Types
 import qualified Fig.Bless.Syntax as Syn
 
 data ValueF t v
   = ValueInteger Integer
   | ValueDouble Double
   | ValueString Text
-  | ValueWord Syn.Word
   | ValueProgram (Syn.ProgramF t)
   | ValueArray [v]
   deriving (Show, Eq, Ord)
@@ -34,7 +33,6 @@ instance (Pretty t, Pretty v) => Pretty (ValueF t v) where
   pretty (ValueInteger i) = tshow i
   pretty (ValueDouble d) = tshow d
   pretty (ValueString s) = tshow s
-  pretty (ValueWord s) = pretty s
   pretty (ValueProgram p) = pretty p
   pretty (ValueArray vs) = mconcat
     [ "["
@@ -63,7 +61,6 @@ valueSort :: ValueF t v -> ValueSort
 valueSort (ValueInteger _) = ValueSortInteger
 valueSort (ValueDouble _) = ValueSortDouble
 valueSort (ValueString _) = ValueSortString
-valueSort (ValueWord _) = ValueSortWord
 valueSort (ValueProgram _) = ValueSortProgram
 valueSort (ValueArray _) = ValueSortArray
 
@@ -102,9 +99,9 @@ instance Pretty t => Pretty (RuntimeError t) where
 
 type RunningTop m t v = (MonadThrow m, Typeable t, Show t)
 type Running m t v = (RunningTop m t v, ?term :: Maybe t)
-type Builtin m t v = VM m t v -> m (VM m t v)
+type BuiltinProgram m t v = VM m t v -> m (VM m t v)
+type Builtin m t v = (BuiltinProgram m t v, BProgType)
 type Builtins m t v = Maybe t -> Map Syn.Word (Builtin m t v)
-type Extractor m t = t -> m (Syn.TermF t)
 data VM m t v = VM
   { fuel :: Maybe Integer
   , bindings :: Syn.DictionaryF t
@@ -130,15 +127,15 @@ push v vm = vm
   { stack = v : vm.stack
   }
 
-runProgram :: Running m t v => Extractor m t -> Syn.ProgramF t -> VM m t v -> m (VM m t v)
+runProgram :: Running m t v => Syn.Extractor m t -> Syn.ProgramF t -> VM m t v -> m (VM m t v)
 runProgram f (Syn.Program p) vm = foldM (flip (run f)) vm p
 
-runWord :: Running m t v => Extractor m t -> Syn.Word -> VM m t v -> m (VM m t v)
-runWord _ w vm | Just b <- Map.lookup w $ vm.builtins ?term = b vm
-runWord f w vm | Just p <- Map.lookup w vm.bindings.defs = runProgram f p vm
+runWord :: Running m t v => Syn.Extractor m t -> Syn.Word -> VM m t v -> m (VM m t v)
+runWord _ w vm | Just (b, _) <- Map.lookup w $ vm.builtins ?term = b vm
+runWord f w vm | Just p <- lookup w vm.bindings.defs = runProgram f p vm
 runWord _ w _ = throwM $ RuntimeErrorWordNotFound ?term w
 
-run :: Running m t v => Extractor m t -> t -> VM m t v -> m (VM m t v)
+run :: Running m t v => Syn.Extractor m t -> t -> VM m t v -> m (VM m t v)
 run f v vm =
   let ?term = Just v in f v >>= \case
     Syn.TermLiteral (Syn.LiteralInteger i) -> push (ValueInteger i) <$> checkFuel vm
