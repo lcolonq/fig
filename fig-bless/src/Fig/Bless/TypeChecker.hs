@@ -10,6 +10,8 @@ import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
 
+import qualified Data.Aeson as Aeson
+
 import Fig.Bless.Syntax
 import Fig.Bless.Types
 import Fig.Bless.Runtime
@@ -23,8 +25,9 @@ data TypeError t
   = TypeErrorWordNotFound (Maybe t) Word
   | TypeErrorMismatch (Maybe t) BType BType
   | TypeErrorArityMismatch (Maybe t) BProgType BProgType
-  deriving (Show, Eq, Ord)
+  deriving (Show, Eq, Ord, Generic)
 instance (Show t, Typeable t) => Exception (TypeError t)
+instance Aeson.ToJSON t => Aeson.ToJSON (TypeError t)
 typeErrorPrefix :: Pretty t => Maybe t -> Text
 typeErrorPrefix Nothing = ""
 typeErrorPrefix (Just t) = mconcat
@@ -142,4 +145,4 @@ checkDictionary env d = foldM
         }
   )
   env
-  (reverse d.defs)
+  d.defs

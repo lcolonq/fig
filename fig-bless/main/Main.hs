@@ -20,7 +20,7 @@ import qualified Fig.Bless.Syntax as Syn
 data EvalOptions = EvalOptions
   { src :: Text
   , fuel :: Maybe Integer
-  }
+  } deriving Show
 
 parseEvalOptions :: Parser EvalOptions
 parseEvalOptions = do
@@ -30,7 +30,7 @@ parseEvalOptions = do
 
 newtype TypeOptions = TypeOptions
   { src :: Text
-  }
+  } deriving Show
 
 parseTypeOptions :: Parser TypeOptions
 parseTypeOptions = do
@@ -41,7 +41,7 @@ data DictionaryOptions = DictionaryOptions
   { path :: FilePath
   , entrypoint :: Word
   , fuel :: Maybe Integer
-  }
+  } deriving Show
 
 parseDictionaryOptions :: Parser DictionaryOptions
 parseDictionaryOptions = do
@@ -54,6 +54,7 @@ data Command
   = Eval EvalOptions
   | Type TypeOptions
   | Dict DictionaryOptions
+  deriving Show
 
 parseCommand :: Parser Command
 parseCommand = subparser $ mconcat
@@ -65,7 +66,7 @@ parseCommand = subparser $ mconcat
 data Options = Options
   { cmd :: Command
   , json :: Bool
-  }
+  } deriving Show
 
 parseOptions :: Parser Options
 parseOptions = do
@@ -75,8 +76,22 @@ parseOptions = do
 
 writeError :: (MonadIO m, Pretty e, Aeson.ToJSON e) => Options -> e -> m ()
 writeError o e
-  | o.json = liftIO . putStrLn . decodeUtf8 . B.L.toStrict $ Aeson.encode e
+  | o.json = liftIO . putStrLn . decodeUtf8 . B.L.toStrict . Aeson.encode $ Aeson.object
+    [ "status" Aeson..= ("error" :: Text)
+    , "data" Aeson..= Aeson.object
+      [ "structure" Aeson..= e
+      , "message" Aeson..= pretty e
+      ]
+    ]
   | otherwise = liftIO . hPutStrLn stderr $ pretty e
+
+writeSuccess :: (MonadIO m, Pretty e, Aeson.ToJSON e) => Options -> e -> m ()
+writeSuccess o e
+  | o.json = liftIO . putStrLn . decodeUtf8 . B.L.toStrict . Aeson.encode $ Aeson.object
+    [ "status" Aeson..= ("success" :: Text)
+    , "data" Aeson..= e
+    ]
+  | otherwise = liftIO . putStrLn $ pretty e
 
 main :: IO ()
 main = do
@@ -96,13 +111,13 @@ main = do
           let
             stack :: [ValueF Spanning (Fix (ValueF Spanning))]
             stack = vm'.stack
-          forM_ stack $ putStrLn . pretty
+          writeSuccess opts stack
         Type to -> do
           prog <- parse "<input>" (programF spanning <* eof) to.src
           let ?term = Nothing
           let ext = pure . unSpanning
           ty <- typeOfProgram (initializeEnv ext builtins) prog
-          putStrLn $ pretty ty
+          writeSuccess opts ty
         Dict o -> do
           src <- T.IO.readFile o.path
           dict <- parse "<input>" (dictionaryF spanning <* eof) src
@@ -114,9 +129,9 @@ main = do
           let
             stack :: [ValueF Spanning (Fix (ValueF Spanning))]
             stack = vm'.stack
-          forM_ stack $ putStrLn . pretty
+          writeSuccess opts stack
     )
-    [ Handler \(e :: Syn.ParseError) -> hPutStrLn stderr $ pretty e
-    , Handler \(e :: RuntimeError Spanning) -> hPutStrLn stderr $ pretty e
-    , Handler \(e :: TypeError Spanning) -> hPutStrLn stderr $ pretty e
+    [ Handler \(e :: Syn.ParseError) -> writeError opts e
+    , Handler \(e :: RuntimeError Spanning) -> writeError opts e
+    , Handler \(e :: TypeError Spanning) -> writeError opts e
     ]

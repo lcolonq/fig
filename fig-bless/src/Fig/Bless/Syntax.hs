@@ -27,8 +27,11 @@ import qualified Text.Megaparsec as P
 import qualified Text.Megaparsec.Char as P.C
 import qualified Text.Megaparsec.Char.Lexer as P.C.L
 
+import qualified Data.Aeson as Aeson
+
 newtype Word = Word Text
-  deriving (Show, Eq, Ord)
+  deriving (Show, Eq, Ord, Generic)
+instance Aeson.ToJSON Word
 instance IsString Word where
   fromString = Word . fromString
 instance Pretty Word where
@@ -38,14 +41,16 @@ data Literal
   = LiteralInteger Integer
   | LiteralDouble Double
   | LiteralString Text
-  deriving (Show, Eq, Ord)
+  deriving (Show, Eq, Ord, Generic)
+instance Aeson.ToJSON Literal
 instance Pretty Literal where
   pretty (LiteralInteger i) = tshow i
   pretty (LiteralDouble d) = tshow d
   pretty (LiteralString s) = tshow s
 
 newtype ProgramF t = Program [t]
-  deriving (Show, Eq, Ord, Functor)
+  deriving (Show, Eq, Ord, Generic, Functor)
+instance Aeson.ToJSON t => Aeson.ToJSON (ProgramF t)
 instance Pretty t => Pretty (ProgramF t) where
   pretty (Program ts) = unwords $ pretty <$> ts
 type Program = ProgramF (Fix TermF)
@@ -54,7 +59,8 @@ data TermF t
   = TermWord Word
   | TermLiteral Literal
   | TermQuote (ProgramF t)
-  deriving (Show, Eq, Ord, Functor)
+  deriving (Show, Eq, Ord, Generic, Functor)
+instance Aeson.ToJSON t => Aeson.ToJSON (TermF t)
 instance Pretty t => Pretty (TermF t) where
   pretty (TermWord w) = pretty w
   pretty (TermLiteral l) = pretty l
@@ -83,7 +89,7 @@ ws = P.C.L.space
   (P.C.L.skipBlockComment "/*" "*/")
 
 wordChar :: Char -> Bool
-wordChar c = not $ elem @[] c ['[', ']'] || isSpace c
+wordChar c = not $ elem @[] c ['[', ']', '=', ';'] || isSpace c
 word :: Parser Word
 word = Word . pack <$> P.some (P.satisfy wordChar)
 
@@ -133,8 +139,14 @@ dictionary :: Parser Dictionary
 dictionary = dictionaryF $ Fix <$> term
 
 newtype ParseError = ParseError (P.ParseErrorBundle Text Void)
-  deriving (Show)
+  deriving (Show, Generic)
 instance Exception ParseError
+instance Aeson.ToJSON ParseError where
+  toJSON (ParseError b) = Aeson.object
+    [ "errors" Aeson..= Aeson.toJSON (bimap P.parseErrorPretty P.sourcePosPretty <$> posed)
+    ]
+    where
+      (posed, _) = P.attachSourcePos P.errorOffset (P.bundleErrors b) (P.bundlePosState b)
 instance Pretty ParseError where
   pretty (ParseError b) = mconcat
     [ "failed to read program:\n"
@@ -146,7 +158,13 @@ data Spanning = Spanning
   , start :: P.SourcePos
   , end :: P.SourcePos
   }
-  deriving (Show, Eq, Ord)
+  deriving (Show, Eq, Ord, Generic)
+instance Aeson.ToJSON Spanning where
+  toJSON s = Aeson.object
+    [ "term" Aeson..= Aeson.toJSON s.t
+    , "start" Aeson..= pack (P.sourcePosPretty s.start)
+    , "end" Aeson..= pack (P.sourcePosPretty s.end)
+    ]
 instance Pretty Spanning where
   pretty s = mconcat
     [ pretty s.t, "\n"

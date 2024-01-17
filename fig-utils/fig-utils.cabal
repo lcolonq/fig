@@ -17,6 +17,7 @@ library
     Fig.Utils.SExpr
   build-depends:
       base
+    , aeson
     , binary
     , bytestring
     , containers

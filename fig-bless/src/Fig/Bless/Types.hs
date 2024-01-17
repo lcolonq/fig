@@ -7,13 +7,16 @@ import qualified Data.Map.Strict as Map
 import Data.Set (Set)
 import qualified Data.Set as Set
 
+import qualified Data.Aeson as Aeson
+
 data BType
   = BTypeVariable Text
   | BTypeInteger
   | BTypeDouble
   | BTypeString
   | BTypeProgram BProgType
-  deriving (Show, Eq, Ord)
+  deriving (Show, Eq, Ord, Generic)
+instance Aeson.ToJSON BType
 instance Pretty BType where
   pretty (BTypeVariable s) = "!" <> s
   pretty BTypeInteger = "integer"
@@ -25,7 +28,8 @@ data BProgType = BProgType
   { inp :: [BType]
   , out :: [BType]
   }
-  deriving (Show, Eq, Ord)
+  deriving (Show, Eq, Ord, Generic)
+instance Aeson.ToJSON BProgType
 instance Pretty BProgType where
   pretty p = unwords (pretty <$> p.inp) <> " -- " <> unwords (pretty <$> p.out)
 

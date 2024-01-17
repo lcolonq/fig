@@ -65,7 +65,7 @@ import Data.Void (Void)
 import Data.Bool (Bool(..), otherwise, not, (&&), (||))
 import Data.Char (Char, isUpper)
 import Data.Int (Int)
-import Data.Text (Text, pack, unpack, unwords)
+import Data.Text (Text, pack, unpack, unwords, unlines)
 import Data.Text.IO (hPutStrLn)
 import Data.Text.Encoding (decodeUtf8, decodeUtf8', encodeUtf8)
 import Data.ByteString (ByteString, readFile, writeFile)
@@ -95,6 +95,8 @@ import Control.Monad.State.Class (MonadState(..), get, put, modify)
 import Control.Monad.Reader.Class (MonadReader(..), ask)
 import Control.Exception.Safe (Exception, SomeException, IOException, MonadThrow, MonadCatch, MonadMask, throwM, try, catch, catchIO, bracket, bracketOnError)
 
+import qualified Data.Aeson as Aeson
+
 tshow :: Show a => a -> Text
 tshow = pack . show
 
@@ -123,6 +125,9 @@ class Pretty a where
 instance Pretty Void where
   pretty _ = ""
 
+instance Pretty a => Pretty [a] where
+  pretty xs = unlines $ pretty <$> xs
+
 newtype Fix f = Fix { unFix :: f (Fix f) }
 unFix :: Fix f -> f (Fix f)
 unFix (Fix x) = x
@@ -130,3 +135,5 @@ instance Pretty (f (Fix f)) => Pretty (Fix f) where
   pretty (Fix x) = pretty x
 instance Show (f (Fix f)) => Show (Fix f) where
   show (Fix x) = show x
+instance Aeson.ToJSON (f (Fix f)) => Aeson.ToJSON (Fix f) where
+  toJSON (Fix x) = Aeson.toJSON x

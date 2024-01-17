@@ -19,6 +19,8 @@ import qualified Data.Text as Text
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 
+import qualified Data.Aeson as Aeson
+
 import Fig.Bless.Types
 import qualified Fig.Bless.Syntax as Syn
 
@@ -28,7 +30,8 @@ data ValueF t v
   | ValueString Text
   | ValueProgram (Syn.ProgramF t)
   | ValueArray [v]
-  deriving (Show, Eq, Ord)
+  deriving (Show, Eq, Ord, Generic)
+instance (Aeson.ToJSON t, Aeson.ToJSON v) => Aeson.ToJSON (ValueF t v)
 instance (Pretty t, Pretty v) => Pretty (ValueF t v) where
   pretty (ValueInteger i) = tshow i
   pretty (ValueDouble d) = tshow d
@@ -48,7 +51,8 @@ data ValueSort
   | ValueSortWord
   | ValueSortProgram
   | ValueSortArray
-  deriving (Show, Eq, Ord)
+  deriving (Show, Eq, Ord, Generic)
+instance Aeson.ToJSON ValueSort
 instance Pretty ValueSort where
   pretty ValueSortInteger = "integer"
   pretty ValueSortDouble = "double"
@@ -56,7 +60,6 @@ instance Pretty ValueSort where
   pretty ValueSortWord = "word"
   pretty ValueSortProgram = "program"
   pretty ValueSortArray = "list"
-
 valueSort :: ValueF t v -> ValueSort
 valueSort (ValueInteger _) = ValueSortInteger
 valueSort (ValueDouble _) = ValueSortDouble
@@ -69,14 +72,14 @@ data RuntimeError t
   | RuntimeErrorOutOfFuel (Maybe t)
   | RuntimeErrorStackUnderflow (Maybe t)
   | RuntimeErrorSortMismatch (Maybe t) ValueSort ValueSort
-  deriving (Show, Eq, Ord)
+  deriving (Show, Eq, Ord, Generic)
 instance (Show t, Typeable t) => Exception (RuntimeError t)
+instance Aeson.ToJSON t => Aeson.ToJSON (RuntimeError t)
 runtimeErrorPrefix :: Pretty t => Maybe t -> Text
 runtimeErrorPrefix Nothing = ""
 runtimeErrorPrefix (Just t) = mconcat
   [ "while evaluating term: ", pretty t, "\n"
   ]
-
 instance Pretty t => Pretty (RuntimeError t) where
   pretty (RuntimeErrorWordNotFound t w) = mconcat
     [ runtimeErrorPrefix t
