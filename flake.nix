@@ -6,19 +6,24 @@
   outputs = { self, nixpkgs }:
     let
       pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      haskellPackages = pkgs.haskell.packages.ghc94.override {
-        overrides = self: super: {
-          discord-haskell = self.callCabal2nix "discord-haskell" ./deps/discord-haskell {};
-          irc-conduit = self.callCabal2nix "irc-conduit" ./deps/irc-conduit {};
-          irc-client = self.callCabal2nix "irc-client" ./deps/irc-client {};
-          fig-utils = self.callCabal2nix "fig-utils" ./fig-utils {};
-          fig-bus = self.callCabal2nix "fig-bus" ./fig-bus {};
-          fig-monitor-discord = self.callCabal2nix "fig-monitor-discord" ./fig-monitor-discord {};
-          fig-monitor-irc = self.callCabal2nix "fig-monitor-irc" ./fig-monitor-irc {};
-          fig-monitor-bullfrog = self.callCabal2nix "fig-monitor-bullfrog" ./fig-monitor-bullfrog {};
-          fig-bridge-irc-discord = self.callCabal2nix "fig-bridge-irc-discord" ./fig-bridge-irc-discord {};
-          fig-frontend = self.callCabal2nix "fig-frontend" ./fig-frontend {};
+      overrides = self: super: {
+        discord-haskell = self.callCabal2nix "discord-haskell" ./deps/discord-haskell {};
+        irc-conduit = self.callCabal2nix "irc-conduit" ./deps/irc-conduit {};
+        irc-client = self.callCabal2nix "irc-client" ./deps/irc-client {};
+        fig-utils = self.callCabal2nix "fig-utils" ./fig-utils {};
+        fig-bus = self.callCabal2nix "fig-bus" ./fig-bus {};
+        fig-monitor-discord = self.callCabal2nix "fig-monitor-discord" ./fig-monitor-discord {};
+        fig-monitor-irc = self.callCabal2nix "fig-monitor-irc" ./fig-monitor-irc {};
+        fig-monitor-bullfrog = self.callCabal2nix "fig-monitor-bullfrog" ./fig-monitor-bullfrog {};
+        fig-bridge-irc-discord = self.callCabal2nix "fig-bridge-irc-discord" ./fig-bridge-irc-discord {};
+        fig-bless = self.callCabal2nix "fig-bless" ./fig-bless {};
+        fig-frontend = self.callCabal2nix "fig-frontend" ./fig-frontend {};
         };
+      haskellPackages = pkgs.haskell.packages.ghc94.override {
+        inherit overrides;
+      };
+      haskellPackagesStatic = pkgs.pkgsStatic.haskell.packages.ghc94.override {
+        inherit overrides;
       };
       figBusModule = { config, lib, ... }:
         let
@@ -222,6 +227,7 @@
           fig-monitor-irc
           fig-monitor-bullfrog
           fig-bridge-irc-discord
+          fig-bless
           fig-frontend
         ];
         withHoogle = true;
@@ -236,6 +242,8 @@
         figMonitorIRC = haskellPackages.fig-monitor-irc;
         figMonitorBullfrog = haskellPackages.fig-monitor-bullfrog;
         figBridgeIRCDiscord = haskellPackages.fig-bridge-irc-discord;
+        figBless = haskellPackages.fig-bless;
+        figBlessStatic = haskellPackagesStatic.fig-bless;
         figFrontend = haskellPackages.fig-frontend;
       };
       apps.x86_64-linux.default = {

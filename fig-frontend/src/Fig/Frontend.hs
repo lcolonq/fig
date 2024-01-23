@@ -14,6 +14,7 @@ import qualified Web.Twain as Tw
 import qualified Lucid as L
 import qualified Lucid.Base as L
 
+import Fig.Utils.SExpr
 import Fig.Frontend.Utils
 import Fig.Frontend.Auth
 import Fig.Frontend.State
@@ -55,4 +56,8 @@ app cfg = do
         DB.get db ("user:" <> encodeUtf8 name) >>= \case
           Nothing -> Tw.send . Tw.status Tw.status404 $ Tw.text "user not found"
           Just val -> Tw.send . Tw.text $ decodeUtf8 val
+    , Tw.get "/api/songs" do
+        DB.hvals db "songnames" >>= \case
+          Nothing -> Tw.send . Tw.status Tw.status404 $ Tw.text "no sounds found :("
+          Just songs -> Tw.send . Tw.text . pretty . SExprList @Void $ SExprString . decodeUtf8 <$> songs
     ]
