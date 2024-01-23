@@ -60,4 +60,9 @@ app cfg = do
         DB.hvals db "songnames" >>= \case
           Nothing -> Tw.send . Tw.status Tw.status404 $ Tw.text "no sounds found :("
           Just songs -> Tw.send . Tw.text . pretty . SExprList @Void $ SExprString . decodeUtf8 <$> songs
+    , Tw.get "/api/song/:hash" do
+        hash <- Tw.param "hash"
+        DB.hget db "songnotes" hash >>= \case
+          Nothing -> Tw.send . Tw.status Tw.status404 $ Tw.text "song not found"
+          Just val -> Tw.send . Tw.text $ decodeUtf8 val
     ]

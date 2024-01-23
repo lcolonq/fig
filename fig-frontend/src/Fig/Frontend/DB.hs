@@ -14,7 +14,12 @@ connect = liftIO $ Redis.checkedConnect Redis.defaultConnectInfo
 get :: MonadIO m => Redis.Connection -> ByteString -> m (Maybe ByteString)
 get c key = liftIO $ Redis.runRedis c do
   v <- Redis.get key
-  pure $ join $ hush v
+  pure . join $ hush v
+
+hget :: MonadIO m => Redis.Connection -> ByteString -> ByteString -> m (Maybe ByteString)
+hget c key hkey = liftIO $ Redis.runRedis c do
+  v <- Redis.hget key hkey
+  pure . join $ hush v
 
 hvals :: MonadIO m => Redis.Connection -> ByteString -> m (Maybe [ByteString])
 hvals c key = liftIO $ Redis.runRedis c do
