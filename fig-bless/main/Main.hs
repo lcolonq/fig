@@ -8,7 +8,7 @@ import Options.Applicative
 
 import Control.Exception.Safe (Handler(..), catches)
 
-import Data.Text.IO (putStrLn)
+import Data.Text.IO (putStr, putStrLn)
 import qualified Data.Text.IO as T.IO
 import qualified Data.ByteString.Lazy as B.L
 
@@ -85,13 +85,26 @@ writeError o e
     ]
   | otherwise = liftIO . hPutStrLn stderr $ pretty e
 
-writeSuccess :: (MonadIO m, Pretty e, Aeson.ToJSON e) => Options -> e -> m ()
-writeSuccess o e
+writeEval :: (MonadIO m, Pretty t, Aeson.ToJSON t) => Options -> [ValueF t] -> [EffectF t] -> m ()
+writeEval o st ef
   | o.json = liftIO . putStrLn . decodeUtf8 . B.L.toStrict . Aeson.encode $ Aeson.object
     [ "status" Aeson..= ("success" :: Text)
-    , "data" Aeson..= e
+    , "data" Aeson..= Aeson.object
+      [ "stack" Aeson..= st
+      , "effects" Aeson..= reverse ef
+      ]
     ]
-  | otherwise = liftIO . putStrLn $ pretty e
+  | otherwise = do
+      liftIO . putStr $ "Stack:\n" <> pretty st
+      liftIO . putStr $ "Effects:\n" <> pretty (reverse ef)
+
+writeType :: (MonadIO m, Pretty e, Aeson.ToJSON e) => Options -> e -> m ()
+writeType o t
+  | o.json = liftIO . putStrLn . decodeUtf8 . B.L.toStrict . Aeson.encode $ Aeson.object
+    [ "status" Aeson..= ("error" :: Text)
+    , "data" Aeson..= t
+    ]
+  | otherwise = liftIO . hPutStrLn stderr $ pretty t
 
 main :: IO ()
 main = do
@@ -108,16 +121,13 @@ main = do
           _ty <- typeOfProgram (initializeEnv ext builtins) prog
           let vm = initialize eo.fuel (Dictionary mempty) builtins
           vm' <- runProgram ext prog vm
-          let
-            stack :: [ValueF Spanning (Fix (ValueF Spanning))]
-            stack = vm'.stack
-          writeSuccess opts stack
+          writeEval opts vm'.stack vm'.effects
         Type to -> do
           prog <- parse "<input>" (programF spanning <* eof) to.src
           let ?term = Nothing
           let ext = pure . unSpanning
           ty <- typeOfProgram (initializeEnv ext builtins) prog
-          writeSuccess opts ty
+          writeType opts ty
         Dict o -> do
           src <- T.IO.readFile o.path
           dict <- parse "<input>" (dictionaryF spanning <* eof) src
@@ -126,10 +136,7 @@ main = do
           _env <- checkDictionary (initializeEnv ext builtins) dict
           let vm = initialize o.fuel dict builtins
           vm' <- runWord ext o.entrypoint vm
-          let
-            stack :: [ValueF Spanning (Fix (ValueF Spanning))]
-            stack = vm'.stack
-          writeSuccess opts stack
+          writeEval opts vm'.stack vm'.effects
     )
     [ Handler \(e :: Syn.ParseError) -> writeError opts e
     , Handler \(e :: RuntimeError Spanning) -> writeError opts e

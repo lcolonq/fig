@@ -20,7 +20,6 @@ import Fig.Prelude
 
 import Data.Char (isSpace)
 import Data.Functor ((<&>))
-import Data.Text (unlines)
 import Data.String (IsString(..))
 
 import qualified Text.Megaparsec as P
@@ -41,12 +40,14 @@ data Literal
   = LiteralInteger Integer
   | LiteralDouble Double
   | LiteralString Text
+  | LiteralArray [Literal]
   deriving (Show, Eq, Ord, Generic)
 instance Aeson.ToJSON Literal
 instance Pretty Literal where
   pretty (LiteralInteger i) = tshow i
   pretty (LiteralDouble d) = tshow d
   pretty (LiteralString s) = tshow s
+  pretty (LiteralArray xs) = "{" <> unwords (pretty <$> xs) <> "}"
 
 newtype ProgramF t = Program [t]
   deriving (Show, Eq, Ord, Generic, Functor)
@@ -98,8 +99,7 @@ literal =
   P.try ( (LiteralDouble <$> P.C.L.signed (pure ()) P.C.L.float)
     P.<?> "floating-point literal"
   ) P.<|>
-  (
-    ( LiteralInteger <$>
+  ( (LiteralInteger <$>
       P.C.L.signed (pure ())
       ( (P.C.string' "0x" *> P.C.L.hexadecimal) P.<|>
         (P.C.string' "0o" *> P.C.L.octal) P.<|>
@@ -110,6 +110,9 @@ literal =
   ) P.<|>
   ( (LiteralString . pack <$> (P.C.char '"' *> P.manyTill P.C.L.charLiteral (P.C.char '"')))
     P.<?> "string literal"
+  ) P.<|>
+  ( (LiteralArray <$> (P.C.char '{' *> P.many (ws *> literal <* ws) <* P.C.char '}'))
+    P.<?> "array literal"
   )
 
 programF :: Parser t -> Parser (ProgramF t)
@@ -157,8 +160,7 @@ data Spanning = Spanning
   { t :: TermF Spanning
   , start :: P.SourcePos
   , end :: P.SourcePos
-  }
-  deriving (Show, Eq, Ord, Generic)
+  } deriving (Show, Eq, Ord, Generic)
 instance Aeson.ToJSON Spanning where
   toJSON s = Aeson.object
     [ "term" Aeson..= Aeson.toJSON s.t

@@ -22,9 +22,9 @@
       haskellPackages = pkgs.haskell.packages.ghc94.override {
         inherit overrides;
       };
-      haskellPackagesStatic = pkgs.pkgsStatic.haskell.packages.ghc94.override {
-        inherit overrides;
-      };
+      # haskellPackagesStatic = pkgs.pkgsStatic.haskell.packages.ghc94.override {
+      #   inherit overrides;
+      # };
       figBusModule = { config, lib, ... }:
         let
           cfg = config.colonq.services.fig-bus;
@@ -243,7 +243,7 @@
         figMonitorBullfrog = haskellPackages.fig-monitor-bullfrog;
         figBridgeIRCDiscord = haskellPackages.fig-bridge-irc-discord;
         figBless = haskellPackages.fig-bless;
-        figBlessStatic = haskellPackagesStatic.fig-bless;
+        # figBlessStatic = haskellPackagesStatic.fig-bless;
         figFrontend = haskellPackages.fig-frontend;
       };
       apps.x86_64-linux.default = {

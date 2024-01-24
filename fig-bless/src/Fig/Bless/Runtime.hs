@@ -1,7 +1,8 @@
 {-# Language ImplicitParams #-}
 
 module Fig.Bless.Runtime
-  ( ValueF(..), Value
+  ( ValueF(..)
+  , EffectF(..)
   , ValueSort(..), valueSort
   , RuntimeError(..)
   , RunningTop, Running
@@ -24,25 +25,37 @@ import qualified Data.Aeson as Aeson
 import Fig.Bless.Types
 import qualified Fig.Bless.Syntax as Syn
 
-data ValueF t v
+data ValueF t
   = ValueInteger Integer
   | ValueDouble Double
   | ValueString Text
   | ValueProgram (Syn.ProgramF t)
-  | ValueArray [v]
+  | ValueArray [ValueF t]
   deriving (Show, Eq, Ord, Generic)
-instance (Aeson.ToJSON t, Aeson.ToJSON v) => Aeson.ToJSON (ValueF t v)
-instance (Pretty t, Pretty v) => Pretty (ValueF t v) where
+instance Aeson.ToJSON t => Aeson.ToJSON (ValueF t)
+instance Pretty t => Pretty (ValueF t) where
   pretty (ValueInteger i) = tshow i
   pretty (ValueDouble d) = tshow d
   pretty (ValueString s) = tshow s
   pretty (ValueProgram p) = pretty p
   pretty (ValueArray vs) = mconcat
-    [ "["
-    , Text.intercalate ", " $ pretty <$> vs
-    , "]"
+    [ "{"
+    , unwords $ pretty <$> vs
+    , "}"
     ]
-type Value = ValueF (Fix Syn.TermF) (Fix (ValueF (Fix Syn.TermF)))
+
+data EffectF t
+  = EffectPrint (ValueF t)
+  | EffectPrintBackwards (ValueF t)
+  | EffectSoundboard (ValueF t)
+  | EffectModelToggle (ValueF t)
+  deriving (Show, Eq, Ord, Generic)
+instance Aeson.ToJSON t => Aeson.ToJSON (EffectF t)
+instance Pretty t => Pretty (EffectF t) where
+  pretty (EffectPrint x) =  "(print " <> pretty x <> ")"
+  pretty (EffectPrintBackwards x) =  "(print-backwards " <> pretty x <> ")"
+  pretty (EffectSoundboard x) =  "(soundboard " <> pretty x <> ")"
+  pretty (EffectModelToggle x) =  "(moddle-toggle " <> pretty x <> ")"
 
 data ValueSort
   = ValueSortInteger
@@ -60,7 +73,7 @@ instance Pretty ValueSort where
   pretty ValueSortWord = "word"
   pretty ValueSortProgram = "program"
   pretty ValueSortArray = "list"
-valueSort :: ValueF t v -> ValueSort
+valueSort :: ValueF t -> ValueSort
 valueSort (ValueInteger _) = ValueSortInteger
 valueSort (ValueDouble _) = ValueSortDouble
 valueSort (ValueString _) = ValueSortString
@@ -100,24 +113,26 @@ instance Pretty t => Pretty (RuntimeError t) where
     , "actual: ", pretty actual
     ]
 
-type RunningTop m t v = (MonadThrow m, Typeable t, Show t)
-type Running m t v = (RunningTop m t v, ?term :: Maybe t)
-type BuiltinProgram m t v = VM m t v -> m (VM m t v)
-type Builtin m t v = (BuiltinProgram m t v, BProgType)
-type Builtins m t v = Maybe t -> Map Syn.Word (Builtin m t v)
-data VM m t v = VM
+type RunningTop m t = (MonadThrow m, Typeable t, Show t)
+type Running m t = (RunningTop m t, ?term :: Maybe t)
+type BuiltinProgram m t = VM m t -> m (VM m t)
+type Builtin m t = (BuiltinProgram m t, BProgType)
+type Builtins m t = Maybe t -> Map Syn.Word (Builtin m t)
+data VM m t = VM
   { fuel :: Maybe Integer
   , bindings :: Syn.DictionaryF t
-  , builtins :: Builtins m t v
-  , stack :: [ValueF t v]
+  , builtins :: Builtins m t
+  , stack :: [ValueF t]
+  , effects :: [EffectF t]
   }
 
-initialize :: Running m t v => Maybe Integer -> Syn.DictionaryF t -> Builtins m t v -> VM m t v
+initialize :: Running m t => Maybe Integer -> Syn.DictionaryF t -> Builtins m t -> VM m t
 initialize fuel bindings builtins = VM{..}
   where
     stack = []
+    effects = []
 
-checkFuel :: Running m t v => VM m t v -> m (VM m t v)
+checkFuel :: Running m t => VM m t -> m (VM m t)
 checkFuel vm
   | Just f <- vm.fuel
   = if f <= 0
@@ -125,24 +140,28 @@ checkFuel vm
     else pure vm { fuel = Just $ f - 1 }
 checkFuel vm = pure vm
 
-push :: Running m t v => ValueF t v -> VM m t v -> VM m t v
+push :: Running m t => ValueF t -> VM m t -> VM m t
 push v vm = vm
   { stack = v : vm.stack
   }
 
-runProgram :: Running m t v => Syn.Extractor m t -> Syn.ProgramF t -> VM m t v -> m (VM m t v)
+runProgram :: Running m t => Syn.Extractor m t -> Syn.ProgramF t -> VM m t -> m (VM m t)
 runProgram f (Syn.Program p) vm = foldM (flip (run f)) vm p
 
-runWord :: Running m t v => Syn.Extractor m t -> Syn.Word -> VM m t v -> m (VM m t v)
+runWord :: Running m t => Syn.Extractor m t -> Syn.Word -> VM m t -> m (VM m t)
 runWord _ w vm | Just (b, _) <- Map.lookup w $ vm.builtins ?term = b vm
 runWord f w vm | Just p <- lookup w vm.bindings.defs = runProgram f p vm
 runWord _ w _ = throwM $ RuntimeErrorWordNotFound ?term w
 
-run :: Running m t v => Syn.Extractor m t -> t -> VM m t v -> m (VM m t v)
+literalValue :: Syn.Literal -> ValueF t
+literalValue (Syn.LiteralInteger i) = ValueInteger i
+literalValue (Syn.LiteralDouble i) = ValueDouble i
+literalValue (Syn.LiteralString i) = ValueString i
+literalValue (Syn.LiteralArray xs) = ValueArray $ literalValue <$> xs
+
+run :: Running m t => Syn.Extractor m t -> t -> VM m t -> m (VM m t)
 run f v vm =
   let ?term = Just v in f v >>= \case
-    Syn.TermLiteral (Syn.LiteralInteger i) -> push (ValueInteger i) <$> checkFuel vm
-    Syn.TermLiteral (Syn.LiteralDouble i) -> push (ValueDouble i) <$> checkFuel vm
-    Syn.TermLiteral (Syn.LiteralString i) -> push (ValueString i) <$> checkFuel vm
+    Syn.TermLiteral l -> push (literalValue l) <$> checkFuel vm
     Syn.TermQuote p -> push (ValueProgram p) <$> checkFuel vm
     Syn.TermWord w -> runWord f w =<< checkFuel vm

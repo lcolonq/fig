@@ -25,6 +25,7 @@ data TypeError t
   = TypeErrorWordNotFound (Maybe t) Word
   | TypeErrorMismatch (Maybe t) BType BType
   | TypeErrorArityMismatch (Maybe t) BProgType BProgType
+  | TypeErrorMixedArray (Maybe t)
   deriving (Show, Eq, Ord, Generic)
 instance (Show t, Typeable t) => Exception (TypeError t)
 instance Aeson.ToJSON t => Aeson.ToJSON (TypeError t)
@@ -51,8 +52,12 @@ instance Pretty t => Pretty (TypeError t) where
     , "expected: ", pretty expected, "\n"
     , "actual: ", pretty actual
     ]
+  pretty (TypeErrorMixedArray t) = mconcat
+    [ typeErrorPrefix t
+    , "array literal has mixed types"
+    ]
 
-type Typing m t = (MonadThrow m, Typeable t, Show t, ?term :: Maybe t)
+type Typing m t = (MonadIO m, MonadThrow m, Typeable t, Show t, ?term :: Maybe t)
 
 completeSubstitution :: [(BType, BType)] -> Either ((BType, BType), [(BType, BType)]) (Map Text BType)
 completeSubstitution = go Map.empty
@@ -66,6 +71,8 @@ completeSubstitution = go Map.empty
 unifyTypes :: forall m t. Typing m t => [(BType, BType)] -> m (Map Text BType)
 unifyTypes subst = case completeSubstitution subst of
   Right f -> pure f
+  Left ((BTypeArray t0, BTypeArray t1), xs) -- decompose arrays
+    -> unifyTypes ((t0, t1):xs)
   Left ((BTypeProgram p0, BTypeProgram p1), xs) -- decompose programs
     | length p0.inp == length p1.inp
       && length p0.out == length p1.out
@@ -89,7 +96,7 @@ combineProgTypes f s = do
     ( \(l, d) t -> case l of
         x:xs
           | x == t -> pure (xs, d)
-          | otherwise -> throwM $ TypeErrorMismatch ?term x t
+          | otherwise -> throwM $ TypeErrorMismatch ?term t x
         [] -> pure (l, d <> [t])
     )
     (fout, [])
@@ -98,6 +105,16 @@ combineProgTypes f s = do
     { inp = finp <> dig
     , out = sout <> leftover
     }
+
+typeOfLiteral :: Typing m t => Literal -> m BType
+typeOfLiteral LiteralInteger{} = pure BTypeInteger
+typeOfLiteral LiteralDouble{} = pure BTypeDouble
+typeOfLiteral LiteralString{} = pure BTypeString
+typeOfLiteral (LiteralArray xs) = mapM typeOfLiteral xs >>= \case
+  [] -> pure $ BTypeArray (BTypeVariable "a")
+  ts@(t:_)
+    | length (Set.fromList ts) == 1 -> pure $ BTypeArray t
+    | otherwise -> throwM $ TypeErrorMixedArray ?term
 
 typeOfProgram :: Typing m t => Env m t -> ProgramF t -> m BProgType
 typeOfProgram e (Program p) = case p of
@@ -113,15 +130,12 @@ typeOf e wt = do
     TermWord w -> case lookup w e.defs of
       Nothing -> throwM $ TypeErrorWordNotFound ?term w
       Just p -> pure p
-    TermLiteral l -> pure BProgType
-      { inp = []
-      , out =
-        [ case l of
-            LiteralInteger _ -> BTypeInteger
-            LiteralDouble _ -> BTypeDouble
-            LiteralString _ -> BTypeString
-        ]
-      }
+    TermLiteral l -> do
+      out <- typeOfLiteral l
+      pure BProgType
+        { inp = []
+        , out = [out]
+        }
     TermQuote p -> do
       ty <- typeOfProgram e p
       pure BProgType
@@ -129,7 +143,7 @@ typeOf e wt = do
         , out = [BTypeProgram ty]
         }
 
-initializeEnv :: Extractor m t -> Builtins m t v -> Env m t
+initializeEnv :: Extractor m t -> Builtins m t -> Env m t
 initializeEnv ext bs = Env
   { ext = ext
   , defs = (\(w, (_, p)) -> (w, p)) <$> Map.toList (bs Nothing)
