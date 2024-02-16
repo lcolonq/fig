@@ -153,15 +153,15 @@ runWord _ w vm | Just (b, _) <- Map.lookup w $ vm.builtins ?term = b vm
 runWord f w vm | Just p <- lookup w vm.bindings.defs = runProgram f p vm
 runWord _ w _ = throwM $ RuntimeErrorWordNotFound ?term w
 
-literalValue :: Syn.Literal -> ValueF t
+literalValue :: Syn.LiteralF t -> ValueF t
 literalValue (Syn.LiteralInteger i) = ValueInteger i
 literalValue (Syn.LiteralDouble i) = ValueDouble i
 literalValue (Syn.LiteralString i) = ValueString i
 literalValue (Syn.LiteralArray xs) = ValueArray $ literalValue <$> xs
+literalValue (Syn.LiteralQuote p) = ValueProgram p
 
 run :: Running m t => Syn.Extractor m t -> t -> VM m t -> m (VM m t)
 run f v vm =
   let ?term = Just v in f v >>= \case
     Syn.TermLiteral l -> push (literalValue l) <$> checkFuel vm
-    Syn.TermQuote p -> push (ValueProgram p) <$> checkFuel vm
     Syn.TermWord w -> runWord f w =<< checkFuel vm

@@ -86,7 +86,9 @@ unifyTypes subst = case completeSubstitution subst of
     | otherwise -> throwM $ TypeErrorMismatch ?term t0 t1 -- otherwise, mismatch
 
 combineProgTypes :: forall m t. Typing m t => BProgType -> BProgType -> m BProgType
-combineProgTypes f s = do
+combineProgTypes f s' = do
+  let fvars = typeVariables $ BTypeProgram f
+  let s = BProgType { inp = ensureUniqueVars fvars <$> s'.inp, out = ensureUniqueVars fvars <$> s'.out }
   subst <- unifyTypes $ zip f.out s.inp
   let finp = applySubstitution subst <$> f.inp
   let fout = applySubstitution subst <$> f.out
@@ -106,15 +108,16 @@ combineProgTypes f s = do
     , out = sout <> leftover
     }
 
-typeOfLiteral :: Typing m t => Literal -> m BType
-typeOfLiteral LiteralInteger{} = pure BTypeInteger
-typeOfLiteral LiteralDouble{} = pure BTypeDouble
-typeOfLiteral LiteralString{} = pure BTypeString
-typeOfLiteral (LiteralArray xs) = mapM typeOfLiteral xs >>= \case
+typeOfLiteral :: Typing m t => Env m t -> LiteralF t -> m BType
+typeOfLiteral _ LiteralInteger{} = pure BTypeInteger
+typeOfLiteral _ LiteralDouble{} = pure BTypeDouble
+typeOfLiteral _ LiteralString{} = pure BTypeString
+typeOfLiteral e (LiteralArray xs) = mapM (typeOfLiteral e) xs >>= \case
   [] -> pure $ BTypeArray (BTypeVariable "a")
   ts@(t:_)
     | length (Set.fromList ts) == 1 -> pure $ BTypeArray t
     | otherwise -> throwM $ TypeErrorMixedArray ?term
+typeOfLiteral e (LiteralQuote p) = BTypeProgram <$> typeOfProgram e p
 
 typeOfProgram :: Typing m t => Env m t -> ProgramF t -> m BProgType
 typeOfProgram e (Program p) = case p of
@@ -131,16 +134,10 @@ typeOf e wt = do
       Nothing -> throwM $ TypeErrorWordNotFound ?term w
       Just p -> pure p
     TermLiteral l -> do
-      out <- typeOfLiteral l
+      out <- typeOfLiteral e l
       pure BProgType
         { inp = []
         , out = [out]
-        }
-    TermQuote p -> do
-      ty <- typeOfProgram e p
-      pure BProgType
-        { inp = []
-        , out = [BTypeProgram ty]
         }
 
 initializeEnv :: Extractor m t -> Builtins m t -> Env m t

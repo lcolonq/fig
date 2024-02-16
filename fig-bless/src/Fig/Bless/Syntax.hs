@@ -2,7 +2,7 @@
 
 module Fig.Bless.Syntax
   ( Word(..)
-  , Literal(..)
+  , LiteralF(..)
   , ProgramF(..)
   , Program
   , TermF(..)
@@ -10,7 +10,7 @@ module Fig.Bless.Syntax
   , DictionaryF(..)
   , Dictionary
   , Extractor
-  , word, literal, termF, term, programF, program, dictionaryF, dictionary, P.eof
+  , word, literalF, termF, term, programF, program, dictionaryF, dictionary, P.eof
   , Spanning(..), unSpanning, spanning
   , ParseError(..)
   , parse
@@ -36,18 +36,20 @@ instance IsString Word where
 instance Pretty Word where
   pretty (Word t) = t
 
-data Literal
+data LiteralF t
   = LiteralInteger Integer
   | LiteralDouble Double
   | LiteralString Text
-  | LiteralArray [Literal]
-  deriving (Show, Eq, Ord, Generic)
-instance Aeson.ToJSON Literal
-instance Pretty Literal where
+  | LiteralArray [LiteralF t]
+  | LiteralQuote (ProgramF t)
+  deriving (Show, Eq, Ord, Generic, Functor)
+instance Aeson.ToJSON t => Aeson.ToJSON (LiteralF t)
+instance Pretty t => Pretty (LiteralF t) where
   pretty (LiteralInteger i) = tshow i
   pretty (LiteralDouble d) = tshow d
   pretty (LiteralString s) = tshow s
   pretty (LiteralArray xs) = "{" <> unwords (pretty <$> xs) <> "}"
+  pretty (LiteralQuote p) = pretty p
 
 newtype ProgramF t = Program [t]
   deriving (Show, Eq, Ord, Generic, Functor)
@@ -58,14 +60,12 @@ type Program = ProgramF (Fix TermF)
 
 data TermF t
   = TermWord Word
-  | TermLiteral Literal
-  | TermQuote (ProgramF t)
+  | TermLiteral (LiteralF t)
   deriving (Show, Eq, Ord, Generic, Functor)
 instance Aeson.ToJSON t => Aeson.ToJSON (TermF t)
 instance Pretty t => Pretty (TermF t) where
   pretty (TermWord w) = pretty w
   pretty (TermLiteral l) = pretty l
-  pretty (TermQuote p) = pretty p
 type Term = TermF (Fix TermF)
 
 newtype DictionaryF t = Dictionary
@@ -90,12 +90,12 @@ ws = P.C.L.space
   (P.C.L.skipBlockComment "/*" "*/")
 
 wordChar :: Char -> Bool
-wordChar c = not $ elem @[] c ['[', ']', '=', ';'] || isSpace c
+wordChar c = not $ elem @[] c ['[', ']', '{', '}', '=', ';'] || isSpace c
 word :: Parser Word
 word = Word . pack <$> P.some (P.satisfy wordChar)
 
-literal :: Parser Literal
-literal =
+literalF :: Parser t -> Parser (LiteralF t)
+literalF pt =
   P.try ( (LiteralDouble <$> P.C.L.signed (pure ()) P.C.L.float)
     P.<?> "floating-point literal"
   ) P.<|>
@@ -111,8 +111,11 @@ literal =
   ( (LiteralString . pack <$> (P.C.char '"' *> P.manyTill P.C.L.charLiteral (P.C.char '"')))
     P.<?> "string literal"
   ) P.<|>
-  ( (LiteralArray <$> (P.C.char '{' *> P.many (ws *> literal <* ws) <* P.C.char '}'))
+  ( (LiteralArray <$> (P.C.char '{' *> P.many (ws *> literalF pt <* ws) <* P.C.char '}'))
     P.<?> "array literal"
+  ) P.<|>
+  ( (LiteralQuote <$> (P.C.char '[' *> programF pt <* P.C.char ']'))
+    P.<?> "quotation"
   )
 
 programF :: Parser t -> Parser (ProgramF t)
@@ -123,9 +126,8 @@ program = programF $ Fix <$> term
 
 termF :: Parser t -> Parser (TermF t)
 termF pt =
-  ( P.try (TermLiteral <$> literal)
+  ( P.try (TermLiteral <$> literalF pt)
     P.<|> (TermWord <$> word)
-    P.<|> (TermQuote <$> (P.C.char '[' *> programF pt <* P.C.char ']'))
   ) P.<?> "term"
 
 term :: Parser Term

@@ -2,6 +2,8 @@ module Fig.Bless.Types where
 
 import Fig.Prelude
 
+import Prelude (error)
+
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 import Data.Set (Set)
@@ -23,8 +25,8 @@ instance Pretty BType where
   pretty BTypeInteger = "integer"
   pretty BTypeDouble = "double"
   pretty BTypeString = "string"
-  pretty (BTypeProgram p) = "(" <> pretty p <> ")"
-  pretty (BTypeArray p) = "Array<" <> pretty p <> ">"
+  pretty (BTypeProgram p) = "[" <> pretty p <> "]"
+  pretty (BTypeArray p) = "{" <> pretty p <> "}"
 
 data BProgType = BProgType
   { inp :: [BType]
@@ -43,6 +45,17 @@ renameVars f (BTypeProgram p) = BTypeProgram BProgType
   , out = renameVars f <$> p.out
   }
 renameVars _ x = x
+
+ensureUniqueVars :: Set Text -> BType -> BType
+ensureUniqueVars bad = renameVars \v -> if Set.member v bad
+  then do
+  let
+    names :: [Text]
+    names = fmap (pack . (:[])) ['a'..'z'] <> fmap (<>"'") names
+  case headMay $ filter (not . flip Set.member bad) names of
+    Nothing -> error "unreachable" -- this can't happen because names is an infinite list
+    Just x -> x
+  else v
 
 substitute :: Text -> BType -> BType -> BType
 substitute n v (BTypeVariable n') | n == n' = v
