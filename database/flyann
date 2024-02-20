@@ -1,1 +1,1 @@
-((:boost . 1) (:faction . lever))
+((:identity . "Jaylynn Portillo") (:rpg-character . #s(fig//rpg-character "flyann" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 3 #s(fig//rpg-ability-scores 15 6 12 17 13 14))) (:element . "heart") (:ancestor . #s(fig//ancestor nil "Blanchedalmondbeard" nil nil "flyann" "quartermaster" 1368 1429 "unknown")) (:boost . 2) (:faction . lever))

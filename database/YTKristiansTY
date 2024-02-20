@@ -1,1 +1,2 @@
-((:faction . nate))
+((:ancestor . #s(fig//ancestor nil "Slategraybeard" nil nil "YTKristiansTY" "stowaway" 1222 1280 "succumbed to scurvy on a long sea voyage.
+")) (:rpg-character . #s(fig//rpg-character "YTKristiansTY" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 1 #s(fig//rpg-ability-scores 15 14 14 12 11 13))) (:element . "heart") (:boost . 1) (:faction . nate))

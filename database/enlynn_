@@ -1,1 +1,1 @@
-((:faction . tony))
+((:identity . "Michaela Mcclain") (:rpg-character . #s(fig//rpg-character "enlynn_" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 3 #s(fig//rpg-ability-scores 6 9 15 12 8 11))) (:element . "earth") (:ancestor . #s(fig//ancestor nil "Lightsteelblue2beard" nil "Two-Hands" "enlynn_" "navigator" 1300 1301 "unknown")) (:faction . tony))

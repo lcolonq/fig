@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor nil "Koopook" nil nil "jordanleto" "socialite" 1772 1820 "succumbed to tuberculosis.
+")) (:rpg-character . #s(fig//rpg-character "jordanleto" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 1 #s(fig//rpg-ability-scores 13 15 16 15 15 18))) (:element . "heart") (:faction . tony))

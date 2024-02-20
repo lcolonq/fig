@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor nil "Kings" nil nil "That1Bread" "sculpture model" 1585 1594 "contracted a fatal illness.
+")) (:rpg-character . #s(fig//rpg-character "That1Bread" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 4 #s(fig//rpg-ability-scores 14 9 14 15 11 15))) (:element . "lightning") (:faction . lever))

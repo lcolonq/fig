@@ -1,1 +1,2 @@
-((:faction . lever) (:boost . 1))
+((:ancestor . #s(fig//ancestor nil "Navalpiranha" nil nil "SolarPoweredBard" "statue" 1426 1460 "struck by lightning during a storm.
+")) (:rpg-character . #s(fig//rpg-character "SolarPoweredBard" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 2 #s(fig//rpg-ability-scores 9 17 10 16 14 8))) (:element . "earth") (:faction . lever) (:boost . 1))

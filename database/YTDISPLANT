@@ -1,1 +1,1 @@
-((:faction . tony))
+((:rpg-character . #s(fig//rpg-character "YTDISPLANT" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 7 #s(fig//rpg-ability-scores 13 11 9 10 6 6))) (:identity . "Savanah Foster") (:element . "lightning") (:ancestor . #s(fig//ancestor nil "Whitebeard" nil nil "YTDISPLANT" "buccaneer" 1289 1349 "unknown")) (:faction . tony))

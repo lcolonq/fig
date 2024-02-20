@@ -1,1 +1,1 @@
-((:boost . -3) (:faction . nate))
+((:rpg-character . #s(fig//rpg-character "eientei95" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 2 #s(fig//rpg-ability-scores 18 11 10 13 11 12))) (:element . "lightning") (:ancestor . #s(fig//ancestor nil "Samusaran" nil "Divini" "eientei95" "executioner" 1559 1570 "unknown")) (:boost . -4) (:faction . nate))

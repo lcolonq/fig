@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor nil "Penguinking" nil nil "Ewo_On_Sight" "painter" 1608 1612 "accidentally ingested toxic paint pigments.
+")) (:rpg-character . #s(fig//rpg-character "Ewo_On_Sight" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 5 #s(fig//rpg-ability-scores 16 7 11 15 15 14))) (:identity . "Carleigh Alvarado") (:element . "wind") (:faction . tony))

@@ -1,1 +1,2 @@
-((:boost . -1) (:faction . nate))
+((:ancestor . #s(fig//ancestor nil "Hulu" nil nil "zombiechou" "alchemist" 1530 1563 "accidentally poisoned himself while experimenting with a new elixir.
+")) (:rpg-character . #s(fig//rpg-character "zombiechou" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 1 #s(fig//rpg-ability-scores 15 16 12 15 14 16))) (:identity . "Leila Preston") (:element . "lightning") (:boost . -1) (:faction . nate))

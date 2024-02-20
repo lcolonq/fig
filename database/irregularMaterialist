@@ -1,0 +1,2 @@
+((:identity . "Elsie Mendez") (:boost . 3) (:ancestor . #s(fig//ancestor "Baron" "Eoforheard" nil nil "irregularMaterialist" "baron" 1095 1172 "died of old age during a harsh winter.
+")) (:rpg-character . #s(fig//rpg-character "irregularMaterialist" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 1 #s(fig//rpg-ability-scores 17 16 12 15 16 16))) (:element . "fire") (:faction . lever))

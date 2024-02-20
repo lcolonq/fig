@@ -1,1 +1,2 @@
-((:note . 71) (:boost . 1))
+((:ancestor . #s(fig//ancestor nil "Gray75beard" nil "Hook" "cellophane11578" "shipwright" 1211 1249 "drowned after a ship he was repairing capsized during a storm.
+")) (:rpg-character . #s(fig//rpg-character "cellophane11578" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 4 #s(fig//rpg-ability-scores 15 9 13 7 11 10))) (:element . "water") (:faction . nate) (:note . 71) (:boost . 1))

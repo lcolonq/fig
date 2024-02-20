@@ -1,1 +1,2 @@
-((:faction . lever))
+((:identity . "Janelle Willis") (:boost . 0) (:ancestor . #s(fig//ancestor nil "Yellowtoadandbluetoadyellowtoad" nil nil "queen_leo_of_animals" "the first ever atheist" 1684 1771 "succumbed to pneumonia at the age of 87.
+")) (:rpg-character . #s(fig//rpg-character "queen_leo_of_animals" 1 #s(fig//rpg-class "Cleric" fig//rpg-ability-scores-wis 8 #s(fig//rpg-ability-scores 6 3 6 6 9 6) (2 . 3) #s(fig//rpg-saves 14 16 10 13 15)) 7 #s(fig//rpg-ability-scores 12 11 13 9 14 13))) (:element . "lightning") (:faction . lever))

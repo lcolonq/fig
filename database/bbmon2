@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor "Sir" "Coglass" nil nil "bbmon2" "big daddy" 1878 1883 "succumbed to diphtheria at age five.
+")) (:rpg-character . #s(fig//rpg-character "bbmon2" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 10 #s(fig//rpg-ability-scores 12 14 9 11 9 8))) (:identity . "Tia Alfaro") (:element . "lightning") (:faction . tony))

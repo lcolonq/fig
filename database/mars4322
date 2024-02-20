@@ -1,1 +1,1 @@
-((:faction . lever))
+((:rpg-character . #s(fig//rpg-character "mars4322" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 2 #s(fig//rpg-ability-scores 10 6 8 12 12 14))) (:element . "wind") (:ancestor . #s(fig//ancestor nil "Blizzardcharacterblizzard" nil nil "mars4322" "pope" 1424 1426 "unknown")) (:faction . lever))

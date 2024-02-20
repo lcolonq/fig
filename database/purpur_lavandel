@@ -1,1 +1,1 @@
-((:faction . lever) (:boost . 1))
+((:rpg-character . #s(fig//rpg-character "purpur_lavandel" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 3 #s(fig//rpg-ability-scores 11 10 13 15 12 17))) (:element . "earth") (:ancestor . #s(fig//ancestor nil "Magenta3beard" nil nil "purpur_lavandel" "stowaway" 1375 1463 "unknown")) (:faction . lever) (:boost . 1))

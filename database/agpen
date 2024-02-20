@@ -1,1 +1,1 @@
-((:faction . lever))
+((:identity . "Kamari Little") (:rpg-character . #s(fig//rpg-character "agpen" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 4 #s(fig//rpg-ability-scores 15 12 14 15 9 14))) (:element . "wind") (:ancestor . #s(fig//ancestor nil "Cadetblue3beard" nil nil "agpen" "privateer" 1303 1362 "unknown")) (:faction . lever))

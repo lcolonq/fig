@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor nil "Philip" nil "Neuland" "Chibiibot" "General and Operations Manager" 1929 1966 "suffered a fatal heart attack during a high-stress business negotiation.
+")) (:rpg-character . #s(fig//rpg-character "Chibiibot" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 1 #s(fig//rpg-ability-scores 9 12 13 12 7 15))) (:identity . "Khloe Estrada") (:element . "wind") (:faction . tony))

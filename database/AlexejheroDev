@@ -1,1 +1,2 @@
-((:faction . nate))
+((:ancestor . #s(fig//ancestor nil "Kaijumario" nil nil "AlexejheroDev" "the first ever atheist" 1500 1500 "succumbed to complications from a prevalent plague.
+")) (:rpg-character . #s(fig//rpg-character "AlexejheroDev" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 4 #s(fig//rpg-ability-scores 9 10 15 12 11 15))) (:identity . "Nylah Silva") (:element . "earth") (:faction . nate))

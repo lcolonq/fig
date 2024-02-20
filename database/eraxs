@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor nil "Indianredbeard" nil nil "eraxs" "shipwright" 1371 1430 "drowned in a shipyard accident.
+")) (:rpg-character . #s(fig//rpg-character "eraxs" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 2 #s(fig//rpg-ability-scores 5 11 13 10 8 10))) (:identity . "Paityn Mclaughlin") (:element . "earth") (:faction . nate))

@@ -1,1 +1,2 @@
-((:boost . 1) (:faction . lever))
+((:rpg-character . #s(fig//rpg-character "RoflrawrVT" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 1 #s(fig//rpg-ability-scores 13 11 12 15 8 7))) (:identity . "Anya Bean") (:element . "lightning") (:ancestor . #s(fig//ancestor nil "Minispek" nil nil "RoflrawrVT" "socialite" 1409 1457 "succumbed to a mysterious illness at a lavish masquerade ball.
+")) (:boost . 0) (:faction . lever))

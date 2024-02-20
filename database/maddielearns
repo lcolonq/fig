@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor "Duke" "Hunbeorht" nil nil "maddielearns" "duke" 1105 1140 "died in a jousting tournament accident.
+")) (:rpg-character . #s(fig//rpg-character "maddielearns" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 6 #s(fig//rpg-ability-scores 16 7 15 10 9 10))) (:identity . "Kaitlynn Perez") (:element . "wind") (:faction . tony))

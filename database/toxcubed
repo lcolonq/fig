@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor nil "Erniehudson" nil nil "toxcubed" "fence" 1619 1694 "succumbed to a sword wound during a duel.
+")) (:rpg-character . #s(fig//rpg-character "toxcubed" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 2 #s(fig//rpg-ability-scores 14 13 18 15 11 13))) (:identity . "Janiyah Brock") (:element . "lightning") (:faction . lever))

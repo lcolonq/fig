@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor nil "Wilfrith" nil "The Cruel" "P99Chan" "blacksmith" 1055 1138 "succumbed to severe burns after an accident at the forge.
+")) (:rpg-character . #s(fig//rpg-character "P99Chan" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 6 #s(fig//rpg-ability-scores 13 12 14 12 12 15))) (:identity . "Karen Clarke") (:element . "fire") (:faction . lever))

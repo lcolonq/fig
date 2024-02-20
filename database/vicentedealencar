@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor "Sir" "Brassdon" nil nil "vicentedealencar" "bellows enjoyer" 1834 1879 "succumbed to respiratory complications from constant inhalation of smelting fumes.
+")) (:rpg-character . #s(fig//rpg-character "vicentedealencar" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 2 #s(fig//rpg-ability-scores 11 13 13 10 8 13))) (:identity . "Mariam Page") (:element . "heart") (:faction . lever))

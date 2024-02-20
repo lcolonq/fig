@@ -110,6 +110,18 @@
         it)
       sp))))
 
+(defun fig//insert-7tv-emote (nm)
+  "Insert a 7TV emote with NM in the current buffer."
+  (when-let* ((eid (fig//get-7tv-emote nm))
+              (path (fig//7tv-emote-path eid))
+              (img (create-image path)))
+    (insert
+     (propertize
+      nm
+      'display
+      img
+      'rear-nonsticky t))))
+
 (defun fig//process-emote-range (er msg)
   "Given a string ER of form emoteid:start-end, add the emote MSG."
   (if (string-empty-p er)

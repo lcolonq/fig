@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor nil "Genieofthelamp" nil nil "nafnaf2" "alchemist" 1445 1509 "succumbed to mercury poisoning from his alchemical experiments.
+")) (:rpg-character . #s(fig//rpg-character "nafnaf2" 1 #s(fig//rpg-class "Cleric" fig//rpg-ability-scores-wis 8 #s(fig//rpg-ability-scores 6 3 6 6 9 6) (2 . 3) #s(fig//rpg-saves 14 16 10 13 15)) 8 #s(fig//rpg-ability-scores 15 11 14 12 18 14))) (:identity . "Kenna Costa") (:element . "heart") (:faction . tony))

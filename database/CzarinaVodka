@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor nil "Gray23beard" nil nil "CzarinaVodka" "freebooter" 1368 1430 "succumbed to gangrene from an infected saber wound.
+")) (:rpg-character . #s(fig//rpg-character "CzarinaVodka" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 1 #s(fig//rpg-ability-scores 16 9 14 12 8 13))) (:element . "heart") (:faction . nate))

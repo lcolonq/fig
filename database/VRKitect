@@ -1,1 +1,1 @@
-((:faction . tony))
+((:boost . -1) (:rpg-character . #s(fig//rpg-character "VRKitect" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 1 #s(fig//rpg-ability-scores 11 11 10 17 7 6))) (:identity . "Logan Vaughn") (:element . "water") (:ancestor . #s(fig//ancestor nil "Minmin" nil nil "VRKitect" "guy who paints himself silver and wears a tophat" 1698 1745 "unknown")) (:faction . tony))

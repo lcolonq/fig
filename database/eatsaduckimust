@@ -1,1 +1,2 @@
-((:boost . 1) (:faction . lever))
+((:ancestor . #s(fig//ancestor nil "Drybowser" nil nil "eatsaduckimust" "statue polisher" 1695 1751 "slipped from a cathedral's spire while polishing a gargoyle.
+")) (:rpg-character . #s(fig//rpg-character "eatsaduckimust" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 8 #s(fig//rpg-ability-scores 17 15 15 10 11 18))) (:identity . "Jordin Buchanan") (:element . "water") (:boost . 1) (:faction . lever))

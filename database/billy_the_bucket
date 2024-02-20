@@ -1,1 +1,1 @@
-((:faction . lever))
+((:rpg-character . #s(fig//rpg-character "billy_the_bucket" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 1 #s(fig//rpg-ability-scores 12 10 14 16 12 7))) (:identity . "Libby Wyatt") (:element . "earth") (:ancestor . #s(fig//ancestor nil "Catbat" nil nil "billy_the_bucket" "fake wizard" 1739 1794 "unknown")) (:faction . lever))

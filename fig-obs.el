@@ -16,6 +16,7 @@
 (defvar fig//obs-intj-timer nil "Time to display INTJ stare.")
 (defvar fig//obs-forsen-timer nil "Time to display Forsen.")
 (defvar fig//obs-crit-timer nil "Time to display critical hit.")
+(defvar fig//obs-dreams-timer nil "Time to display Chasing Dreams message.")
 
 (defun fig//obs-log-modclonk-message ()
   "Record that MODCLONK sent a message."
@@ -74,6 +75,13 @@ MSG is displayed above the red arrow."
     (fig//toggle-clickbait msg))
   (setf fig//obs-clickbait-timer 31))
 
+(defun fig/chase-dreams ()
+  "Enable the Chasing Dreams message for some time."
+  (interactive)
+  (unless fig//obs-dreams-timer
+    (fig//toggle-chase-dreams))
+  (setf fig//obs-dreams-timer 31))
+
 (defun fig//toggle-live-reaction ()
   "Toggle the Live LCOLONQ Reaction panel."
   (fig/pub '(monitor obs toggle) (list "Live LCOLONQ Reaction" "Live Reaction")))
@@ -125,6 +133,10 @@ Optionally, change text to MSG."
     (fig//set-clickbait-text msg))
   (fig/pub '(monitor obs toggle) (list "Red Arrow" "Red Arrow Group")))
 
+(defun fig//toggle-chase-dreams ()
+  "Toggle the Chasing Dreams effect."
+  (fig/pub '(monitor obs toggle) (list "Chasing Dreams" "Dreams")))
+
 (defun fig//handle-obs ()
   "Run OBS actions."
   (when fig//obs-modclonk-timer
@@ -162,6 +174,11 @@ Optionally, change text to MSG."
     (when (<= fig//obs-crit-timer 0)
       (setf fig//obs-crit-timer nil)
       (fig//toggle-critical-hit)))
+  (when fig//obs-dreams-timer
+    (cl-decf fig//obs-dreams-timer)
+    (when (<= fig//obs-dreams-timer 0)
+      (setf fig//obs-dreams-timer nil)
+      (fig//toggle-chase-dreams)))
   (when fig//obs-clickbait-timer
     (cl-decf fig//obs-clickbait-timer)
     (when (<= fig//obs-clickbait-timer 0)

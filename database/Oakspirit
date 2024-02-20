@@ -1,1 +1,2 @@
-((:faction . tony))
+((:ancestor . #s(fig//ancestor "Sir" "Cogwald" nil nil "Oakspirit" "big daddy" 1852 1868 "succumbed to a factory accident while working.
+")) (:rpg-character . #s(fig//rpg-character "Oakspirit" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 3 #s(fig//rpg-ability-scores 13 14 10 14 14 13))) (:element . "heart") (:faction . tony))

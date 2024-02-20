@@ -1,1 +1,1 @@
-((:faction . tony) (:boost . 9))
+((:rpg-character . #s(fig//rpg-character "SinFormaVX" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 7 #s(fig//rpg-ability-scores 15 11 13 13 9 8))) (:identity . "Cynthia Elliott") (:element . "earth") (:ancestor . #s(fig//ancestor nil "Ceolmund" nil nil "SinFormaVX" "fletcher" 1034 1039 "unknown")) (:faction . tony) (:boost . 9))

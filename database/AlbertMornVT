@@ -1,1 +1,2 @@
-((:faction . nate))
+((:ancestor . #s(fig//ancestor nil "Goosey" nil nil "AlbertMornVT" "sculpture model" 1490 1524 "succumbed to pneumonia.
+")) (:rpg-character . #s(fig//rpg-character "AlbertMornVT" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 1 #s(fig//rpg-ability-scores 13 7 13 17 13 12))) (:element . "water") (:faction . nate))

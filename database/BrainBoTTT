@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor "Viscount" "Ælfgifu" nil nil "BrainBoTTT" "viscount" 1092 1175 "succumbed to the bubonic plague.
+")) (:rpg-character . #s(fig//rpg-character "BrainBoTTT" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 2 #s(fig//rpg-ability-scores 13 12 15 9 11 17))) (:identity . "Marie Gonzalez") (:element . "heart") (:faction . nate))

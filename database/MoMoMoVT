@@ -1,1 +1,1 @@
-((:faction . tony) (:note . 67) (:boost . 4))
+((:identity . "Desiree Wade") (:rpg-character . #s(fig//rpg-character "MoMoMoVT" 1 #s(fig//rpg-class "Cleric" fig//rpg-ability-scores-wis 8 #s(fig//rpg-ability-scores 6 3 6 6 9 6) (2 . 3) #s(fig//rpg-saves 14 16 10 13 15)) 1 #s(fig//rpg-ability-scores 10 13 15 7 15 11))) (:element . "heart") (:ancestor . #s(fig//ancestor nil "Henry" nil nil "MoMoMoVT" "Maintenance and Repair Worker, General" 1998 2026 "unknown")) (:faction . tony) (:note . 67) (:boost . 3))

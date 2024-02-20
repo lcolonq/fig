@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor "Sir" "Etheron" nil nil "octorinski" "witch hunter" 1865 1922 "was struck by lightning during a thunderstorm while pursuing a suspected witch.
+")) (:rpg-character . #s(fig//rpg-character "octorinski" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 5 #s(fig//rpg-ability-scores 17 12 10 12 15 12))) (:identity . "Esperanza Greer") (:element . "wind") (:faction . tony) (:boost . 8))

@@ -1,1 +1,2 @@
-((:faction . lever) (:boost . 1))
+((:identity . "Aniya Cano") (:ancestor . #s(fig//ancestor "Duchess" "Eastmund" nil nil "Infernoid" "duchess" 1033 1129 "succumbed to natural causes at an advanced age
+")) (:rpg-character . #s(fig//rpg-character "Infernoid" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 2 #s(fig//rpg-ability-scores 18 9 10 15 6 10))) (:element . "heart") (:faction . lever) (:boost . 1))

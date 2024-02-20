@@ -1,1 +1,1 @@
-((:boost . 2) (:faction . tony))
+((:identity . "Sara Frye") (:resolution . "Do al least 1 24hr stream every month") (:rpg-character . #s(fig//rpg-character "DoctorGlitchy" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 1 #s(fig//rpg-ability-scores 10 11 11 13 8 10))) (:element . "water") (:ancestor . #s(fig//ancestor nil "Foxfoxmccloud" nil nil "DoctorGlitchy" "painting hanger" 1500 1579 "unknown")) (:boost . 2) (:faction . tony))

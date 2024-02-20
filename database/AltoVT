@@ -1,1 +1,1 @@
-((:faction . lever) (:note . 62) (:boost . 39))
+((:identity . "Campbell Phelps") (:rpg-character . #s(fig//rpg-character "AltoVT" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 4 #s(fig//rpg-ability-scores 16 13 9 11 13 15))) (:equity . 1) (:element . "heart") (:ancestor . #s(fig//ancestor nil "Fri\303\260uswi\303\276" nil nil "AltoVT" "peasant" 1175 1199 "unknown")) (:faction . lever) (:note . 62) (:boost . 62))

@@ -1,1 +1,2 @@
-((:faction . lever) (:boost . 19))
+((:identity . "Myla Crane") (:ancestor . #s(fig//ancestor nil "Littlemousercharacterlittlemouser" nil nil "theUnseenMystic" "pope" 1523 1603 "died of natural causes related to old age.
+")) (:rpg-character . #s(fig//rpg-character "theUnseenMystic" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 3 #s(fig//rpg-ability-scores 11 11 14 15 11 14))) (:element . "lightning") (:faction . lever) (:boost . 19))

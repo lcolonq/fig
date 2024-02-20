@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor nil "Edward" nil nil "WhooshTV" "Market Research Analysts and Marketing Specialist" 1972 1983 "suffered a fatal allergic reaction to a bee sting while on a field survey.
+")) (:rpg-character . #s(fig//rpg-character "WhooshTV" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 1 #s(fig//rpg-ability-scores 16 17 13 16 9 9))) (:element . "heart") (:faction . lever))

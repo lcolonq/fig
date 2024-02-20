@@ -1,1 +1,1 @@
-((:faction . tony) (:boost . 16))
+((:identity . "Isla Mccormick") (:rpg-character . #s(fig//rpg-character "DanteDaedalusCh" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 1 #s(fig//rpg-ability-scores 12 11 12 10 11 16))) (:element . "earth") (:ancestor . #s(fig//ancestor "Baron" "Glædwine" nil nil "DanteDaedalusCh" "baron" 1015 1058 "unknown")) (:faction . tony) (:boost . 26))

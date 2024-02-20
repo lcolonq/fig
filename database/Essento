@@ -1,1 +1,2 @@
-((:boost . 9) (:faction . nate))
+((:ancestor . #s(fig//ancestor nil "Gray85beard" nil nil "Essento" "Thief, Ocean" 1274 1372 "drowned during a treacherous midnight swim to escape pursuit after a heist at sea.
+")) (:rpg-character . #s(fig//rpg-character "Essento" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 8 #s(fig//rpg-ability-scores 17 16 14 14 15 11))) (:identity . "Mckenna Tapia") (:element . "earth") (:boost . 18) (:faction . nate))

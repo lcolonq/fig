@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor nil "Cosmicmariocosmicluigi" nil nil "Fixertin" "actor" 1594 1665 "died from a severe infection following a stage injury.
+")) (:rpg-character . #s(fig//rpg-character "Fixertin" 1 #s(fig//rpg-class "Cleric" fig//rpg-ability-scores-wis 8 #s(fig//rpg-ability-scores 6 3 6 6 9 6) (2 . 3) #s(fig//rpg-saves 14 16 10 13 15)) 8 #s(fig//rpg-ability-scores 15 16 6 12 17 11))) (:identity . "Britney Fletcher") (:element . "water") (:faction . tony))

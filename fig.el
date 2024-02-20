@@ -5,50 +5,10 @@
 (require 'dash)
 (require 's)
 
-(defgroup fig nil
-  "Pub/sub bus client."
-  :group 'applications)
-
-(defcustom fig/network-buffer " *fig-network*"
-  "Name of buffer used to store intermediate network data."
-  :type '(string)
-  :group 'fig)
-
-(defcustom fig/log-buffer "*fig-log*"
-  "Name of buffer used to store the log."
-  :type '(string)
-  :group 'fig)
-
 (defcustom fig/twitch-chat-buffer "*fig-chat*"
   "Name of buffer used to store the chat log."
   :type '(string)
   :group 'fig)
-
-(defvar fig/quotes nil)
-(defun fig//save-quotes ()
-  "Save the quotes database."
-  (fig//save-db "__QUOTES__" fig/quotes))
-(defun fig//load-quotes ()
-  "Load the quotes database."
-  (setf fig/quotes (fig//load-db "__QUOTES__")))
-(defun fig//add-quote (user q)
-  "Add quote Q from USER."
-  (add-to-list 'fig/quotes (cons q user))
-  (fig//save-quotes))
-(fig//load-quotes)
-
-(defvar fig/recommended-books nil)
-(defun fig//save-recommended-books ()
-  "Save the quotes database."
-  (fig//save-db "__BOOKS__" fig/recommended-books))
-(defun fig//load-recommended-books ()
-  "Load the quotes database."
-  (setf fig/recommended-books (fig//load-db "__BOOKS__")))
-(defun fig//add-recommended-book (user b)
-  "Add book B from USER."
-  (add-to-list 'fig/recommended-books (cons b user))
-  (fig//save-recommended-books))
-(fig//load-recommended-books)
 
 (defvar fig//assess-chat-spirituality t
   "Whether or not to print Bible word summary in chat messages.")
@@ -59,11 +19,7 @@
 (defvar fig//current-prediction-ids nil
   "Prediction and outcome identifiers for the current prediction.")
 
-;; (defconst fig/host "shiro")
-(defconst fig/host "localhost")
-(defconst fig/port 32050)
-
-(defconst fig//event-handlers
+(setq fig//event-handlers
   (list
    ;; (cons '(bald stat total)
    ;;       (lambda (msg)
@@ -108,6 +64,7 @@
    (cons '(monitor twitch follow)
          (lambda (msg)
            (let ((user (car msg)))
+             (fig//bless-hook "follow" (list user))
              (soundboard//play-clip "firstblood.mp3")
              (fig//model-region-word "skin" (format "welcome_%s_" user))
              (fig//friend-respond (format "%s just followed the stream" user))
@@ -162,12 +119,23 @@
                (buffer-string))))))
    (cons "!nc" (lambda (_ _) (fig//twitch-say "try: \"nc colonq.computer 31340\", if nc doesn't work try ncat or telnet")))
    (cons "!oomfie" (lambda (_ _) (fig//twitch-say "hi!!!!!!!")))
-   (cons "!forth" (lambda (_ _) (fig//twitch-say "https://gforth.org")))
+   (cons "!pronunciation" (lambda (_ _) (fig//twitch-say (fig//pronuciation))))
+   ;; (cons "!jetsWave" (lambda (_ _) (fig//twitch-say (fig/slurp "jetsWave.txt"))))
+   (cons "!forth" (lambda (_ _) (fig//twitch-say "https://github.com/lcolonq/giving")))
+   (cons "!oub" (lambda (_ _) (fig//twitch-say "https://oub.colonq.computer")))
    (cons "!game" (lambda (_ _) (fig//twitch-say "https://oub.colonq.computer")))
+   (cons "!pubnix" (lambda (_ _) (fig//twitch-say "https://pub.colonq.computer")))
+   (cons "!ring" (lambda (_ _) (fig//twitch-say "https://pub.colonq.computer")))
    (cons "!webring" (lambda (_ _) (fig//twitch-say "https://pub.colonq.computer")))
+   (cons "!animeguide" (lambda (_ _) (fig//twitch-say "https://nixos-and-flakes.thiscute.world/introduction")))
+   (cons "!bells" (lambda (_ _) (fig//twitch-say "https://pub.colonq.computer/~bezelea/bells/ and https://pub.colonq.computer/~prod/toy/dbkai/")))
    (cons "!faction"
          (lambda (user _)
            (fig//twitch-say (format "faction for %s: %s" user (fig//get-chatter-faction user)))))
+   (cons "!thanks" (lambda (user _) (fig//twitch-say (format "thank you %s!" user))))
+   (cons "!namesake"
+         (lambda (user _)
+           (fig//twitch-say (s-replace "\n" ", " (s-trim (fig//describe-ancestor (fig//get-chatter-ancestor user)))))))
    (cons "!lore"
          (lambda (_ _)
            (fig/ask
@@ -197,6 +165,13 @@
          (lambda (_ _)
            (let ((choice (nth (random (length fig/recommended-books)) fig/recommended-books)))
              (fig//twitch-say (format "%s (recommended by %s)" (car choice) (cdr choice))))))
+   (cons "!8ball"
+         (lambda (user inp)
+           (let ((trimmed (s-trim (s-replace "!8ball" "" inp))))
+             (fig//8ball
+              trimmed
+              (lambda (answer)
+                (fig//twitch-say (format "@%s 8ball says: %s" user answer)))))))
    (cons "!addbookrec"
          (lambda (user inp)
            (let ((trimmed (s-trim (s-replace "!addbookrec" "" inp))))
@@ -211,14 +186,25 @@
            (let ((trimmed (s-trim (s-replace "!addquote" "" inp))))
              (fig//write-chat-event (format "%s saves quote: %s" user trimmed))
              (fig//add-quote user trimmed))))
+   (cons "!resolution"
+         (lambda (user inp)
+           (let ((trimmed (s-trim (s-replace "!resolution" "" inp))))
+             (if (string-empty-p trimmed)
+                 (fig//write-chat-event "You gotta put what your resolution is.")
+               (fig//write-chat-event (format "%s RESOLVES: %s" (s-upcase user) trimmed))
+               (fig//set-db-entry user :resolution trimmed)))))
    (cons "!twitter"
          (lambda (_ _)
            (fig/ask "How do you feel about Twitter? Should viewers follow LCOLONQ on Twitter?" #'fig/say)
            (fig//twitch-say "https://twitter.com/LCOLONQ")))
+   (cons "heart" (lambda (_ _) (fig/increment-heartrate-counter)))
+   (cons "bpm" (lambda (_ _) (fig/increment-heartrate-counter)))
+   (cons "BPM" (lambda (_ _) (fig/increment-heartrate-counter)))
    (cons "discord" (lambda (_ _) (fig//twitch-say "https://discord.gg/f4JTbgN7St")))
    (cons "Discord" (lambda (_ _) (fig//twitch-say "https://discord.gg/f4JTbgN7St")))
    (cons "!irc" (lambda (_ _) (fig//twitch-say "#cyberspace on IRC at colonq.computer:26697 (over TLS)")))
    (cons "IRC" (lambda (_ _) (fig//twitch-say "#cyberspace on IRC at colonq.computer:26697 (over TLS)")))
+   ;; (cons "!aoc" (lambda (_ _) (fig//twitch-say "Join our leaderboard: 3307583-b61f237c")))
    (cons "!sponsor" (lambda (_ _) (fig//twitch-say "Like what you see? Don't forget to download GNU Emacs at https://www.gnu.org/software/emacs/?code=LCOLONQ")))
    (cons "!specs" (lambda (_ _) (fig//twitch-say "Editor: evil-mode, WM: EXWM, OS: NixOS, hardware: shit laptop")))
    (cons "!coverage" (lambda (_ _) (fig//twitch-say (s-concat "Test coverage: " (number-to-string (random 100)) "%"))))
@@ -229,8 +215,10 @@
    (cons "!throne" (lambda (_ _) (fig//twitch-say "xdding")))
    (cons "!vim" (lambda (_ _) (fig//twitch-say "vi is the best text editor, emacs is the best operating system")))
    (cons "!emacs" (lambda (_ _) (fig//twitch-say "i've tried everything else emacs is best girl")))
-   (cons "!fish" (lambda (_ _) (fig//twitch-say "Not even a nibble...")))
-   (cons "!roll" (lambda (user _) (fig//twitch-say (fig//character-to-string (fig//roll-character user)))))
+   (cons "!fish"
+         (lambda (_ _)
+           (fig//twitch-say (shell-command-to-string "fishing"))))
+   ;; (cons "!roll" (lambda (user _) (fig//twitch-say (fig//character-to-string (fig//roll-character user)))))
    (cons
     "!leaderboard"
     (lambda (_ _)
@@ -253,14 +241,14 @@
       (let ((vipperstring (s-join ", " (fig//shuffle-seq fig//twitch-vip-list))))
         (fig//twitch-say (seq-take vipperstring 450)))
       (fig//twitch-get-vip-list)))
-   (cons "!levelup"
-         (lambda (user _)
-           (fig//update-db-character
-            user
-            (lambda (c)
-              (cl-incf (fig//rpg-character-level c))
-              c))
-           (fig//twitch-say (fig//character-to-string (fig//get-db-character user)))))
+   ;; (cons "!levelup"
+   ;;       (lambda (user _)
+   ;;         (fig//update-db-character
+   ;;          user
+   ;;          (lambda (c)
+   ;;            (cl-incf (fig//rpg-character-level c))
+   ;;            c))
+   ;;         (fig//twitch-say (fig//character-to-string (fig//get-db-character user)))))
    ))
 
 (defvar fig//current-strength 0
@@ -278,6 +266,10 @@
          (lambda (user _)
            (fig//write-chat-event (format "%s established mental clarity" user))
            (fig/mental-clarity)))
+   (cons "theme: maris-dark"
+         (lambda (user _)
+           (fig//write-chat-event (format "%s changed the theme: maris-dark" user))
+           (fig//change-theme 'ef-maris-dark)))
    (cons "theme: autumn"
          (lambda (user _)
            (fig//write-chat-event (format "%s changed the theme: autumn" user))
@@ -349,17 +341,60 @@
            (fig//bj-stand)))
    (cons "run program"
          (lambda (user prog)
-           (fig//write-chat-event (s-concat user " runs program: " prog))
-           (when (eq 'out-of-fuel (fig/bless-run (fig/bless prog)))
-             (fig//write-chat-event (s-concat user " ran out of fuel")))))
+           (if (fig//user-authorized user)
+               (progn
+                 (fig//write-chat-event (s-concat user " runs program: " prog))
+                 (fig/bless-eval
+                  prog
+                  (lambda (x)
+                    (-each (cdr x) #'fig/bless-apply-effect)
+                    )
+                  50))
+             (fig//write-chat-event (format "%s is not authorized to run code" user)))))
+   (cons "add hook"
+         (lambda (user inp)
+           (if (fig//user-authorized user)
+               (when-let*
+                   ((space-pos (string-search " " inp))
+                    (h (s-trim (substring inp 0 space-pos)))
+                    (prog (s-trim (substring inp space-pos))))
+                 (fig//write-chat-event (format "%s adds hook %s: %s" user h prog))
+                 (fig//add-bless-hook h prog))
+             (fig//write-chat-event (format "%s is not authorized to run code" user)))))
    (cons "feed friend"
          (lambda (user inp)
            (fig//write-chat-event (s-concat user " feeds \"friend\" " inp))
            (fig//friend-feed user inp)))
+   (cons "give friend gift"
+         (lambda (user inp)
+           (if-let ((boosts (fig//load-db-entry user :boost))
+                    ((> boosts 0)))
+               (progn
+                 (fig//write-chat-event (s-concat user " gives \"friend\" a Christmas present: " inp))
+                 (fig//friend-gift user inp)
+                 (fig//set-db-entry user :boost (- boosts 1)))
+             (fig//write-chat-event (s-concat user " doesn't have enough boosts to give one to \"friend\"")))))
+   (cons "tfig dneirf evig"
+         (lambda (user inp)
+           (if-let ((boosts (fig//load-db-entry user :boost))
+                    ((< boosts 0)))
+               (progn
+                 (fig//write-chat-event (reverse (s-concat user " gives \"friend\" a Christmas present: " inp)))
+                 (fig//friend-tfig user inp)
+                 (fig//set-db-entry user :boost (+ boosts 1)))
+             (fig//write-chat-event (reverse (s-concat user " doesn't have enough boosts to give one to \"friend\""))))))
    (cons "talk to friend"
          (lambda (user inp)
            (fig//write-chat-event (s-concat user " talks to \"friend\": " inp))
            (fig//friend-chat user inp)))
+   (cons "show friend wikipedia page"
+         (lambda (user inp)
+           (fig//write-chat-event (s-concat user " shows \"friend\" a Wikipedia page: " inp))
+           (fig//friend-react-wikipedia user inp)))
+   (cons "friend composes song"
+         (lambda (user inp)
+           (fig//write-chat-event (s-concat user " asks \"friend\" to compose a song about: " inp))
+           (fig//friend-compose-song inp)))
    (cons "BOOST"
          (lambda (user _)
            (soundboard//play-clip "yougotboostpower.ogg")
@@ -385,12 +420,19 @@
    (cons "pursue idol dream"
          (lambda (user _)
            (fig//write-chat-event (format "Helping %s pursue their idol dream~" user))
+           (fig/chase-dreams)
            (fig//model-region-user-avatar "hair" user)))
    (cons "bells of bezelea"
          (lambda (user msg)
-           (when (< (length msg) 256)
-             (fig//write-chat-event (format "%s played the bells (sponsored by Bezelea)" user))
-             (muzak-play-notes msg))))
+           (muzak//get-song
+            msg
+            (lambda (song)
+              (if song
+                  (progn
+                    (fig//write-chat-event (format "%s played a song: %s (sponsored by Bezelea)" user msg))
+                    (muzak/play-song msg))
+                (fig//write-chat-event (format "%s played the bells (sponsored by Bezelea)" user))
+                (muzak/play-tracks msg))))))
    (cons "switch faction: nate"
          (lambda (user _)
            (fig//write-chat-event (format "%s switched faction to: nate" user))
@@ -431,6 +473,7 @@
          (lambda (user _)
            (fig//write-chat-event (s-concat user " quickscoped me"))
            (soundboard//play-clip "videogame.ogg")
+           ;; (soundboard//play-clip "jazz1.ogg")
            (fig/thug-life)))
    (cons "INTJ stare"
          (lambda (user _)
@@ -443,7 +486,9 @@
    (cons "super idol"
          (lambda (_ _)
            (fig//twitch-say "SuperIdoldexiaorongdoumeinidetianbayuezhengwudeyangguangdoumeiniyaoyanreai105Cdenididiqingchundezhen")
-           (soundboard//play-clip "superidol.mp3")))
+           (soundboard//play-clip "superidol.mp3")
+           ;; (soundboard//play-clip "jazz2.ogg")
+           ))
    (cons "SEASICKNESS GENERATOR" (lambda (_ _) (fig//model-toggle "zoom_wave")))
    (cons "change the letters"
          (lambda (user inp)
@@ -468,6 +513,7 @@
    (cons "palette swap (hair)" (fig//handle-redeem-region-swap "hair"))
    (cons "palette swap (highlight)" (fig//handle-redeem-region-swap "highlight"))
    (cons "palette swap (eyes)" (fig//handle-redeem-region-swap "eyes"))
+   (cons "palette swap (hat)" (fig//handle-redeem-region-swap "hat"))
    ;; (cons "breed"
    ;;       (lambda (user inp)
    ;;         (fig//write-chat-event (s-concat user " asks to breed: " inp))
@@ -507,7 +553,9 @@
            (fig//twitch-get-vip-list)))
    (cons "crown a king and/or queen"
          (lambda (user inp)
-           (soundboard//play-clip "girlfriend.ogg")
+           ;; (soundboard//play-clip "girlfriend.ogg")
+           (soundboard//play-clip "aeiou.ogg")
+           ;; (soundboard//play-clip "jazz3.ogg")
            (fig//write-chat-event (s-concat user " VIPed " inp))
            (when (>= (length fig//twitch-vip-list) 49)
              (fig//remove-random-vip))
@@ -522,28 +570,40 @@
 (defvar-keymap fig/chat-mode-map
   :suppress t
   "C-l" #'fig//clear-chat
+  ;; "<mouse-movement>" #'fig/chat-handle-mouse
   )
+(defun fig/open-link ()
+  "Open URL in the primary stream window."
+  (interactive)
+  (when-let ((url (thing-at-point 'url t)))
+    (select-window (colonq/get-stream-primary-window))
+    (browse-url url)))
+(evil-define-key 'motion fig/chat-mode-map (kbd "<return>") #'fig/open-link)
+(defun fig//prevent-focus-frame (e)
+  "Prevent focus from reaching popup frame E."
+  (not (frame-parameter (cadr e) 'fig-prevent-focus)))
 (define-derived-mode fig/chat-mode special-mode "Twitch Chat"
   "Major mode for displaying Twitch chat."
   :group 'fig
+  (add-hook 'post-command-hook #'fig//handle-clonkhead-io nil t)
+  (advice-add 'handle-switch-frame :before-while #'fig//prevent-focus-frame)
+  ;; (setq-local track-mouse t)
   (setq-local window-point-insertion-type t)
-  (setq-local header-line-format '(:eval fig//chat-header-line)))
-
-(defun fig//shuffle-seq (s)
-  "Shuffle S."
-  (if (seq-empty-p s)
-      nil
-    (let ((elt (seq-elt s (random (seq-length s)))))
-      (cons elt (fig//shuffle-seq (remove elt s))))))
-
-(defun fig//write (text &optional face)
-  "Write TEXT to the current buffer and apply FACE."
-  (let ((text-final (if face (propertize text 'face face) text)))
-    (insert text-final)))
-
-(defun fig//write-line (line &optional face)
-  "Write LINE and a newline to the current buffer and apply FACE."
-  (fig//write (concat line "\n") face))
+  (cond
+   ((s-equals? "*fig-good*" (buffer-name)) (setq-local header-line-format "                         😇"))
+   ((s-equals? "*fig-evil" (buffer-name)) (setq-local header-line-format "                         😈"))
+   (t (setq-local header-line-format '(:eval fig//chat-header-line)))))
+(defun fig/chat-handle-mouse (event)
+  "Handle a mouse movement EVENT in Twitch chat."
+  (interactive "e")
+  (when-let*
+      ((e (cadr event))
+       (point (posn-point e))
+       (same-win (eq (selected-window) (posn-window e))))
+    (with-current-buffer (fig//get-twitch-chat-buffer)
+      (fig//update-clonkhead-io
+       (get-text-property point 'fig-user)
+       (window-absolute-pixel-position point)))))
 
 (defun fig//decode-string (s)
   "Decode the base64 UTF-8 string S."
@@ -553,25 +613,14 @@
   "Decode the base64 UTF-8 string S."
   (base64-encode-string (encode-coding-string s 'utf-8) t))
 
-(defun fig//clean-string (s)
-  "Remove special characters from S."
-  ;; (replace-regexp-in-string "[^[:ascii:]^[:print:]]" "" s)
-  (replace-regexp-in-string "[^[:print:]]" "" s)
-  )
-
-(defun fig//write-log (line &optional face)
-  "Write LINE to the log buffer and apply FACE."
-  (with-current-buffer (get-buffer-create fig/log-buffer)
-    (goto-char (point-max))
-    (fig//write-line (fig//clean-string (format "%s" line)) face)
-    (goto-char (point-max))))
-
-(defun fig//get-twitch-chat-buffer ()
-  "Return the Twitch chat buffer."
-  (unless (get-buffer fig/twitch-chat-buffer)
-    (with-current-buffer (get-buffer-create fig/twitch-chat-buffer)
-      (fig/chat-mode)))
-  (get-buffer fig/twitch-chat-buffer))
+(defun fig//get-twitch-chat-buffer (&optional nm)
+  "Return the Twitch chat buffer.
+Optionally, return the buffer NM in Twitch chat mode."
+  (let ((bufnm (or nm fig/twitch-chat-buffer)))
+    (unless (get-buffer bufnm)
+      (with-current-buffer (get-buffer-create bufnm)
+        (fig/chat-mode)))
+    (get-buffer bufnm)))
 
 (defun fig//add-vip (user)
   "Give VIP status to USER."
@@ -586,6 +635,25 @@
   (let ((user (nth (random (length fig//twitch-vip-list)) fig//twitch-vip-list)))
     (fig//write-chat-event (format "Removing VIP randomly from: %s" user))
     (fig/pub '(monitor twitch vip remove) (list user))))
+
+(defun fig//shoutout (user)
+  "Shoutout USER."
+  (fig/pub '(monitor twitch shoutout) (list user)))
+(defvar fig//shoutout-queue nil)
+(defun fig//enqueue-shoutout (user)
+  "Queue up a shoutout for USER."
+  (push user fig//shoutout-queue))
+(defvar fig//shoutout-timer nil)
+(defun fig//run-shoutout-timer ()
+  "Run the shoutout timer."
+  (when fig//shoutout-timer
+    (cancel-timer fig//shoutout-timer))
+  (when-let ((user (pop fig//shoutout-queue)))
+    (fig//shoutout user))
+  (setq
+   fig//shoutout-timer
+   (run-with-timer 150 nil #'fig//run-shoutout-timer)))
+(fig//run-shoutout-timer)
 
 (defun fig//create-poll (title options &optional callback)
   "Create a poll with TITLE and OPTIONS.
@@ -634,31 +702,50 @@ CALLBACK will be passed the winner when the poll concludes."
 
 (defun fig//user-sigil (user &optional badges)
   "Return the sigil character for USER with BADGES."
-  (let ((equity (fig//load-db-entry user :equity)))
+  (let ((equity (fig//load-db-entry user :equity))
+        ;; (aoc-stars (fig//lookup-aoc-stars user))
+        ;; (max-stars (fig//max-aoc-stars)))
+        )
     (cond
+     ;; ((and aoc-stars (>= aoc-stars max-stars)) "🎄")
+     ;; (aoc-stars "🌲")
      ((-contains? badges "broadcaster/1") "(it me)")
      ((-contains? badges "moderator/1") "⚔")
-     ((and equity (> equity 0)) "♿")
+     ((-contains? badges "artist-badge/1") "🖌️")
+     ((and equity (> equity 0))
+      (cond
+       ((s-equals? user "Bezelea") "♿")
+       ((s-equals? user "AltoVT") "📈")
+       (t "EL.")))
      ((-contains? badges "vip/1") "💎")
      ((-contains? badges "subscriber/0") "💻")
      )))
 
 (defun fig//chat-button-action (b)
   "Action run on button press for button B."
-  (let ((userid (get-text-property (button-start b) 'fig-user-id)))
-    (fig//semi-src userid)))
+  (let ((user (get-text-property (button-start b) 'fig-user))
+        (pos (window-absolute-pixel-position (button-start b))))
+    ;; (fig//semi-src userid)
+    (fig//display-clonkhead-io user (car pos) (cdr pos))
+    ))
 (defun fig//chat-bible-button-action (b)
   "Action run on button press for button B."
   (let ((text (get-text-property (button-start b) 'fig-message)))
     (fig/biblical text (lambda (ass) (fig/say (s-concat "Spiritual assessment: " ass))))))
 (defun fig//write-chat-message (user userid text &optional color sigil bible-score buf)
   "Write TEXT to the Twitch chat buffer as USER with USERID and COLOR."
-  (let ((inhibit-read-only t))
+  (let ((inhibit-read-only t)
+        (name
+         (cond
+          (fig//identity-chat-toggle (fig//get-chatter-identity user))
+          ;; ((s-equals? "fn_lumi" user) "Lumifer")
+          (t user))))
     (with-current-buffer (or buf (fig//get-twitch-chat-buffer))
       (goto-char (point-max))
       (insert-text-button
-       (s-concat (if sigil (s-concat sigil " ") "") user)
+       (s-concat (if sigil (s-concat sigil " ") "") name)
        'face (list :foreground color :weight 'bold)
+       'fig-user user
        'fig-user-id userid
        'action #'fig//chat-button-action)
       (insert
@@ -675,9 +762,10 @@ CALLBACK will be passed the winner when the poll concludes."
          )
         ))
       (insert text)
-      (when bible-score
+     (when bible-score
         (let* ((wwidth (- (window-total-width (get-buffer-window (current-buffer))) 3))
                (bible-button-text (format "[biblicality %.2f]" bible-score))
+               ;; (bible-button-text (format "[L:Quality %.2f]" bible-score))
                ;; (bible-button-text "[biblicality -666]")
                (msgwidth
                 (+ (length sigil) (if sigil 1 0)
@@ -735,17 +823,27 @@ CALLBACK will be passed the winner when the poll concludes."
              (if fig//assess-chat-spirituality text-colored-bible text)))))
          )
     (fig//assign-chatter-faction user)
+    (fig//assign-chatter-ancestor user)
+    (fig//assign-chatter-element user)
+    (fig//assign-chatter-identity user)
+    (fig//assign-chatter-character user)
     (fig//check-chatter-geiser user)
     (fig//hexamedia-update-user user)
+    (if (s-contains? "SuperIdoldexiaorongdoumeinidetianbayuezhengwudeyangguangdoumeiniyaoyanreai105Cdenididiqingchundezhen" text)
+        (cl-incf fig//super-idol-tally)
+      (cl-decf fig//super-idol-tally))
+    (fig//check-super-idol-tally)
     (push (cons user text) fig//incoming-chat-history)
     (setf (alist-get user fig//chatter-colors nil nil #'s-equals?) color)
     (when (s-equals? user "MODCLONK")
       (fig//obs-log-modclonk-message))
+    ;; (fig//friend-judge
+    ;;  user userid (s-replace "bald" "ball" text-with-emotes) color
+    ;;  (fig//user-sigil user badges))
     (fig//write-chat-message
      user userid (s-replace "bald" "ball" text-with-emotes) color
      (fig//user-sigil user badges)
      (and fig//assess-chat-spirituality (cdr text-colored-bible-res)))
-    
     (--each fig//twitch-chat-commands
       (when (s-contains? (car it) text)
         (funcall (cdr it) user text)))))
@@ -785,78 +883,6 @@ CALLBACK will be passed the winner when the poll concludes."
   (with-current-buffer (fig//get-twitch-chat-buffer)
     (let ((inhibit-read-only t))
       (erase-buffer))))
-
-(defun fig//handle-message (msg)
-  "Handle the message MSG."
-  (let* ((ev (car msg))
-         (body (cdr msg))
-         (handler (alist-get ev fig//event-handlers nil nil #'equal)))
-    (if handler
-        (funcall handler body)
-      (fig//write-log (format "Unknown incoming event: %S" ev)))))
-
-(defun fig//get-complete-line ()
-  "Kill a line followed by a newline if it exists, and nil otherwise."
-  (let ((l (thing-at-point 'line t)))
-    (if (and l (s-contains? "\n" l))
-        (progn
-          (delete-region (line-beginning-position) (line-beginning-position 2))
-          l)
-      nil)))
-(defun fig//handle-lines ()
-  "Call `fig//handle-message' on every complete line of the current buffer."
-  (let ((l (fig//get-complete-line)))
-    (when (and l (not (s-blank? l)))
-      (fig//handle-message (read (fig//clean-string l)))
-      (fig//handle-lines))))
-(defun fig//process-filter (proc data)
-  "Process filter for pub/sub bus connection on PROC and DATA."
-  (with-current-buffer (get-buffer-create fig/network-buffer)
-    (when (not (marker-position (process-mark proc)))
-      (set-marker (process-mark proc) (point-max)))
-    (goto-char (process-mark proc))
-    (insert data)
-    (set-marker (process-mark proc) (point))
-    (goto-char (point-min))
-    (fig//handle-lines)))
-
-(defun fig/disconnect ()
-  "Disconnect from the pub/sub bus."
-  (when (process-live-p (get-process "fig"))
-    (delete-process "fig")))
-
-(defun fig/connect ()
-  "Connect to the pub/sub bus."
-  (fig/disconnect)
-  (make-network-process
-   :name "fig"
-   :buffer nil
-   :host fig/host
-   :service fig/port
-   :filter #'fig//process-filter)
-  (fig/sub-all))
-
-(defun fig/sub (ev)
-  "Subscribe to the event EV."
-  (process-send-string
-   "fig"
-   (s-concat
-    (format "%S" `(sub ,ev))
-    "\n")))
-
-(defun fig/pub (ev &optional d)
-  "Publish the data D to the event EV."
-  (process-send-string
-   "fig"
-   (s-concat
-    (format "%S" `(pub ,ev ,@d))
-    "\n")))
-
-(defun fig/sub-all ()
-  "Subscribe to all events in `fig//event-handlers'."
-  (--each fig//event-handlers
-    (fig//write-log (format "Subscribing to: %S" (car it)))
-    (fig/sub (car it))))
 
 (provide 'fig)
 ;;; fig.el ends here

@@ -1,1 +1,2 @@
-((:faction . lever))
+((:ancestor . #s(fig//ancestor nil "Gray100beard" nil nil "Toyaloi" "peg leg warmer" 1398 1453 "succumbed to scurvy.
+")) (:rpg-character . #s(fig//rpg-character "Toyaloi" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 2 #s(fig//rpg-ability-scores 11 16 13 11 8 15))) (:element . "lightning") (:faction . lever))

@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor nil "Goomama" nil nil "fannyslam" "bishop" 1778 1845 "suffered a stroke during a passionate sermon.
+")) (:rpg-character . #s(fig//rpg-character "fannyslam" 1 #s(fig//rpg-class "Cleric" fig//rpg-ability-scores-wis 8 #s(fig//rpg-ability-scores 6 3 6 6 9 6) (2 . 3) #s(fig//rpg-saves 14 16 10 13 15)) 5 #s(fig//rpg-ability-scores 8 13 16 12 16 10))) (:identity . "Brisa Bruce") (:element . "wind") (:faction . lever))

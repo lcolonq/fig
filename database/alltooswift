@@ -1,0 +1,1 @@
+((:rpg-character . #s(fig//rpg-character "alltooswift" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 5 #s(fig//rpg-ability-scores 14 12 7 11 13 10))) (:identity . "Brenda George") (:element . "water") (:faction . nate))

@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor nil "Dimgreybeard" nil nil "RisenKomandos" "scullery worker" 1337 1397 "succumbed to a severe case of dysentery.
+")) (:rpg-character . #s(fig//rpg-character "RisenKomandos" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 6 #s(fig//rpg-ability-scores 16 16 10 14 12 13))) (:element . "fire") (:faction . tony))

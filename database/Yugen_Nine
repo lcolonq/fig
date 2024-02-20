@@ -1,1 +1,2 @@
-((:faction . lever))
+((:ancestor . #s(fig//ancestor nil "Ronald" nil nil "Yugen_Nine" "Collector Of Valuable Artifacts" 1912 2005 "suffered a heart attack while arranging an exhibition.
+")) (:rpg-character . #s(fig//rpg-character "Yugen_Nine" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 4 #s(fig//rpg-ability-scores 12 8 15 14 14 15))) (:identity . "Madelynn Nichols") (:element . "fire") (:faction . lever))

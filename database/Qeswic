@@ -1,1 +1,2 @@
-((:faction . nate))
+((:identity . "Barbara Powers") (:ancestor . #s(fig//ancestor nil "Lightslategreybeard" nil nil "Qeswic" "privateer" 1303 1325 "succumbed to wounds sustained in a naval battle.
+")) (:rpg-character . #s(fig//rpg-character "Qeswic" 1 #s(fig//rpg-class "Cleric" fig//rpg-ability-scores-wis 8 #s(fig//rpg-ability-scores 6 3 6 6 9 6) (2 . 3) #s(fig//rpg-saves 14 16 10 13 15)) 2 #s(fig//rpg-ability-scores 12 14 11 12 18 6))) (:element . "wind") (:faction . nate))

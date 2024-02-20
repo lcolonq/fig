@@ -1,1 +1,2 @@
-((:faction . tony))
+((:ancestor . #s(fig//ancestor nil "Hilda" nil nil "InfiniteCoder01" "blacksmith" 1043 1059 "suffered a fatal burn during a forge accident.
+")) (:rpg-character . #s(fig//rpg-character "InfiniteCoder01" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 8 #s(fig//rpg-ability-scores 15 16 15 13 11 15))) (:identity . "Shania Simon") (:element . "wind") (:faction . tony))

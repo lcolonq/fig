@@ -13,13 +13,12 @@
   :group 'fig)
 
 (defconst fig//speedrun-route
-  '(("Mat" . 1000)
-    ("Pat" . 1000)))
+  '(("obstacles" . 1000)
+    ("hurdles" . 1000)))
 
 (define-derived-mode fig/stopwatch-mode special-mode "My Insane Pace"
   "Major mode for displaying speedrun stopwatch."
   :group 'fig)
-
 (defface fig/stopwatch-big
   '((t
      :foreground "darkgreen"
@@ -84,7 +83,8 @@
   (with-current-buffer (fig//get-stopwatch-buffer)
     (let* ((inhibit-read-only t)
            (total-split 0)
-           (delta (time-subtract (current-time) fig//current-stopwatch-start)))
+           (delta (time-subtract (current-time) fig//current-stopwatch-start))
+           (remaining (round (- 74880 (float-time delta)))))
       (erase-buffer)
 
       (--each (-zip fig//speedrun-route (-iota (length fig//speedrun-route)))
@@ -105,11 +105,12 @@
              'fig/stopwatch-split-name-active
            'fig/stopwatch-split-name))
         )
-
       (fig//write-line
        (format
-        "%s%.2d"
-        (format-time-string "%M:%S.%1N" delta)
+        "%.2d:%.2d:%.2d.%.2d"
+        (floor (/ remaining 3600))
+        (floor (/ (% remaining 3600) 60))
+        (% remaining 60)
         (random 99))
        'fig/stopwatch-big)
 

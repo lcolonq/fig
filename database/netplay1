@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor nil "Wilburh" nil nil "netplay1" "fletcher" 1090 1145 "succumbed to an accidental arrow wound.
+")) (:rpg-character . #s(fig//rpg-character "netplay1" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 4 #s(fig//rpg-ability-scores 10 14 15 13 13 16))) (:identity . "Finley Harper") (:element . "wind") (:faction . lever))

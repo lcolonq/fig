@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor nil "Orchid1beard" nil nil "gogo_gadget_gogo" "smuggler" 1288 1372 "succumbed to a fatal wound after a smuggling deal went awry.
+")) (:rpg-character . #s(fig//rpg-character "gogo_gadget_gogo" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 7 #s(fig//rpg-ability-scores 14 15 14 5 14 10))) (:identity . "Amara Patton") (:element . "wind") (:faction . tony))

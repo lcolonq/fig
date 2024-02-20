@@ -1,1 +1,1 @@
-((:hexamedia-cards ("Clover Power" . 0) ("Radish Riot" . 0)) (:faction . tony))
+((:identity . "Neveah Alvarez") (:boost . 4) (:rpg-character . #s(fig//rpg-character "dj_zmx" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 2 #s(fig//rpg-ability-scores 12 12 8 14 9 15))) (:element . "heart") (:ancestor . #s(fig//ancestor "Queen" "Cyneheard" nil nil "dj_zmx" "queen" 1166 1227 "unknown")) (:hexamedia-cards ("Clover Power" . 1) ("Radish Riot" . 0)) (:faction . tony))

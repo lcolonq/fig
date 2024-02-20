@@ -1,1 +1,2 @@
-((:faction . lever))
+((:identity . "Teagan Neal") (:rpg-character . #s(fig//rpg-character "zment" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 5 #s(fig//rpg-ability-scores 15 12 12 13 14 11))) (:element . "wind") (:ancestor . #s(fig//ancestor "Marquis" "Eadgyð" nil nil "zment" "marquis" 1195 1251 "succumbed to a wound sustained in a jousting tournament.
+")) (:faction . lever))

@@ -1,1 +1,2 @@
-((:faction . lever))
+((:ancestor . #s(fig//ancestor nil "Ninjakong" nil "Fracastoro" "sonowono" "pope" 1606 1617 "succumbed to a sudden outbreak of the bubonic plague.
+")) (:rpg-character . #s(fig//rpg-character "sonowono" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 4 #s(fig//rpg-ability-scores 11 12 13 14 14 15))) (:element . "fire") (:faction . lever))

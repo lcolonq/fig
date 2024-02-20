@@ -149,6 +149,7 @@ Optionally use SYSTEMPROMPT and the USER and ASSISTANT prompts."
 (defun fig/mental-clarity ()
   "Establish mental clarity."
   (interactive)
+  (muzak-stop)
   (start-process "pkill" nil "pkill" "mpv"))
 
 (defun fig/transcribe-poll ()

@@ -23,9 +23,25 @@
 (defun fig//all-db-users ()
   "Get all users in the database."
   (--map (f-relative it fig/database-path) (f-entries fig/database-path)))
-  
+
+(defun fig//db2-serialize-old-entry (data)
+  "Update DATA to not contain structs."
+  (--map-when
+   (equal (type-of (cdr it)) 'fig//ancestor)
+   (cons (car it) (fig//ancestor-serialize (cdr it)))
+   (--map-when
+    (equal (type-of (cdr it)) 'fig//rpg-character)
+    (cons (car it) (fig//rpg-character-serialize (cdr it)))
+    data)))
+
+(defun fig//db2-backup-db (user data)
+  "Backup the DATA for USER to Redis."
+  (let* ((ser (fig//db2-serialize-old-entry data)))
+    (fig/db2-set (s-concat "user:" (s-downcase user)) (format "%S" ser))))
+
 (defun fig//save-db (user data)
   "Save DATA for USER."
+  (fig//db2-backup-db user data)
   (write-region (format "%S" data) nil (fig//db-path user)))
 
 (defun fig//load-db (user)
@@ -33,7 +49,7 @@
   (when-let* ((path (fig//db-path user))
               (exists (file-exists-p path)))
     (with-temp-buffer
-      (insert-file-contents-literally path)
+      (insert-file-contents path)
       (read (buffer-string)))))
 
 (defun fig//load-db-entry (user attrib)
@@ -73,6 +89,32 @@ The value is assumed to be a number."
   "Apply F to ATTRIB on USER data.
 The value is assumed to be a list."
   (fig//update-db-default user attrib f nil))
+
+(defvar fig/quotes nil)
+(defun fig//save-quotes ()
+  "Save the quotes database."
+  (fig//save-db "__QUOTES__" fig/quotes))
+(defun fig//load-quotes ()
+  "Load the quotes database."
+  (setf fig/quotes (fig//load-db "__QUOTES__")))
+(defun fig//add-quote (user q)
+  "Add quote Q from USER."
+  (add-to-list 'fig/quotes (cons q user))
+  (fig//save-quotes))
+(fig//load-quotes)
+
+(defvar fig/recommended-books nil)
+(defun fig//save-recommended-books ()
+  "Save the quotes database."
+  (fig//save-db "__BOOKS__" fig/recommended-books))
+(defun fig//load-recommended-books ()
+  "Load the quotes database."
+  (setf fig/recommended-books (fig//load-db "__BOOKS__")))
+(defun fig//add-recommended-book (user b)
+  "Add book B from USER."
+  (add-to-list 'fig/recommended-books (cons b user))
+  (fig//save-recommended-books))
+(fig//load-recommended-books)
 
 (provide 'fig-database)
 ;;; fig-database.el ends here

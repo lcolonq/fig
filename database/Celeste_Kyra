@@ -1,1 +1,1 @@
-((:boost . 0) (:faction . nate))
+((:identity . "Charity Mcdonald") (:resolution . "1920 x 1080") (:rpg-character . #s(fig//rpg-character "Celeste_Kyra" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 4 #s(fig//rpg-ability-scores 18 10 11 17 13 11))) (:element . "water") (:ancestor . #s(fig//ancestor nil "Willy" nil nil "Celeste_Kyra" "art contemplator" 1743 1745 "unknown")) (:boost . 17) (:faction . nate))

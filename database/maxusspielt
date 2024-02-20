@@ -1,0 +1,2 @@
+((:identity . "Yadira Russell") (:resolution . "Exercise :L") (:ancestor . #s(fig//ancestor "Sir" "Gearson" nil nil "maxusspielt" "boilermaker" 1898 1978 "passed away due to long-term exposure to asbestos in the boilers he worked on.
+")) (:rpg-character . #s(fig//rpg-character "maxusspielt" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 6 #s(fig//rpg-ability-scores 18 14 8 14 14 14))) (:element . "lightning") (:faction . nate))

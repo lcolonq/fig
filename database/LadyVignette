@@ -1,1 +1,4 @@
-((:faction . tony))
+((:identity . "Aiyana Erickson") (:ancestor . #s(fig//ancestor nil "Douglas" nil nil "LadyVignette" "Livestreamer (VTuber)" 1944 1981 "Please note that there are anachronisms in the given description, as livestreaming and VTubers did not exist in 1981. Assuming the employment is a typographical error and meant to align with a more appropriate occupation for the time, a plausible cause of death for Douglas Ladyvignette Colonq might be:
+
+suffered a fatal heart attack during a live broadcast on public access television.
+")) (:rpg-character . #s(fig//rpg-character "LadyVignette" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 3 #s(fig//rpg-ability-scores 11 11 10 12 7 16))) (:element . "lightning") (:faction . tony))

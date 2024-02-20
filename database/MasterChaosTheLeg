@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor "Countess" "Wilheard" nil nil "MasterChaosTheLeg" "countess" 1147 1213 "succumbed to pneumonia.
+")) (:rpg-character . #s(fig//rpg-character "MasterChaosTheLeg" 1 #s(fig//rpg-class "Cleric" fig//rpg-ability-scores-wis 8 #s(fig//rpg-ability-scores 6 3 6 6 9 6) (2 . 3) #s(fig//rpg-saves 14 16 10 13 15)) 5 #s(fig//rpg-ability-scores 9 12 9 16 18 14))) (:identity . "Stephanie Valencia") (:element . "wind") (:faction . tony))

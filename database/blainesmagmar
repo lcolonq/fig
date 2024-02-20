@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor nil "Budandmissysmother" nil nil "blainesmagmar" "scientist (galvanic energy)" 1466 1491 "electrocuted during an experiment with galvanic energy
+")) (:rpg-character . #s(fig//rpg-character "blainesmagmar" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 4 #s(fig//rpg-ability-scores 13 18 9 16 7 13))) (:identity . "Melanie Edwards") (:element . "water") (:faction . lever))

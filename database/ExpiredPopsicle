@@ -1,1 +1,2 @@
-((:faction . tony))
+((:identity . "Amanda Ortega") (:ancestor . #s(fig//ancestor nil "Slategray2beard" nil nil "ExpiredPopsicle" "pirate" 1366 1391 "was struck by a cannonball during a naval battle.
+")) (:rpg-character . #s(fig//rpg-character "ExpiredPopsicle" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 7 #s(fig//rpg-ability-scores 15 11 12 12 11 12))) (:element . "fire") (:faction . tony))

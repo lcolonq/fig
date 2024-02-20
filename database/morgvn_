@@ -1,1 +1,1 @@
-((:boost . 3) (:faction . nate))
+((:resolution . "make out with Aphex Twin and Thom Yorke") (:rpg-character . #s(fig//rpg-character "morgvn_" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 3 #s(fig//rpg-ability-scores 12 14 14 12 11 10))) (:element . "fire") (:ancestor . #s(fig//ancestor nil "Michael" nil nil "morgvn_" "Licensed Practical and Licensed Vocational Nurse" 1948 1969 "unknown")) (:boost . 1) (:faction . nate))

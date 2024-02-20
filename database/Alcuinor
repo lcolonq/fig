@@ -1,1 +1,1 @@
-((:faction . nate) (:boost . 1))
+((:identity . "Layla Alexander") (:rpg-character . #s(fig//rpg-character "Alcuinor" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 2 #s(fig//rpg-ability-scores 14 12 12 8 13 9))) (:element . "earth") (:ancestor . #s(fig//ancestor nil "Blackboo" nil nil "Alcuinor" "sculptor" 1552 1649 "unknown")) (:faction . nate) (:boost . 1))

@@ -1,1 +1,1 @@
-((:faction . nate))
+((:identity . "Celia Pena") (:rpg-character . #s(fig//rpg-character "archible" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 6 #s(fig//rpg-ability-scores 15 7 14 14 10 10))) (:element . "wind") (:ancestor . #s(fig//ancestor nil "Thread" nil nil "archible" "fencer" 1483 1543 "unknown")) (:faction . nate))

@@ -1,1 +1,1 @@
-((:faction . lever))
+((:ancestor . #s(fig//ancestor "Baroness" "Wulfwynn" nil nil "DinoCrys" "baroness" 1034 1104 "unknown")) (:faction . lever))

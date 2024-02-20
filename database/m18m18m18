@@ -1,1 +1,1 @@
-((:faction . lever))
+((:identity . "Nylah Padilla") (:resolution . "stream from an 80x50 terminal") (:rpg-character . #s(fig//rpg-character "m18m18m18" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 1 #s(fig//rpg-ability-scores 12 13 10 13 12 14))) (:element . "water") (:ancestor . #s(fig//ancestor nil "Eadwulf" nil nil "m18m18m18" "peasant" 1176 1200 "unknown")) (:faction . lever))

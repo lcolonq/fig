@@ -1,1 +1,2 @@
-((:boost . 6) (:faction . nate))
+((:rpg-character . #s(fig//rpg-character "DeathByAlgorithm" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 2 #s(fig//rpg-ability-scores 13 9 12 16 8 17))) (:identity . "Carla Nicholson") (:element . "water") (:ancestor . #s(fig//ancestor "Countess" "Swi\303\260hun" nil nil "DeathByAlgorithm" "countess" 1195 1263 "succumbed to the Black Death.
+")) (:boost . 8) (:faction . nate))

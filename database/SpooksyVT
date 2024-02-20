@@ -1,1 +1,1 @@
-((:boost . 7) (:faction . lever))
+((:identity . "Macy Duran") (:resolution . "not take 2 weeks to make a 3D model") (:ancestor . #s(fig//ancestor nil "Thermidor" nil nil "SpooksyVT" "statue" 1416 1417 "unknown")) (:rpg-character . #s(fig//rpg-character "SpooksyVT" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 6 #s(fig//rpg-ability-scores 17 14 14 13 11 15))) (:element . "fire") (:boost . 16) (:faction . lever))

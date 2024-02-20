@@ -1,1 +1,2 @@
-((:faction . lever) (:boost . 1))
+((:identity . "Alisson Stewart") (:ancestor . #s(fig//ancestor "Sir" "Donaric" nil nil "anokayguy0" "good sir" 1822 1831 "succumbed to a sudden outbreak of cholera.
+")) (:rpg-character . #s(fig//rpg-character "anokayguy0" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 4 #s(fig//rpg-ability-scores 10 11 14 13 13 10))) (:element . "water") (:faction . lever) (:boost . 0))

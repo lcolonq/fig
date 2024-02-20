@@ -15,6 +15,7 @@
   (let* ((bible-string
           (with-temp-buffer
             (insert-file-contents-literally "~/src/fig/bible.txt")
+            ;; (insert-file-contents-literally "~/src/fig/lcolonq.txt")
             (downcase (buffer-string))))
          (bible-string-nosyms (replace-regexp-in-string "[^[:alpha:]]" " " bible-string))
          (bible-words (s-split-words bible-string-nosyms))

@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor nil "Mistyrose2beard" nil "No-Eye" "nayuNee" "gunner" 1371 1382 "accidentally ignited gunpowder aboard a ship, causing an explosion
+")) (:rpg-character . #s(fig//rpg-character "nayuNee" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 6 #s(fig//rpg-ability-scores 15 11 16 9 6 12))) (:element . "fire") (:faction . nate))

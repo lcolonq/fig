@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor "Viscountess" "Cynemær" nil nil "NoGoodNick_" "viscountess" 1026 1090 "poisoned at a royal banquet
+")) (:rpg-character . #s(fig//rpg-character "NoGoodNick_" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 3 #s(fig//rpg-ability-scores 18 7 16 8 11 14))) (:identity . "Laurel Giles") (:element . "lightning") (:faction . tony))

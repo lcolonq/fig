@@ -21,6 +21,16 @@
   (wis 0)
   (cha 0))
 
+(defun fig//rpg-ability-scores-serialize (c)
+  "Serialize a set of RPG ability scores C."
+  (list
+   (fig//rpg-ability-scores-str c)
+   (fig//rpg-ability-scores-dex c)
+   (fig//rpg-ability-scores-con c)
+   (fig//rpg-ability-scores-int c)
+   (fig//rpg-ability-scores-wis c)
+   (fig//rpg-ability-scores-cha c)))
+
 (defun fig//roll-ability-score ()
   "Generate one ability score."
   (let* ((stats (list (fig//roll 6) (fig//roll 6) (fig//roll 6) (fig//roll 6)))
@@ -46,6 +56,15 @@
   (polymorph 0)
   (spells 0))
 
+(defun fig//rpg-saves-serialize (c)
+  "Serialize a set of RPG saving throws C."
+  (list
+   (fig//rpg-saves-wand c)
+   (fig//rpg-saves-breath c)
+   (fig//rpg-saves-death c)
+   (fig//rpg-saves-polymorph c)
+   (fig//rpg-saves-spells c)))
+
 (cl-defstruct
     (fig//rpg-class
      (:constructor fig//make-rpg-class))
@@ -55,6 +74,15 @@
   minimum-ability-scores
   attack-gain
   saves)
+
+(defun fig//rpg-class-serialize (c)
+  "Serialize an RPG class C."
+  (list
+   (fig//rpg-class-name c)
+   (fig//rpg-class-ideal-stat c)
+   (fig//rpg-class-hit-die c)
+   (fig//rpg-ability-scores-serialize (fig//rpg-class-minimum-ability-scores c))
+   (fig//rpg-saves-serialize (fig//rpg-class-saves c))))
 
 (defconst fig/rpg-fighter
   (fig//make-rpg-class
@@ -140,6 +168,15 @@
   max-hp
   ability-scores)
 
+(defun fig//rpg-character-serialize (c)
+  "Serialize an RPG character C."
+  (list
+   (fig//rpg-character-name c)
+   (fig//rpg-character-level c)
+   (fig//rpg-class-serialize (fig//rpg-character-class c))
+   (fig//rpg-character-max-hp c)
+   (fig//rpg-ability-scores-serialize (fig//rpg-character-ability-scores c))))
+
 (defun fig//scores-at-least (scores reqs)
   "Return non-nil if SCORES are all greater than or equal to REQS."
   (and
@@ -170,14 +207,24 @@
      :max-hp (fig//roll (fig//rpg-class-hit-die class))
      :ability-scores scores)))
 
-(defun fig//get-db-character (user)
+(defun fig//get-chatter-character (user)
   "Get the RPG character for USER."
   (alist-get :rpg-character (fig//load-db user)))
 
-(defun fig//update-db-character (user f)
+(defun fig//update-chatter-character (user f)
   "Apply F to to USER's saved RPG character.
 If the user has no character, roll a new one."
   (fig//update-db-default user :rpg-character f (fig//roll-character user)))
+
+(defun fig//assign-chatter-character (user)
+  "Assign a new character to USER."
+  (unless (fig//get-chatter-character user)
+    (fig//update-db-default
+     user
+     :rpg-character
+     (lambda (_)
+       (fig//roll-character user))
+     nil)))
 
 (defun fig//character-to-string (char)
   "Convert CHAR to a human-readable description."

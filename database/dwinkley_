@@ -1,1 +1,2 @@
-((:faction . tony) (:boost . 19))
+((:identity . "Carina Odonnell") (:ancestor . #s(fig//ancestor nil "Wiifittrainer" nil nil "dwinkley_" "thief" 1587 1629 "was fatally wounded during a botched robbery.
+")) (:rpg-character . #s(fig//rpg-character "dwinkley_" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 2 #s(fig//rpg-ability-scores 13 12 8 17 14 13))) (:element . "earth") (:faction . tony) (:boost . 30))

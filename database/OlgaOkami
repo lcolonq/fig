@@ -1,1 +1,2 @@
-((:faction . nate) (:boost . 19))
+((:identity . "Alissa Briggs") (:resolution . "not die in 2024") (:rpg-character . #s(fig//rpg-character "OlgaOkami" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 2 #s(fig//rpg-ability-scores 13 9 15 14 13 8))) (:element . "water") (:ancestor . #s(fig//ancestor nil "Maroon4beard" nil nil "OlgaOkami" "gunner" 1201 1235 "killed by an accidental gunpowder explosion while loading a cannon.
+")) (:faction . nate) (:boost . 32))

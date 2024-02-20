@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor nil "Roberts" nil nil "kurisukun3" "smuggler" 1383 1409 "was stabbed during a deal gone wrong.
+")) (:rpg-character . #s(fig//rpg-character "kurisukun3" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 7 #s(fig//rpg-ability-scores 11 15 11 9 10 14))) (:identity . "Moriah Norton") (:element . "lightning") (:faction . nate))

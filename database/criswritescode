@@ -1,1 +1,1 @@
-((:faction . lever))
+((:identity . "Rayne Nava") (:rpg-character . #s(fig//rpg-character "criswritescode" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 2 #s(fig//rpg-ability-scores 11 9 10 11 11 16))) (:element . "earth") (:ancestor . #s(fig//ancestor nil "Gray82beard" nil nil "criswritescode" "first mate" 1396 1448 "unknown")) (:faction . lever))

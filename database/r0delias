@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor "King" "Cynefrith" nil nil "r0delias" "king" 1088 1166 "succumbed to an illness brought on by a prolonged siege on his castle.
+")) (:rpg-character . #s(fig//rpg-character "r0delias" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 4 #s(fig//rpg-ability-scores 9 9 10 15 12 13))) (:identity . "Simone Hancock") (:element . "lightning") (:faction . nate))

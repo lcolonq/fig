@@ -1,0 +1,2 @@
+((:identity . "Adalyn Gallegos") (:boost . 9) (:resolution . "come up with a better resolution") (:ancestor . #s(fig//ancestor nil "Mummipokey" nil nil "andras204" "wimbeldon tournamentor" 1598 1629 "struck by a stray tennis ball leading to a fatal head injury
+")) (:rpg-character . #s(fig//rpg-character "andras204" 1 #s(fig//rpg-class "Cleric" fig//rpg-ability-scores-wis 8 #s(fig//rpg-ability-scores 6 3 6 6 9 6) (2 . 3) #s(fig//rpg-saves 14 16 10 13 15)) 4 #s(fig//rpg-ability-scores 7 12 10 9 15 14))) (:element . "fire") (:faction . lever))

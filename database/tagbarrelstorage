@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor nil "Gabriel" nil nil "tagbarrelstorage" "Market Research Analysts and Marketing Specialist" 1992 2040 "suffered an allergic reaction to a new medication.
+")) (:rpg-character . #s(fig//rpg-character "tagbarrelstorage" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 1 #s(fig//rpg-ability-scores 15 15 8 10 13 18))) (:identity . "Kylie Garza") (:element . "fire") (:faction . lever))

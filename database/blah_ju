@@ -1,0 +1,2 @@
+((:resolution . "zxc") (:ancestor . #s(fig//ancestor nil "Goombaria" nil nil "blah_ju" "illuminati cofounder and product mommy" 1604 1615 "succumbed to a rare infectious disease.
+")) (:rpg-character . #s(fig//rpg-character "blah_ju" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 3 #s(fig//rpg-ability-scores 13 15 14 17 15 11))) (:element . "wind") (:faction . nate))

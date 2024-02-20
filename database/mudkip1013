@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor "Countess" "Æthelnoð" nil nil "mudkip1013" "countess" 1047 1065 "succumbed to a sudden illness.
+")) (:rpg-character . #s(fig//rpg-character "mudkip1013" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 2 #s(fig//rpg-ability-scores 10 16 11 12 11 14))) (:identity . "Kendall Ferguson") (:element . "lightning") (:faction . tony))

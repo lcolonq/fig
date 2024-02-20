@@ -1,1 +1,2 @@
-((:faction . nate) (:boost . 4))
+((:identity . "Ashlynn Kerr") (:resolution . "don't leak one of my passwords in chat") (:rpg-character . #s(fig//rpg-character "kettlestew" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 5 #s(fig//rpg-ability-scores 13 11 17 11 12 15))) (:element . "water") (:ancestor . #s(fig//ancestor "Sir" "Gearhart" nil "Staunch" "kettlestew" "dossier griefer" 1802 1869 "succumbed to a severe bout of cholera.
+")) (:faction . nate) (:boost . -18))

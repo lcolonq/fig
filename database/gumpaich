@@ -1,1 +1,1 @@
-((:faction . lever))
+((:boost . 1) (:rpg-character . #s(fig//rpg-character "gumpaich" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 6 #s(fig//rpg-ability-scores 16 16 11 9 10 12))) (:identity . "Karly Faulkner") (:element . "heart") (:ancestor . #s(fig//ancestor nil "Clawgrip" nil nil "gumpaich" "playwright" 1417 1424 "unknown")) (:faction . lever))

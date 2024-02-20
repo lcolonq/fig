@@ -80,6 +80,19 @@
   "Get the path to USER's avatar."
   (s-concat fig/twitch-avatar-cache-dir user ".png"))
 
+(defvar fig//current-stream-title nil)
+(defun fig//twitch-get-title (userid k)
+  "Get the stream title for USERID and pass it to K."
+  (fig//twitch-api-get
+   (s-concat "/channels?broadcaster_id=" userid)
+   (lambda (data)
+     (let ((title (ht-get (aref (ht-get data "data") 0) "title")))
+       (funcall k title)))))
+(fig//twitch-get-title
+ fig//twitch-broadcaster-id
+ (lambda (title)
+   (setq fig//current-stream-title title)))
+
 (defun fig//twitch-get-user-id (user k)
   "Get the ID for USER and pass it to K."
   (fig//twitch-api-get

@@ -1,0 +1,2 @@
+((:identity . "Jadyn Malone") (:ancestor . #s(fig//ancestor nil "Gray52beard" nil nil "m_s_c_s" "admiral" 1224 1282 "drowned during a naval battle.
+")) (:rpg-character . #s(fig//rpg-character "m_s_c_s" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 4 #s(fig//rpg-ability-scores 15 17 11 9 13 18))) (:element . "heart") (:faction . nate))

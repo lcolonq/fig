@@ -1,0 +1,2 @@
+((:identity . "Tatiana Avery") (:ancestor . #s(fig//ancestor nil "Fronk" nil nil "Swarm_of_Weasels" "paint thinner" 1535 1536 "succumbed to respiratory failure due to inhalation of toxic fumes from his occupation.
+")) (:rpg-character . #s(fig//rpg-character "Swarm_of_Weasels" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 2 #s(fig//rpg-ability-scores 11 7 10 12 12 12))) (:element . "water") (:faction . tony))

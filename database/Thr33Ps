@@ -1,0 +1,1 @@
+((:rpg-character . #s(fig//rpg-character "Thr33Ps" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 10 #s(fig//rpg-ability-scores 10 14 11 9 9 15))) (:element . "heart") (:ancestor . #s(fig//ancestor nil "Madamagogo" nil nil "Thr33Ps" "statue" 1644 1714 "unknown")) (:faction . tony))

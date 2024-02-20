@@ -1,1 +1,2 @@
-((:faction . tony))
+((:identity . "Kara Pugh") (:ancestor . #s(fig//ancestor nil "Blue" nil nil "FreeOfMe" "executioner" 1632 1689 "struck by a misdirected axe during an execution.
+")) (:rpg-character . #s(fig//rpg-character "FreeOfMe" 1 #s(fig//rpg-class "Cleric" fig//rpg-ability-scores-wis 8 #s(fig//rpg-ability-scores 6 3 6 6 9 6) (2 . 3) #s(fig//rpg-saves 14 16 10 13 15)) 8 #s(fig//rpg-ability-scores 10 14 18 9 16 11))) (:element . "fire") (:faction . tony))

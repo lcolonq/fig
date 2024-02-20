@@ -1,1 +1,1 @@
-((:faction . nate))
+((:identity . "Adison Morse") (:rpg-character . #s(fig//rpg-character "bluewhistle" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 3 #s(fig//rpg-ability-scores 7 13 10 12 10 13))) (:element . "fire") (:ancestor . #s(fig//ancestor nil "Captainboo" nil nil "bluewhistle" "sculptor" 1685 1736 "unknown")) (:faction . nate))

@@ -1,1 +1,2 @@
-((:faction . tony) (:boost . 1))
+((:resolution . "69x420") (:rpg-character . #s(fig//rpg-character "StuxVT" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 8 #s(fig//rpg-ability-scores 15 9 8 7 11 10))) (:element . "heart") (:ancestor . #s(fig//ancestor nil "Darksamus" nil nil "StuxVT" "painter" 1658 1735 "succumbed to lead poisoning from paint pigments.
+")) (:faction . tony) (:boost . 1))

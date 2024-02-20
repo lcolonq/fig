@@ -1,0 +1,2 @@
+((:identity . "Armani Black") (:ancestor . #s(fig//ancestor nil "Darkbowser" nil nil "KaiGNikkiVT" "ninja" 1487 1513 "was fatally wounded on a stealth mission.
+")) (:rpg-character . #s(fig//rpg-character "KaiGNikkiVT" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 6 #s(fig//rpg-ability-scores 12 17 15 10 11 12))) (:element . "heart") (:faction . lever))

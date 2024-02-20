@@ -1,1 +1,2 @@
-((:faction . nate) (:boost . 20))
+((:identity . "Ariel Blankenship") (:hexamedia-cards ("Clover Power" . 7) ("Radish Riot" . 7)) (:rpg-character . #s(fig//rpg-character "iampanis" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 6 #s(fig//rpg-ability-scores 14 16 13 13 12 12))) (:element . "wind") (:ancestor . #s(fig//ancestor nil "Grey85beard" nil nil "iampanis" "Thief, Ocean" 1290 1341 "drowned during a sea storm while escaping after a heist.
+")) (:faction . nate) (:boost . 36))

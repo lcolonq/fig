@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor nil "Mediumbluebeard" nil nil "Zdyne" "galley cook" 1339 1379 "succumbed to scurvy on a long sea voyage.
+")) (:rpg-character . #s(fig//rpg-character "Zdyne" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 3 #s(fig//rpg-ability-scores 13 16 12 18 16 15))) (:identity . "Sonia Taylor") (:element . "fire") (:faction . nate))

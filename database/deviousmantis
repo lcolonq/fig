@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor nil "Tyler" nil nil "deviousmantis" "VTweeter" 1917 1969 "succumbed to a high-voltage electrical shock while repairing a transmission tower.
+")) (:resolution . "1920x1080") (:rpg-character . #s(fig//rpg-character "deviousmantis" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 9 #s(fig//rpg-ability-scores 16 14 13 8 14 14))) (:element . "water") (:faction . tony))

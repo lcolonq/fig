@@ -1,1 +1,1 @@
-((:faction . lever))
+((:rpg-character . #s(fig//rpg-character "eliphaz_" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 3 #s(fig//rpg-ability-scores 6 16 7 11 9 10))) (:identity . "Arabella Lam") (:element . "earth") (:ancestor . #s(fig//ancestor nil "Moccasinbeard" nil "Saltine" "eliphaz_" "shipwright" 1391 1463 "unknown")) (:faction . lever))

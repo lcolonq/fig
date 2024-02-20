@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor "Viscountess" "Leofstan" nil "The Despot" "Zend_inny" "viscountess" 1175 1201 "poisoned at a banquet.
+")) (:rpg-character . #s(fig//rpg-character "Zend_inny" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 4 #s(fig//rpg-ability-scores 7 14 9 12 9 13))) (:identity . "Aaliyah Mckay") (:element . "water") (:faction . lever))

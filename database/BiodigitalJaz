@@ -1,0 +1,2 @@
+((:identity . "Marlee Wright") (:ancestor . #s(fig//ancestor nil "Brian" nil nil "BiodigitalJaz" "Forex Trader and Crypto Trader" 1964 2052 "suffered a heart attack while monitoring volatile market fluctuations.
+")) (:rpg-character . #s(fig//rpg-character "BiodigitalJaz" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 3 #s(fig//rpg-ability-scores 11 11 15 15 6 13))) (:element . "fire") (:faction . lever))

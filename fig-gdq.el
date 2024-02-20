@@ -56,7 +56,7 @@
 
 (defun fig//generate-gdq-message (user k)
   "Generate a random GDQ-style donation message for USER and pass it to K."
-  (let ((exuser (nth (random fig//gdq-usernames) fig//gdq-usernames))
+  (let ((exuser (nth (random (length fig//gdq-usernames)) fig//gdq-usernames))
         (extemplate (s-join " " (-take 3 (fig//shuffle-seq fig//gdq-templates)))))
     (fig/ask
      user

@@ -1,1 +1,1 @@
-((:faction . lever) (:boost . 2))
+((:identity . "Marie Perry") (:rpg-character . #s(fig//rpg-character "NobreHD" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 4 #s(fig//rpg-ability-scores 13 12 12 18 15 14))) (:element . "fire") (:ancestor . #s(fig//ancestor nil "Gray63beard" nil nil "NobreHD" "sail dewrinkler" 1393 1411 "unknown")) (:faction . lever) (:boost . 2))

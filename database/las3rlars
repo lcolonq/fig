@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor "Queen" "Cerdic" nil nil "las3rlars" "queen" 1120 1131 "succumbed to a sudden outbreak of the plague.
+")) (:rpg-character . #s(fig//rpg-character "las3rlars" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 2 #s(fig//rpg-ability-scores 14 16 12 15 11 9))) (:element . "earth") (:faction . tony))

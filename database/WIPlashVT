@@ -1,0 +1,2 @@
+((:rpg-character . #s(fig//rpg-character "WIPlashVT" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 10 #s(fig//rpg-ability-scores 12 15 13 7 9 16))) (:ancestor . #s(fig//ancestor nil "Kingwindbag" nil nil "WIPlashVT" "socialite" 1541 1560 "succumbed to a rare infectious disease contracted during one of his lavish parties.
+")) (:identity . "Ashlee Wells") (:element . "water") (:faction . lever))

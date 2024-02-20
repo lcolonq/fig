@@ -1,1 +1,1 @@
-((:faction . lever) (:boost . 10))
+((:identity . "Cristal Bush") (:rpg-character . #s(fig//rpg-character "ZenyaHima" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 1 #s(fig//rpg-ability-scores 11 15 13 14 9 11))) (:element . "wind") (:ancestor . #s(fig//ancestor nil "Grey1beard" nil nil "ZenyaHima" "sail dewrinkler" 1344 1366 "unknown")) (:faction . lever) (:boost . 9))

@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor nil "Slategray2beard" nil "The Cruel" "Sadra_TV" "swashbuckler" 1201 1236 "was fatally wounded in a duel.
+")) (:rpg-character . #s(fig//rpg-character "Sadra_TV" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 1 #s(fig//rpg-ability-scores 16 13 16 13 14 14))) (:element . "water") (:faction . tony))

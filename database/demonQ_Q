@@ -1,1 +1,2 @@
-((:faction . nate))
+((:identity . "Evelin Gillespie") (:ancestor . #s(fig//ancestor nil "Metalmario" nil nil "demonQ_Q" "socialite" 1504 1513 "succumbed to a sudden and severe bout of pneumonia.
+")) (:rpg-character . #s(fig//rpg-character "demonQ_Q" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 1 #s(fig//rpg-ability-scores 11 17 15 17 14 13))) (:element . "heart") (:faction . nate))

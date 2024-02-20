@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor nil "Ealdhelm" nil nil "GlitchButSmol" "jester" 1160 1175 "succumbed to a sudden illness rampant in the medieval era.
+")) (:rpg-character . #s(fig//rpg-character "GlitchButSmol" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 1 #s(fig//rpg-ability-scores 7 6 11 13 12 12))) (:identity . "Jayden Morton") (:element . "water") (:faction . lever))

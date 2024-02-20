@@ -1,1 +1,2 @@
-((:faction . tony) (:note . 60))
+((:identity . "Jenna Hanna") (:rpg-character . #s(fig//rpg-character "pablo_pepe_69" 1 #s(fig//rpg-class "Cleric" fig//rpg-ability-scores-wis 8 #s(fig//rpg-ability-scores 6 3 6 6 9 6) (2 . 3) #s(fig//rpg-saves 14 16 10 13 15)) 7 #s(fig//rpg-ability-scores 13 16 8 12 13 12))) (:element . "fire") (:ancestor . #s(fig//ancestor nil "Chirako" nil nil "pablo_pepe_69" "art contemplator" 1413 1446 "succumbed to a sudden outbreak of the bubonic plague.
+")) (:faction . tony) (:note . 60))

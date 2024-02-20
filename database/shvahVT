@@ -1,1 +1,1 @@
-((:faction . tony))
+((:identity . "Zara Wise") (:rpg-character . #s(fig//rpg-character "shvahVT" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 3 #s(fig//rpg-ability-scores 13 16 8 10 10 9))) (:element . "earth") (:ancestor . #s(fig//ancestor nil "Kidklown" nil nil "shvahVT" "statue" 1415 1438 "unknown")) (:faction . tony))

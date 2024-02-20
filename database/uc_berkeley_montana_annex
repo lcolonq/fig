@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor "Sir" "Scottius" nil nil "uc_berkeley_montana_annex" "tophat designer" 1866 1888 "succumbed to tuberculosis.
+")) (:rpg-character . #s(fig//rpg-character "uc_berkeley_montana_annex" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 2 #s(fig//rpg-ability-scores 10 6 14 14 8 14))) (:identity . "Nola Booker") (:element . "lightning") (:faction . lever))

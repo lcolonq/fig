@@ -1,1 +1,1 @@
-((:boost . 8) (:faction . lever))
+((:identity . "Jayla Mayer") (:resolution . "Do voice training") (:rpg-character . #s(fig//rpg-character "BlazyNights" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 2 #s(fig//rpg-ability-scores 17 12 17 13 13 12))) (:element . "earth") (:ancestor . #s(fig//ancestor "Sir" "Gearmes" nil nil "BlazyNights" "gear polisher" 1844 1894 "unknown")) (:boost . 31) (:faction . lever))

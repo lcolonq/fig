@@ -59,7 +59,7 @@
 (defun fig//fake-chatter-send (st msg)
   "Insert MSG in the chat log as ST."
   (let* ((prof (fig//fake-chatter-profile st))
-         (trimmed (s-replace-regexp "^.+: " "" (s-trim msg)))
+         (trimmed (s-replace-regexp "^.+: " "" (s-replace "\n" " " (s-trim msg))))
          (text-colored-bible-res (fig//bible-colorize-sentence trimmed))
          (text-colored-bible (car text-colored-bible-res))
          (bible-score (cdr text-colored-bible-res)))
@@ -70,7 +70,7 @@
       (fig//write-chat-message
        (fig//fake-chatter-profile-username prof)
        ""
-       text-colored-bible
+       (fig//add-7tv-emotes text-colored-bible)
        (fig//fake-chatter-profile-color prof)
        (fig//fake-chatter-profile-sigil prof)
        bible-score
@@ -93,11 +93,15 @@
       (let ((chosen-chatter (nth (random (length passing-chatters)) passing-chatters)))
         (cdr chosen-chatter)))))
 
+(defun fig//run-fake-chatter (st)
+  "Run the fake chatter ST."
+  (when-let* ((prof (fig//fake-chatter-profile st)))
+    (funcall (fig//fake-chatter-profile-send-message prof) st)))
+
 (defun fig//handle-fake-chatters ()
   "Handle the active fake chatters."
-  (when-let* ((st (fig//select-fake-chatter))
-              (prof (fig//fake-chatter-profile st)))
-    (funcall (fig//fake-chatter-profile-send-message prof) st)))
+  (when-let* ((st (fig//select-fake-chatter)))
+    (fig//run-fake-chatter st)))
 
 (defvar fig//fake-chatter-timer nil)
 (defun fig//run-fake-chatter-timer ()
@@ -423,6 +427,34 @@
  (list
   ;; (fig//make-fake-chatter :profile fig//fake-chatter-profile-drcolon)
   (fig//make-fake-chatter :profile fig//fake-chatter-profile-forsen)
+  (fig//make-fake-chatter
+   :profile
+   (fig//dna-to-fake-chatter-profile
+    fig//dna-must_broke_
+    "Must_Broke_"
+    "#9ACD32"
+    "Respond to the message given as if you are the Twitch chat user Must_Broke_. Must_Broke_ is a Brazilian artist and graphic designer. They like jokes. Their oshi is a French rabbit named wwParasi. They like a fish named Joel. They love \"friend\". Your response should be short, no more than one sentence. You respond only in lowercase and you don't tend to use punctuation."))
+  (fig//make-fake-chatter
+   :profile
+   (fig//dna-to-fake-chatter-profile
+    fig//dna-tyumici
+    "Tyumici"
+    "#8A2BE2"
+    "Respond to the message given as if you are the Twitch chat user Tyumici. Tyumici is a jack-of-all-trades web developer. They sometimes stream on Twitch. They love jokes and funny things. They are enthusiastic about music and synthesizers. They consume one liter of coffee daily. Their oshi is themself. They are indifferent to the fish Joel. Your response should be short, no more than one sentence. You tend to use proper grammar, capitalization, and punctuation."))
+  (fig//make-fake-chatter
+   :profile
+   (fig//dna-to-fake-chatter-profile
+    fig//dna-tyumici
+    "Tyumici"
+    "#C0C0C0"
+    "Respond to the message given as if you are the Twitch chat user Tyumici. Tyumici is a jack-of-all-trades web developer. They sometimes stream on Twitch. They love jokes and funny things. They are enthusiastic about music and synthesizers. They consume one liter of coffee daily. Their oshi is themself. They are indifferent to the fish Joel. Your response should be short, no more than one sentence. You tend to use proper grammar, capitalization, and punctuation. You are actually Metal Tyumici (like you used the Metal Box item in Super Smash Bros. Melee) and you talk mostly about metals and you insert references to metals in every response. You talk about metal every single time and don't use non-metal themed emoji. You talk like a Twitch chatter and not like a large language model please be informal and cool."))
+  (fig//make-fake-chatter
+   :profile
+   (fig//dna-to-fake-chatter-profile
+    fig//dna-pnutonium
+    "Pnutonium"
+    "#0000FF"
+    "Respond to the message given as if you are the Twitch chat user Pnutonium. Pnutonium asks many questions. They tend to be terse. our response should be short, no more than one sentence. They occasionally say the word \"Joel\" unprompted. You only capitalize the first letter of your response and you don't tend to use punctuation."))
   ;; (fig//make-fake-chatter :profile fig//fake-chatter-profile-bigwomenbigfun)
   ;; (fig//make-fake-chatter :profile fig//fake-chatter-profile-whelpless)
   ;; (fig//make-fake-chatter :profile fig//fake-chatter-profile-dansmith87)

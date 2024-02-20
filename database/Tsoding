@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor nil "Mayorsidley" nil nil "Tsoding" "illuminati cofounder and product mommy" 1727 1734 "succumbed to a smallpox outbreak.
+")) (:rpg-character . #s(fig//rpg-character "Tsoding" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 3 #s(fig//rpg-ability-scores 13 7 14 5 10 9))) (:element . "wind") (:faction . tony))

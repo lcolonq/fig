@@ -1,1 +1,1 @@
-((:boost . 1))
+((:rpg-character . #s(fig//rpg-character "denpafish" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 5 #s(fig//rpg-ability-scores 15 10 8 11 6 8))) (:element . "heart") (:ancestor . #s(fig//ancestor "Countess" "Beorhtric" nil nil "denpafish" "countess" 1150 1246 "unknown")) (:faction . tony) (:boost . 1))

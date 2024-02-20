@@ -1,1 +1,1 @@
-((:boost . 4) (:faction . tony))
+((:rpg-character . #s(fig//rpg-character "Hat_Knight" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 4 #s(fig//rpg-ability-scores 15 17 15 17 14 18))) (:identity . "Kelsey Cuevas") (:element . "lightning") (:ancestor . #s(fig//ancestor nil "Elephantogre" nil nil "Hat_Knight" "fencer" 1450 1502 "unknown")) (:boost . 4) (:faction . tony))

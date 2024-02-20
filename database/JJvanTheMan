@@ -1,1 +1,1 @@
-((:faction . lever))
+((:rpg-character . #s(fig//rpg-character "JJvanTheMan" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 1 #s(fig//rpg-ability-scores 14 17 15 14 13 15))) (:element . "lightning") (:ancestor . #s(fig//ancestor nil "Grey46beard" nil nil "JJvanTheMan" "plank walker" 1253 1324 "unknown")) (:faction . lever))

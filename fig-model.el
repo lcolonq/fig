@@ -8,6 +8,12 @@
 (require 'ht)
 (require 'cl-lib)
 
+(defun fig/none-more-verified ()
+  "None more verified."
+  (interactive)
+  (fig/pub '(avatar palette word) (list "eyes" (fig//encode-string "✅")))
+  (fig/pub '(avatar palette color) (list "hair" (fig//encode-string (fig//color-value-to-html-code (color-values "purple"))))))
+
 (defun fig//color-value-to-html-code (cval)
   "Convert color value CVAL to an HTML color code."
   (and
@@ -169,9 +175,8 @@
    "SsJsSs"
    "flyann"
    "Wina"
-   "morgvn_"
+   "MORGVN_"
    "TheIdOfAlan"
-   "DoctorGlitchy"
    "body_without_blorgans"
    "cbtcaptain"
    "iLoidtupo"
@@ -192,20 +197,61 @@
    "eientei95"
    "GyrosGeier"
    "FoggyRoses"
+   "StuxVT"
+   "imgeiser"
+   "liquidcake1"
+   "4ll4m3nts"
+   "Luigi401"
+   "sleepysleepy6"
+   "TheMaroonHatHacker"
+   "CodeSpace0x25"
+   "RetroBoi128theGameDev"
+   "yellowberryHN"
+   "DoctorGlitchy"
+   "vvizualizer"
+   "KuromaruOniisan"
+   "j_art_"
+   "BugVT"
+   "vchewbah"
+   "yiffweed"
+   "ESTRE777A"
+   "frizst"
+   "auts__"
+   "floorrip"
+   "DestinyWaits"
+   "Tomaterr"
+   "Ivellon"
+   "RyanWinchester_"
+   "InspectorDiameter"
+   "ryasuar"
+   "schizoidcarp"
+   "forraz99"
+   "The_IronShark"
+   "EricAlvin"
+   "nichePenguin"
+   "fredfuchs_en"
+   "Gleil"
+   "nightowlmocha"
+   "ishishiee"
+   "pigeonGuidedMissile"
    ))
+
+(defun fig//user-authorized (user)
+  "Return non-nil if USER is authorized to use advanced techniques."
+  (let ((boost (fig//load-db-entry user :boost)))
+    (or (and boost (> boost 2))
+        (and boost (< boost -2))
+        (-contains? fig//video-redeem-whitelist user))))
 (defun fig//handle-redeem-region-swap (type)
   "Return a redeem callback for region swap of TYPE.
 If the color is unspecified, use DEFCOLOR."
   (lambda (user inp)
     (let* ((splinp (s-split-up-to " " (s-trim inp) 1))
            (cs (fig//string-to-color-source (car splinp)))
-           (db (fig//load-db user))
-           (boost (alist-get :boost db 0))
            (text (if cs (cadr splinp) (s-join " " splinp))))
       (fig//write-chat-event (format "%s changes my %s to %s" user type inp))
       (when cs
-        (if (or (> boost 2)
-                (-contains? fig//video-redeem-whitelist user)
+        (if (or (fig//user-authorized user)
                 (not (eq 'video-url (fig//color-source-type cs))))
             (fig//model-region-color-source type cs)
           (fig//write-chat-event (format "%s is not authorized to play video, boost harder" user))))

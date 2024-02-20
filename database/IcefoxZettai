@@ -1,1 +1,2 @@
-((:boost . 5) (:faction . nate))
+((:ancestor . #s(fig//ancestor nil "Darkgraybeard" nil nil "IcefoxZettai" "conquistador" 1258 1326 "was fatally wounded in a skirmish with indigenous warriors.
+")) (:rpg-character . #s(fig//rpg-character "IcefoxZettai" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 2 #s(fig//rpg-ability-scores 9 12 11 16 10 11))) (:identity . "Margaret Trujillo") (:element . "heart") (:boost . 5) (:faction . nate))

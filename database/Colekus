@@ -1,1 +1,2 @@
-((:hexamedia-cards ("Clover Power" . 9) ("Radish Riot" . 4)) (:faction . lever) (:boost . 4))
+((:identity . "Quinn Gonzales") (:ancestor . #s(fig//ancestor "Sir" "Artifex" nil nil "Colekus" "idle gentleman" 1801 1804 "succumbed to a childhood illness common in the early 19th century.
+")) (:rpg-character . #s(fig//rpg-character "Colekus" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 4 #s(fig//rpg-ability-scores 15 14 13 14 11 13))) (:element . "lightning") (:hexamedia-cards ("Clover Power" . 9) ("Radish Riot" . 7)) (:faction . lever) (:boost . 4))

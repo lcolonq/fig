@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor "Baroness" "Withburga" nil "The Despot" "realradiodisney" "baroness" 1012 1062 "poisoned by a disgruntled courtier.
+")) (:rpg-character . #s(fig//rpg-character "realradiodisney" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 4 #s(fig//rpg-ability-scores 12 13 11 13 10 12))) (:identity . "Adrienne Meyers") (:element . "lightning") (:faction . tony))

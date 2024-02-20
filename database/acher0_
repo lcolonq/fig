@@ -1,1 +1,2 @@
-((:boost . 1) (:faction . nate))
+((:identity . "Veronica Haynes") (:rpg-character . #s(fig//rpg-character "acher0_" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 1 #s(fig//rpg-ability-scores 14 11 13 17 11 14))) (:element . "earth") (:ancestor . #s(fig//ancestor nil "Dealindelbert" nil nil "acher0_" "fake wizard" 1575 1619 "poisoned by a rival who believed he was a true sorcerer.
+")) (:boost . 4) (:faction . nate))

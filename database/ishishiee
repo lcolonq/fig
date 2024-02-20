@@ -1,0 +1,2 @@
+((:boost . 1) (:ancestor . #s(fig//ancestor nil "Lawrence" nil nil "ishishiee" "Laborer and Freight, Stock, and Material Mover, Hand" 1965 2009 "suffered a fatal accident involving falling cargo at the warehouse where he worked.
+")) (:rpg-character . #s(fig//rpg-character "ishishiee" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 3 #s(fig//rpg-ability-scores 11 16 12 14 12 11))) (:identity . "Alice Shelton") (:element . "wind") (:faction . lever))

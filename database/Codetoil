@@ -1,0 +1,2 @@
+((:ancestor . #s(fig//ancestor nil "Shadoo" nil "Grimaldi" "Codetoil" "ninja" 1464 1520 "was fatally wounded by a rival ninja's shuriken during a clandestine mission.
+")) (:rpg-character . #s(fig//rpg-character "Codetoil" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 10 #s(fig//rpg-ability-scores 17 13 10 12 14 12))) (:identity . "Carla Foster") (:element . "water") (:faction . tony))

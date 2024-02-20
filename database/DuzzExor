@@ -1,1 +1,2 @@
-((:faction . nate))
+((:ancestor . #s(fig//ancestor "Sir" "Gearry" nil nil "DuzzExor" "joint joiner" 1802 1838 "succumbed to pneumonia.
+")) (:rpg-character . #s(fig//rpg-character "DuzzExor" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 3 #s(fig//rpg-ability-scores 12 8 11 12 10 11))) (:element . "lightning") (:faction . nate))

@@ -1,1 +1,2 @@
-((:faction . nate))
+((:identity . "Kayleigh Tanner") (:rpg-character . #s(fig//rpg-character "DanktownBunny" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 3 #s(fig//rpg-ability-scores 16 11 18 7 14 14))) (:element . "heart") (:ancestor . #s(fig//ancestor "Baron" "Cyneburga" nil nil "DanktownBunny" "baron" 1145 1189 "died in a jousting tournament.
+")) (:boost . -15) (:faction . nate))

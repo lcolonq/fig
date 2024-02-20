@@ -1,1 +1,1 @@
-((:faction . tony))
+((:identity . "Shayna Chambers") (:rpg-character . #s(fig//rpg-character "Reshiram54321" 1 #s(fig//rpg-class "Cleric" fig//rpg-ability-scores-wis 8 #s(fig//rpg-ability-scores 6 3 6 6 9 6) (2 . 3) #s(fig//rpg-saves 14 16 10 13 15)) 2 #s(fig//rpg-ability-scores 14 6 15 11 15 9))) (:element . "lightning") (:ancestor . #s(fig//ancestor nil "Gregory" nil nil "Reshiram54321" "Livestreamer (VTuber)" 1944 2043 "unknown")) (:faction . tony))
