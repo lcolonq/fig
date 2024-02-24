@@ -65,4 +65,21 @@ app cfg = do
         DB.hget db "songnotes" hash >>= \case
           Nothing -> Tw.send . Tw.status Tw.status404 $ Tw.text "song not found"
           Just val -> Tw.send . Tw.text $ decodeUtf8 val
+    , Tw.get "/api/poke/:name" do
+        target <- encodeUtf8 . toLower <$> Tw.param "name"
+        inbox <- fromMaybe [] <$> DB.smembers db ("pokeinbox:" <> target)
+        Tw.send . Tw.text . pretty . SExprList @Void $ SExprString . decodeUtf8 <$> inbox
+    , Tw.post "/api/poke/:name" do
+        me <- encodeUtf8 . toLower <$> Tw.param "ayem"
+        target <- encodeUtf8 . toLower <$> Tw.param "name"
+        DB.sismember db ("pokeinbox:" <> me) target >>= \case
+          True -> do
+            log . tshow $ "handshake between " <> me <> " and " <> target <> " complete!"
+            DB.srem db ("pokeinbox:" <> target) [me]
+            DB.srem db ("pokeinbox:" <> me) [target]
+            Tw.send $ Tw.text "complete"
+          False -> do
+            log . tshow $ "partial handshake from " <> me <> " to " <> target
+            DB.sadd db ("pokeinbox:" <> target) [me]
+            Tw.send $ Tw.text "partial"
     ]

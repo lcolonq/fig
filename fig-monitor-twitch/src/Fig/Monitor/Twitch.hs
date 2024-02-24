@@ -210,6 +210,29 @@ removeVIP vipuser user = do
   unless (HTTP.statusIsSuccessful $ HTTP.responseStatus response) $ do
     log $ "Failed to remove VIP: error " <> tshow (HTTP.statusCode $ HTTP.responseStatus response)
 
+shoutout :: Text -> Text -> Authed ()
+shoutout souser user = do
+  log $ "Shoutout to: \"" <> souser <> "\""
+  let body = Aeson.encode $ Aeson.object
+        [ "from_broadcaster_id" .= user
+        , "moderator_id" .= user
+        , "to_broadcaster_id" .= souser
+        ]
+  rc <- ask
+  initialRequest <- liftIO . HTTP.parseRequest $ unpack "https://api.twitch.tv/helix/chat/shoutouts"
+  let request = initialRequest
+        { method = encodeUtf8 "POST"
+        , requestBody = RequestBodyLBS body
+        , requestHeaders =
+            [ ("Authorization", encodeUtf8 $ "Bearer " <> rc.config.userToken)
+            , ("Client-Id", encodeUtf8 rc.config.clientId)
+            , ("Content-Type", "application/json")
+            ]
+        }
+  response <- liftIO $ HTTP.httpLbs request rc.manager
+  unless (HTTP.statusIsSuccessful $ HTTP.responseStatus response) $ do
+    log $ "Failed to shoutout: error " <> tshow (HTTP.statusCode $ HTTP.responseStatus response)
+
 twitchEventClient :: Config -> (Text, Text) -> IO ()
 twitchEventClient cfg busAddr = do
   WS.runSecureClient "eventsub.wss.twitch.tv" 443 "/ws" \conn -> do
@@ -241,6 +264,7 @@ twitchEventClient cfg busAddr = do
           cmds.subscribe [sexp|(monitor twitch prediction finish)|]
           cmds.subscribe [sexp|(monitor twitch vip add)|]
           cmds.subscribe [sexp|(monitor twitch vip remove)|]
+          cmds.subscribe [sexp|(monitor twitch shoutout)|]
           forever do
             resp <- WS.receiveData conn
             case Aeson.eitherDecodeStrict resp of
@@ -404,6 +428,12 @@ twitchEventClient cfg busAddr = do
                     loginToMaybeUserId u >>= \case
                       Nothing -> pure ()
                       Just vipuser -> removeVIP vipuser user
+              | ev == [sexp|(monitor twitch shoutout)|] -> do
+                  runAuthed cfg do
+                    user <- loginToUserId cfg.userLogin
+                    loginToMaybeUserId u >>= \case
+                      Nothing -> pure ()
+                      Just souser -> shoutout souser user
             _ -> log $ "Invalid incoming message: " <> tshow d
       )
       (pure ())

@@ -46,6 +46,7 @@ module Fig.Prelude
   , headMay, atMay
   , throwLeft
   , log
+  , (>>>)
 
   , Pretty(..)
   , Fix(..), unFix
@@ -112,6 +113,9 @@ atMay (_:xs) n = atMay xs $ n - 1
 throwLeft :: (Exception e, MonadThrow m) => (b -> e) -> Either b a -> m a
 throwLeft f (Left x) = throwM $ f x
 throwLeft _ (Right x) = pure x
+
+(>>>) :: (a -> b) -> (b -> c) -> a -> c
+(>>>) = flip (.)
 
 log :: MonadIO m => Text -> m ()
 log msg = do

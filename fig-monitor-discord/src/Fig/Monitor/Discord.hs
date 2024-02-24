@@ -6,7 +6,6 @@ import Fig.Prelude
 
 import GHC.Real (fromIntegral)
 
-import Control.Arrow ((>>>))
 import Control.Monad (unless)
 import Control.Monad.Reader (runReaderT)
 import qualified Control.Concurrent.Async as Async
