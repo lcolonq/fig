@@ -25,7 +25,6 @@ common deps
     , mtl
     , network
     , safe-exceptions
-    , scotty
     , text
     , time
     , tomland

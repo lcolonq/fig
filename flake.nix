@@ -1,12 +1,20 @@
 {
   description = "fig";
 
-  inputs.nixpkgs.url = github:NixOS/nixpkgs/nixos-23.05;
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    ps-tools.follows = "purs-nix/ps-tools";
+    purs-nix.url = "github:purs-nix/purs-nix/ps-0.15";
+  };
 
-  outputs = { self, nixpkgs }:
+  outputs = { self, nixpkgs, ... }@inputs:
     let
-      pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      overrides = self: super: {
+      system = "x86_64-linux";
+      pkgs = nixpkgs.legacyPackages.${system};
+      ps-tools = inputs.ps-tools.legacyPackages.${system};
+      purs-nix = inputs.purs-nix { inherit system; };
+
+      haskellOverrides = self: super: {
         discord-haskell = self.callCabal2nix "discord-haskell" ./deps/discord-haskell {};
         irc-conduit = self.callCabal2nix "irc-conduit" ./deps/irc-conduit {};
         irc-client = self.callCabal2nix "irc-client" ./deps/irc-client {};
@@ -20,11 +28,26 @@
         fig-frontend = self.callCabal2nix "fig-frontend" ./fig-frontend {};
         };
       haskellPackages = pkgs.haskell.packages.ghc94.override {
-        inherit overrides;
+        overrides = haskellOverrides;
       };
-      # haskellPackagesStatic = pkgs.pkgsStatic.haskell.packages.ghc94.override {
-      #   inherit overrides;
-      # };
+
+      purescript = purs-nix.purs {
+        dependencies = [
+          "console"
+          "effect"
+          "prelude"
+          "random"
+          "refs"
+          "web-html"
+          "web-dom"
+          "web-uievents"
+          "canvas"
+        ];
+        dir = ./fig-frontend-client;
+        srcs = [ "src" ];
+      };
+      fig-frontend-client = purescript.bundle {};
+
       figBusModule = { config, lib, ... }:
         let
           cfg = config.colonq.services.fig-bus;
@@ -233,6 +256,11 @@
         withHoogle = true;
         buildInputs = [
           haskellPackages.haskell-language-server
+          pkgs.nodejs
+          (purescript.command {})
+          ps-tools.for-0_15.purescript-language-server
+          purs-nix.esbuild
+          purs-nix.purescript
         ];
       };
       packages.x86_64-linux = {

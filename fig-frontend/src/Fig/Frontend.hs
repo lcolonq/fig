@@ -6,7 +6,7 @@ import Control.Lens (use)
 
 import Data.Text (toLower)
 
--- import qualified Network.Wai.Middleware.Static as Wai.Static
+import qualified Network.Wai.Middleware.Static as Wai.Static
 import qualified Network.Wai.Handler.Warp as Warp
 
 import qualified Web.Twain as Tw
@@ -36,16 +36,19 @@ app cfg = do
   st <- stateRef
   pure $ foldr' @[] ($)
     (Tw.notFound . Tw.send $ Tw.text "not found")
-    -- [ Wai.Static.staticPolicy $ Wai.Static.addBase cfg.assetPath
-    [ Tw.get "/"
-      . Tw.send . Tw.html
-      . L.renderBS
-      $ L.doctypehtml_ do
-          L.head_ do
-            L.title_ "clonk zone api home page"
-            L.link_ [L.rel_ "icon", L.href_ "data:;base64,iVBORw0KGgo="]
-          L.body_ do
-            "hello"
+    [ Wai.Static.staticPolicy $ Wai.Static.addBase cfg.assetPath
+    -- , Tw.get "/"
+    --   . Tw.send . Tw.html
+    --   . L.renderBS
+    --   $ L.doctypehtml_ do
+    --       L.head_ do
+    --         L.title_ "clonk zone api home page"
+    --         L.link_ [L.rel_ "icon", L.href_ "data:;base64,iVBORw0KGgo="]
+    --         L.link_ [L.rel_ "stylesheet", L.href_ "main.css"]
+    --         L.script_ [L.type_ "module", L.src_ "main.js"] ("" :: L.Html ())
+    --       L.body_ do
+    --         L.button_ [L.id_ "foo"] do
+    --           "hello"
     , Tw.get "/api/check" $ authed cfg \auth -> do
         Tw.send $ Tw.json @[Text] [auth.id, auth.name]
     , Tw.put "/api/buffer" do

@@ -4,3 +4,4 @@ node_modules
 fig-monitor-*.toml
 fig-frontend.toml
 fig-frontend-assets
+fig-frontend-client/output/*
