@@ -1,3 +1,5 @@
+{-# Language ApplicativeDo #-}
+
 module Main where
 
 import Fig.Prelude
@@ -7,13 +9,18 @@ import Options.Applicative
 import Fig.Frontend
 import Fig.Frontend.Utils
 
-newtype Opts = Opts
-  { config :: FilePath
+data Opts = Opts
+  { busHost :: Text
+  , busPort :: Text
+  , config :: FilePath
   }
 
 parseOpts :: Parser Opts
-parseOpts = Opts
-  <$> strOption (long "config" <> metavar "PATH" <> help "Path to config file" <> showDefault <> value "fig-frontend.toml")
+parseOpts = do
+  busHost <- strOption (long "bus-host" <> metavar "HOST" <> help "Address of message bus" <> value "localhost")
+  busPort <- strOption (long "bus-port" <> metavar "PORT" <> help "Message bus port" <> showDefault <> value "32050")
+  config <- strOption (long "config" <> metavar "PATH" <> help "Path to config file" <> showDefault <> value "fig-frontend.toml")
+  pure Opts{..}
 
 main :: IO ()
 main = do
@@ -22,4 +29,4 @@ main = do
     <> header "fig-frontend - public-facing web applications"
     )
   cfg <- loadConfig opts.config
-  server cfg
+  server cfg (opts.busHost, opts.busPort)

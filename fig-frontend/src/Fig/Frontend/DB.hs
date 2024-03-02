@@ -44,3 +44,12 @@ sismember c key skey = liftIO $ Redis.runRedis c do
   Redis.sismember key skey >>= hush >>> \case
     Just x -> pure x
     Nothing -> pure False
+
+lpop :: MonadIO m => Redis.Connection -> ByteString -> m (Maybe ByteString)
+lpop c key = liftIO $ Redis.runRedis c do
+  join . hush <$> Redis.lpop key
+
+rpush :: MonadIO m => Redis.Connection -> ByteString -> ByteString -> m ()
+rpush c key val = liftIO $ Redis.runRedis c do
+  _ <- Redis.rpush key [val]
+  pure ()

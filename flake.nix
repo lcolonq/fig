@@ -213,6 +213,16 @@
         in {
           options.colonq.services.fig-frontend = {
             enable = lib.mkEnableOption "Enable the fig web frontend";
+            busHost = lib.mkOption {
+              type = lib.types.str;
+              default = "127.0.0.1";
+              description = "Message bus port";
+            };
+            busPort = lib.mkOption {
+              type = lib.types.port;
+              default = 32050;
+              description = "Address of message bus";
+            };
             configFile = lib.mkOption {
               type = lib.types.path;
               description = "Path to config file";
@@ -229,7 +239,7 @@
               wantedBy = ["multi-user.target"];
               serviceConfig = {
                 Restart = "on-failure";
-                ExecStart = "${haskellPackages.fig-frontend}/bin/fig-frontend --config ${cfg.configFile}";
+                ExecStart = "${haskellPackages.fig-frontend}/bin/fig-frontend --bus-host ${cfg.busHost} --bus-port ${toString cfg.busPort} --config ${cfg.configFile}";
                 DynamicUser = "yes";
                 RuntimeDirectory = "colonq.fig-frontend";
                 RuntimeDirectoryMode = "0755";
