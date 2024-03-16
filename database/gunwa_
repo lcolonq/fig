@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor nil "Fluffy" nil nil "gunwa_" "guy who paints himself silver and wears a tophat" 1638 1648 "succumbed to lead poisoning from the silver paint used for his performances.
-")) (:rpg-character . #s(fig//rpg-character "gunwa_" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 1 #s(fig//rpg-ability-scores 15 16 14 14 11 13))) (:element . "heart") (:faction . lever))

@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor "Sir" "Cogsmin" nil nil "Damond5" "pipemaker" 1839 1854 "succumbed to severe lead poisoning due to long-term exposure from pipemaking materials.
-")) (:rpg-character . #s(fig//rpg-character "Damond5" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 4 #s(fig//rpg-ability-scores 12 16 13 14 11 12))) (:identity . "Aubrey Barker") (:element . "lightning") (:faction . nate))

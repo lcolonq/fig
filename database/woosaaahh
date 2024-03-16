@@ -1,2 +1,0 @@
-((:identity . "Elizabeth Harrell") (:ancestor . #s(fig//ancestor nil "Diddykong" nil nil "woosaaahh" "illuminati cofounder and product mommy" 1747 1828 "succumbed to a tropical disease while on a secret Illuminati expedition.
-")) (:rpg-character . #s(fig//rpg-character "woosaaahh" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 8 #s(fig//rpg-ability-scores 16 16 13 13 9 11))) (:element . "earth") (:faction . lever))

@@ -1,2 +1,0 @@
-((:boost . -2) (:ancestor . #s(fig//ancestor nil "Punkrocks" nil nil "ItsUUnknown" "executioner" 1466 1501 "succumbed to an infection from a wound incurred during an execution gone awry.
-")) (:rpg-character . #s(fig//rpg-character "ItsUUnknown" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 3 #s(fig//rpg-ability-scores 12 11 14 14 13 15))) (:identity . "Taylor Abbott") (:element . "earth") (:faction . lever))

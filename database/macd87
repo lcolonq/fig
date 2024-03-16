@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor nil "Tubbablubba" nil "Grimaldi" "macd87" "electric fish tickler" 1510 1579 "succumbed to an electric shock while tickling an electric eel.
-")) (:rpg-character . #s(fig//rpg-character "macd87" 1 #s(fig//rpg-class "Cleric" fig//rpg-ability-scores-wis 8 #s(fig//rpg-ability-scores 6 3 6 6 9 6) (2 . 3) #s(fig//rpg-saves 14 16 10 13 15)) 3 #s(fig//rpg-ability-scores 15 12 9 6 16 17))) (:identity . "Reagan Goodman") (:element . "heart") (:faction . tony))

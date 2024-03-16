@@ -1,2 +1,0 @@
-((:rpg-character . #s(fig//rpg-character "NyxKrage" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 2 #s(fig//rpg-ability-scores 14 10 13 17 16 11))) (:element . "fire") (:ancestor . #s(fig//ancestor nil "Johnsonsuperpapermariojohnson" nil nil "NyxKrage" "co-conspirator" 1543 1592 "died from a gunshot wound during an attempted revolt.
-")) (:faction . tony) (:boost . 3))

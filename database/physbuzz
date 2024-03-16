@@ -1,2 +1,0 @@
-((:identity . "Kylie Garner") (:ancestor . #s(fig//ancestor nil "Ealdgyð" nil nil "physbuzz" "squire" 1141 1197 "succumbed to wounds sustained in battle.
-")) (:rpg-character . #s(fig//rpg-character "physbuzz" 1 #s(fig//rpg-class "Cleric" fig//rpg-ability-scores-wis 8 #s(fig//rpg-ability-scores 6 3 6 6 9 6) (2 . 3) #s(fig//rpg-saves 14 16 10 13 15)) 2 #s(fig//rpg-ability-scores 11 5 10 12 15 6))) (:element . "heart") (:faction . lever))

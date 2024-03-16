@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor nil "Kiryl" nil nil "EspressoSnail" "sculpture model" 1534 1561 "struck by a collapsing statue during a modeling session.
-")) (:rpg-character . #s(fig//rpg-character "EspressoSnail" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 1 #s(fig//rpg-ability-scores 14 7 8 15 7 11))) (:identity . "Alexandra Alvarez") (:element . "earth") (:faction . nate))

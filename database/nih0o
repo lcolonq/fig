@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor "Count" "Wilfrið" nil nil "nih0o" "count" 1095 1104 "succumbed to a sudden bout of smallpox.
-")) (:rpg-character . #s(fig//rpg-character "nih0o" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 1 #s(fig//rpg-ability-scores 17 18 11 9 15 10))) (:identity . "Jane Jimenez") (:element . "fire") (:faction . nate))

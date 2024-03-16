@@ -1,2 +1,0 @@
-((:identity . "Harley Beil") (:ancestor . #s(fig//ancestor nil "Kenneth" nil nil "goofysystem" "ninja" 1689 1736 "was fatally struck by a stray arrow during a secretive night mission.
-")) (:rpg-character . #s(fig//rpg-character "goofysystem" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 5 #s(fig//rpg-ability-scores 14 6 12 13 12 9))) (:element . "heart") (:faction . nate) (:boost . 6))

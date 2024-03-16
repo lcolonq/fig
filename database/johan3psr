@@ -1,2 +1,0 @@
-((:boost . 1) (:ancestor . #s(fig//ancestor nil "Patchcharacterpatch" nil nil "johan3psr" "Italian" 1606 1625 "succumbed to a sudden outbreak of the bubonic plague.
-")) (:rpg-character . #s(fig//rpg-character "johan3psr" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 10 #s(fig//rpg-ability-scores 16 10 14 9 14 10))) (:identity . "Kaylynn Cobb") (:element . "wind") (:faction . tony))

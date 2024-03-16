@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor "Baron" "Ealhswiþ" nil nil "Panboy" "baron" 1040 1090 "succumbed to wounds sustained in a jousting tournament.
-")) (:rpg-character . #s(fig//rpg-character "Panboy" 1 #s(fig//rpg-class "Cleric" fig//rpg-ability-scores-wis 8 #s(fig//rpg-ability-scores 6 3 6 6 9 6) (2 . 3) #s(fig//rpg-saves 14 16 10 13 15)) 2 #s(fig//rpg-ability-scores 10 12 13 10 16 12))) (:element . "heart") (:faction . lever))

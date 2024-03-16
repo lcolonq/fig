@@ -1,2 +1,0 @@
-((:identity . "Siena Bradley") (:ancestor . #s(fig//ancestor nil "Dodgerblue2beard" nil nil "K10ND1K3" "pirate" 1350 1436 "was killed during a naval battle.
-")) (:rpg-character . #s(fig//rpg-character "K10ND1K3" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 1 #s(fig//rpg-ability-scores 14 17 17 16 9 14))) (:element . "lightning") (:faction . lever))

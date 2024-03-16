@@ -1,2 +1,0 @@
-((:identity . "Denisse Enriquez") (:ancestor . #s(fig//ancestor "Duchess" "Cyneweard" nil nil "SnorlaxBud" "duchess" 1154 1219 "succumbed to a sudden outbreak of the bubonic plague.
-")) (:rpg-character . #s(fig//rpg-character "SnorlaxBud" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 3 #s(fig//rpg-ability-scores 15 9 16 18 16 10))) (:element . "fire") (:faction . lever) (:boost . 22))

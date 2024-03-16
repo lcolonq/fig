@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor nil "Grey35beard" nil nil "rocstar3000" "helmsman" 1257 1258 "drowned in a shipwreck during a violent storm.
-")) (:rpg-character . #s(fig//rpg-character "rocstar3000" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 5 #s(fig//rpg-ability-scores 18 13 12 12 13 17))) (:identity . "Annalise Torres") (:element . "wind") (:faction . tony))

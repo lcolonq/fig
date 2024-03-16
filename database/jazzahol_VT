@@ -1,2 +1,0 @@
-((:identity . "Annie Liu") (:ancestor . #s(fig//ancestor nil "Richardburbage" nil nil "jazzahol_VT" "pope" 1682 1698 "succumbed to a sudden outbreak of smallpox.
-")) (:rpg-character . #s(fig//rpg-character "jazzahol_VT" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 2 #s(fig//rpg-ability-scores 3 16 17 16 14 16))) (:element . "water") (:boost . 2) (:faction . lever))

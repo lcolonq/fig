@@ -1,2 +1,0 @@
-((:identity . "Holly Casey") (:ancestor . #s(fig//ancestor "Sir" "Gearthonius" nil nil "kyubalt" "Federal government contractor with steampunk.com" 1877 1909 "succumbed to a boiler explosion during a steam engine inspection.
-")) (:rpg-character . #s(fig//rpg-character "kyubalt" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 3 #s(fig//rpg-ability-scores 17 15 16 13 12 10))) (:element . "water") (:faction . lever))

@@ -1,2 +1,0 @@
-((:identity . "Brynn Meadows") (:resolution . "Stream at least once during the year. It can be cringe.") (:rpg-character . #s(fig//rpg-character "liquidcake1" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 9 #s(fig//rpg-ability-scores 18 15 16 13 13 15))) (:element . "wind") (:ancestor . #s(fig//ancestor "Marquis" "Wilfrith" nil nil "liquidcake1" "marquis" 1199 1199 "succumbed to a sudden infant illness.
-")) (:faction . nate) (:boost . 0))

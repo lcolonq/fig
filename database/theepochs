@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor "Sir" "Samuetron" nil nil "theepochs" "dashing rogue" 1854 1883 "was shot in a duel over a matter of honor.
-")) (:rpg-character . #s(fig//rpg-character "theepochs" 1 #s(fig//rpg-class "Cleric" fig//rpg-ability-scores-wis 8 #s(fig//rpg-ability-scores 6 3 6 6 9 6) (2 . 3) #s(fig//rpg-saves 14 16 10 13 15)) 2 #s(fig//rpg-ability-scores 14 7 9 13 14 15))) (:identity . "Madilynn Norton") (:element . "water") (:faction . lever))

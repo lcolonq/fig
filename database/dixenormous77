@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor nil "Toadministerminister" nil nil "dixenormous77" "painter" 1515 1545 "succumbed to lead poisoning from his paints.
-")) (:rpg-character . #s(fig//rpg-character "dixenormous77" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 4 #s(fig//rpg-ability-scores 16 13 14 15 14 13))) (:identity . "Alisson Beltran") (:element . "water") (:faction . lever))

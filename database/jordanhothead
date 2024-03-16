@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor nil "Toadministerminister" nil nil "jordanhothead" "painter" 1515 1555 "inhaled toxic fumes from paint.
-")) (:rpg-character . #s(fig//rpg-character "jordanhothead" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 1 #s(fig//rpg-ability-scores 12 11 10 14 14 16))) (:element . "earth") (:faction . lever))

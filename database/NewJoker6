@@ -1,1 +1,0 @@
-((:rpg-character . #s(fig//rpg-character "NewJoker6" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 3 #s(fig//rpg-ability-scores 13 16 14 10 12 8))) (:identity . "Claudia Solis") (:element . "lightning") (:faction . lever))

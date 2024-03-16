@@ -1,2 +1,0 @@
-((:boost . 0) (:ancestor . #s(fig//ancestor "Baron" "Ealdræd" nil nil "nightowlmocha" "baron" 1090 1152 "died in a siege defense against an invading army.
-")) (:rpg-character . #s(fig//rpg-character "nightowlmocha" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 3 #s(fig//rpg-ability-scores 11 12 16 11 9 13))) (:identity . "Akira Rowland") (:element . "lightning") (:faction . lever))

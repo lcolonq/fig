@@ -1,2 +1,0 @@
-((:boost . 7) (:identity . "Mariana Joseph") (:ancestor . #s(fig//ancestor nil "Koopamaster" nil nil "pluv0phile" "executioner" 1425 1471 "succumbed to a virulent plague rampant in his region at the time.
-")) (:rpg-character . #s(fig//rpg-character "pluv0phile" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 1 #s(fig//rpg-ability-scores 9 16 10 14 11 18))) (:element . "water") (:faction . lever))

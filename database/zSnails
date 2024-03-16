@@ -1,2 +1,0 @@
-((:boost . 1) (:ancestor . #s(fig//ancestor nil "Nanchandshi" nil nil "zSnails" "painting hanger" 1754 1833 "succumbed to pneumonia.
-")) (:rpg-character . #s(fig//rpg-character "zSnails" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 3 #s(fig//rpg-ability-scores 14 10 14 15 8 12))) (:identity . "Naima Rodriguez") (:element . "heart") (:faction . nate))

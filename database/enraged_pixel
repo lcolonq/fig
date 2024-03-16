@@ -1,1 +1,0 @@
-((:rpg-character . #s(fig//rpg-character "enraged_pixel" 1 #s(fig//rpg-class "Cleric" fig//rpg-ability-scores-wis 8 #s(fig//rpg-ability-scores 6 3 6 6 9 6) (2 . 3) #s(fig//rpg-saves 14 16 10 13 15)) 1 #s(fig//rpg-ability-scores 13 17 7 9 14 10))) (:identity . "Sarah Avalos") (:element . "lightning") (:faction . lever))

@@ -1,2 +1,0 @@
-((:rpg-character . #s(fig//rpg-character "h_ingles" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 1 #s(fig//rpg-ability-scores 15 10 7 12 13 12))) (:element . "water") (:ancestor . #s(fig//ancestor nil "Tyler" nil nil "h_ingles" "Registered Nurse" 1973 2036 "suffered a fatal heart attack during his night shift.
-")) (:faction . tony))

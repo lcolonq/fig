@@ -1,2 +1,0 @@
-((:identity . "Tiana Ball") (:ancestor . #s(fig//ancestor "Marquess" "Eoforhild" nil nil "IrishJohnGames" "marquess" 1102 1131 "succumbed to complications from a wound sustained in a jousting accident.
-")) (:rpg-character . #s(fig//rpg-character "IrishJohnGames" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 1 #s(fig//rpg-ability-scores 13 7 13 13 11 10))) (:element . "earth") (:boost . -1) (:faction . nate))

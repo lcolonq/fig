@@ -1,2 +1,0 @@
-((:rpg-character . #s(fig//rpg-character "mirynth" 1 #s(fig//rpg-class "Cleric" fig//rpg-ability-scores-wis 8 #s(fig//rpg-ability-scores 6 3 6 6 9 6) (2 . 3) #s(fig//rpg-saves 14 16 10 13 15)) 6 #s(fig//rpg-ability-scores 13 13 6 8 9 9))) (:identity . "Edith Savage") (:element . "lightning") (:ancestor . #s(fig//ancestor nil "Elijah" nil nil "mirynth" "Shipping, Receiving, and Inventory Clerk" 1980 1994 "was accidentally crushed by falling inventory in a warehouse incident.
-")) (:faction . tony))

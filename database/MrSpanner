@@ -1,2 +1,0 @@
-((:rpg-character . #s(fig//rpg-character "MrSpanner" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 9 #s(fig//rpg-ability-scores 13 12 12 11 12 6))) (:element . "fire") (:ancestor . #s(fig//ancestor nil "Grey35beard" nil nil "MrSpanner" "Thief, Ocean" 1249 1340 "succumbed to scurvy during a long sea voyage.
-")) (:faction . tony))

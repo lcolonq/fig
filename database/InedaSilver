@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor nil "Robirdo" nil nil "InedaSilver" "the first ever atheist" 1578 1626 "was executed for blasphemy.
-")) (:rpg-character . #s(fig//rpg-character "InedaSilver" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 3 #s(fig//rpg-ability-scores 10 12 11 18 12 11))) (:identity . "Yaritza Santana") (:element . "heart") (:faction . tony))

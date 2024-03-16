@@ -1,2 +1,0 @@
-((:identity . "Lexie Mcintyre") (:rpg-character . #s(fig//rpg-character "37LN37" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 1 #s(fig//rpg-ability-scores 17 11 12 17 13 13))) (:element . "wind") (:ancestor . #s(fig//ancestor nil "Lightsteelbluebeard" nil nil "37LN37" "smuggler" 1283 1358 "was killed in a skirmish with rival smugglers.
-")) (:boost . 9) (:faction . tony))

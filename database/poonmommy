@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor nil "Billy" nil nil "poonmommy" "Project Management Specialists and Business Operations Specialist, All Other" 1917 2005 "died of natural causes related to old age.
-")) (:rpg-character . #s(fig//rpg-character "poonmommy" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 4 #s(fig//rpg-ability-scores 16 11 17 12 13 10))) (:identity . "Norah Yu") (:element . "earth") (:faction . lever))

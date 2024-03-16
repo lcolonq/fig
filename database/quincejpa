@@ -1,2 +1,0 @@
-((:identity . "Angelica Lang") (:ancestor . #s(fig//ancestor nil "Domino" nil nil "quincejpa" "scientist (galvanic energy)" 1531 1552 "electrocuted during an experiment with galvanic energy.
-")) (:rpg-character . #s(fig//rpg-character "quincejpa" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 8 #s(fig//rpg-ability-scores 14 16 10 9 12 12))) (:element . "earth") (:faction . tony))

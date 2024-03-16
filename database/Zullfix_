@@ -1,2 +1,0 @@
-((:identity . "Yamilet Coffey") (:rpg-character . #s(fig//rpg-character "Zullfix_" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 7 #s(fig//rpg-ability-scores 11 13 13 8 8 13))) (:element . "earth") (:ancestor . #s(fig//ancestor nil "Steelbluebeard" nil nil "Zullfix_" "freebooter" 1249 1323 "was struck by a stray cannonball during a naval skirmish.
-")) (:faction . lever) (:boost . 44))

@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor "Sir" "Phineascog" nil nil "MoonSzol" "twitching steamer" 1846 1929 "succumbed to a severe respiratory condition exacerbated by years of exposure to steam and industrial pollutants.
-")) (:rpg-character . #s(fig//rpg-character "MoonSzol" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 4 #s(fig//rpg-ability-scores 16 15 14 17 12 14))) (:element . "lightning") (:faction . lever))

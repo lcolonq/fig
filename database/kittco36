@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor nil "Willie" nil nil "kittco36" "Clonkhead and Clonk Head" 1972 2043 "suffered a fatal electrocution while repairing a robotic assembly line.
-")) (:rpg-character . #s(fig//rpg-character "kittco36" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 8 #s(fig//rpg-ability-scores 16 7 13 11 10 14))) (:element . "fire") (:faction . nate))

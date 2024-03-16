@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor nil "Grey80beard" nil nil "StarryShark01" "privateer" 1283 1343 "killed in a ship battle.
-")) (:rpg-character . #s(fig//rpg-character "StarryShark01" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 3 #s(fig//rpg-ability-scores 11 14 9 13 12 8))) (:identity . "Heidi Oliver") (:element . "wind") (:faction . lever))

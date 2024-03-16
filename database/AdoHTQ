@@ -1,2 +1,0 @@
-((:identity . "Martha Horne") (:resolution . "1920x1080") (:ancestor . #s(fig//ancestor nil "Violetred4beard" nil nil "AdoHTQ" "stowaway" 1281 1337 "Violetred4beard Adohtq Colonq succumbed to scurvy on a long sea voyage.
-")) (:rpg-character . #s(fig//rpg-character "AdoHTQ" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 4 #s(fig//rpg-ability-scores 12 8 12 13 13 12))) (:element . "fire") (:boost . 9) (:faction . nate))

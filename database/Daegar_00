@@ -1,2 +1,0 @@
-((:boost . 1) (:ancestor . #s(fig//ancestor "King" "Cyneweard" nil "The Loathsome" "Daegar_00" "king" 1062 1114 "was poisoned by a disgruntled courtier.
-")) (:rpg-character . #s(fig//rpg-character "Daegar_00" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 4 #s(fig//rpg-ability-scores 11 9 14 15 11 15))) (:identity . "Taniyah Klein") (:element . "fire") (:faction . nate))

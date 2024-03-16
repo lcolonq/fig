@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor nil "Jonathan" nil nil "flippablecoin69" "Shipping, Receiving, and Inventory Clerk" 1986 2050 "succumbed to a rare heart condition undetected until it was too late.
-")) (:rpg-character . #s(fig//rpg-character "flippablecoin69" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 3 #s(fig//rpg-ability-scores 14 10 11 16 11 16))) (:identity . "Madisyn Kramer") (:element . "fire") (:faction . lever))

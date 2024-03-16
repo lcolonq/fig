@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor nil "Metaknight" nil nil "TheVileOffspring" "poet" 1459 1555 "succumbed to the plague.
-")) (:rpg-character . #s(fig//rpg-character "TheVileOffspring" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 3 #s(fig//rpg-ability-scores 16 11 14 18 7 15))) (:element . "wind") (:faction . lever))

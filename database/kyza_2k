@@ -1,2 +1,0 @@
-((:resolution . "finish my portfolio") (:ancestor . #s(fig//ancestor "Sir" "Cogsby" nil nil "kyza_2k" "derigible inflator" 1883 1926 "hydrogen gas explosion during dirigible maintenance
-")) (:rpg-character . #s(fig//rpg-character "kyza_2k" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 1 #s(fig//rpg-ability-scores 10 14 7 15 11 10))) (:element . "water") (:faction . tony))

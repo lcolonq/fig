@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor "Marquess" "Wulfnoð" nil nil "ShyProgrammer" "marquess" 1093 1145 "succumbed to wounds sustained in a jousting tournament.
-")) (:rpg-character . #s(fig//rpg-character "ShyProgrammer" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 1 #s(fig//rpg-ability-scores 16 12 15 14 9 16))) (:identity . "Jamya Kramer") (:element . "wind") (:faction . tony))

@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor nil "Scooter" nil nil "bigsack_tanuki" "plague carrier" 1606 1657 "contracted the bubonic plague from one of the infected fleas he was handling.
-")) (:rpg-character . #s(fig//rpg-character "bigsack_tanuki" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 4 #s(fig//rpg-ability-scores 12 9 10 18 16 10))) (:element . "wind") (:faction . nate))

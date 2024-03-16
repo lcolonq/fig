@@ -1,2 +1,0 @@
-((:identity . "Alanna Hamilton") (:ancestor . #s(fig//ancestor "Marquess" "Æsc" nil nil "Wadderdragen" "marquess" 1087 1148 "succumbed to wounds sustained in battle.
-")) (:rpg-character . #s(fig//rpg-character "Wadderdragen" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 1 #s(fig//rpg-ability-scores 11 10 16 12 12 11))) (:element . "wind") (:faction . nate) (:boost . 9))

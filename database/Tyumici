@@ -1,2 +1,0 @@
-((:identity . "Ayana Lozano") (:resolution . "5120x1440") (:rpg-character . #s(fig//rpg-character "Tyumici" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 3 #s(fig//rpg-ability-scores 14 17 13 14 12 10))) (:element . "fire") (:ancestor . #s(fig//ancestor nil "Hoohooros" nil nil "Tyumici" "art contemplator" 1434 1440 "succumbed to a rare illness common in childhood during that era.
-")) (:faction . lever) (:boost . 6))

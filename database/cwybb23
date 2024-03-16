@@ -1,1 +1,0 @@
-((:rpg-character . #s(fig//rpg-character "cwybb23" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 3 #s(fig//rpg-ability-scores 9 14 14 11 10 12))) (:element . "heart") (:ancestor . #s(fig//ancestor nil "Stephen" nil nil "cwybb23" "Carpenter" 1924 1947 "unknown")) (:faction . tony))

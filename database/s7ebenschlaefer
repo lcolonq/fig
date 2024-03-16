@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor nil "Uhtric" nil nil "s7ebenschlaefer" "squire" 1043 1095 "died in a jousting accident.
-")) (:rpg-character . #s(fig//rpg-character "s7ebenschlaefer" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 2 #s(fig//rpg-ability-scores 9 14 15 15 10 15))) (:element . "heart") (:faction . nate))

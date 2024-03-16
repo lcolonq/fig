@@ -1,2 +1,0 @@
-((:boost . 6) (:identity . "Karley Truong") (:ancestor . #s(fig//ancestor nil "Austin" nil nil "cryptk5" "Carpenter" 1912 2011 "succumbed to natural causes at the age of 99.
-")) (:rpg-character . #s(fig//rpg-character "cryptk5" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 2 #s(fig//rpg-ability-scores 12 18 13 12 12 12))) (:element . "wind") (:faction . nate) (:note . 62))

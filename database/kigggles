@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor nil "Palegreen2beard" nil nil "kigggles" "poop-deck swabber" 1254 1310 "succumbed to scurvy during a long sea voyage.
-")) (:rpg-character . #s(fig//rpg-character "kigggles" 1 #s(fig//rpg-class "Cleric" fig//rpg-ability-scores-wis 8 #s(fig//rpg-ability-scores 6 3 6 6 9 6) (2 . 3) #s(fig//rpg-saves 14 16 10 13 15)) 6 #s(fig//rpg-ability-scores 13 16 9 12 15 13))) (:identity . "Delaney Gentry") (:element . "wind") (:faction . tony))

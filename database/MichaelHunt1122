@@ -1,2 +1,0 @@
-((:identity . "Kyleigh Pollard") (:ancestor . #s(fig//ancestor nil "Cloudstrife" nil "Etzio" "MichaelHunt1122" "Italian" 1681 1761 "died of old age.
-")) (:rpg-character . #s(fig//rpg-character "MichaelHunt1122" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 1 #s(fig//rpg-ability-scores 14 14 13 14 12 10))) (:element . "heart") (:faction . lever))

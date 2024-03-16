@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor nil "Willy" nil nil "HarrisaMapon" "scientist (galvanic energy)" 1585 1588 "accidentally electrocuted during an experiment with galvanic energy.
-")) (:rpg-character . #s(fig//rpg-character "HarrisaMapon" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 4 #s(fig//rpg-ability-scores 10 15 10 11 8 11))) (:element . "wind") (:faction . tony))

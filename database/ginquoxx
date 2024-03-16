@@ -1,2 +1,0 @@
-((:identity . "Ellen Hendricks") (:ancestor . #s(fig//ancestor nil "Mayorgriffeath" nil nil "ginquoxx" "plumber" 1443 1500 "succumbed to an infection after a pipe burst and lacerated his leg.
-")) (:rpg-character . #s(fig//rpg-character "ginquoxx" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 3 #s(fig//rpg-ability-scores 11 10 10 16 14 17))) (:element . "earth") (:faction . tony))

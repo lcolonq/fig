@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor nil "Cyneric" nil "The Loathsome" "SataMJ" "blacksmith" 1017 1065 "succumbed to severe burns from a forge accident.
-")) (:rpg-character . #s(fig//rpg-character "SataMJ" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 4 #s(fig//rpg-ability-scores 13 14 10 13 10 14))) (:identity . "Cloe Mcmahon") (:element . "water") (:faction . lever))

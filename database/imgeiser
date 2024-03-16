@@ -1,2 +1,0 @@
-((:identity . "Annabelle Brown") (:resolution . "kill friend") (:ancestor . #s(fig//ancestor nil "Spikyjoe" nil nil "imgeiser" "guy who paints himself silver and wears a tophat" 1687 1734 "succumbed to heavy metal poisoning from the silver paint.
-")) (:rpg-character . #s(fig//rpg-character "imgeiser" 1 #s(fig//rpg-class "Cleric" fig//rpg-ability-scores-wis 8 #s(fig//rpg-ability-scores 6 3 6 6 9 6) (2 . 3) #s(fig//rpg-saves 14 16 10 13 15)) 6 #s(fig//rpg-ability-scores 11 14 15 10 13 15))) (:element . "heart") (:boost . 13) (:faction . nate))

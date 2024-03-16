@@ -1,2 +1,0 @@
-((:boost . 1) (:ancestor . #s(fig//ancestor nil "Muskular" nil nil "ryasuar" "thief" 1630 1643 "was fatally stabbed during a botched burglary.
-")) (:rpg-character . #s(fig//rpg-character "ryasuar" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 5 #s(fig//rpg-ability-scores 13 14 15 6 12 10))) (:identity . "Alivia Truong") (:element . "wind") (:faction . lever))

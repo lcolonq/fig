@@ -1,2 +1,0 @@
-((:identity . "Monica Conley") (:ancestor . #s(fig//ancestor "Baroness" "Dunstan" nil nil "badcop_" "baroness" 1099 1112 "succumbed to a sudden illness.
-")) (:rpg-character . #s(fig//rpg-character "badcop_" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 4 #s(fig//rpg-ability-scores 15 12 14 16 13 8))) (:element . "water") (:faction . nate) (:boost . 0))

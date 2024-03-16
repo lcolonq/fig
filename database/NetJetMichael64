@@ -1,2 +1,0 @@
-((:identity . "Karla Hinton") (:ancestor . #s(fig//ancestor nil "Boom" nil "Divini" "NetJetMichael64" "wimbeldon tournamentor" 1554 1570 "struck by a misfired cannonball during a public demonstration.
-")) (:rpg-character . #s(fig//rpg-character "NetJetMichael64" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 3 #s(fig//rpg-ability-scores 11 8 10 16 15 15))) (:element . "fire") (:faction . lever) (:note . 71))

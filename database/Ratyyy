@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor nil "Axemyellow" nil nil "Ratyyy" "Italian" 1582 1640 "succumbed to the bubonic plague.
-")) (:hexamedia-cards ("Clover Power" . 13) ("Radish Riot" . 0)) (:rpg-character . #s(fig//rpg-character "Ratyyy" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 1 #s(fig//rpg-ability-scores 12 15 14 16 10 13))) (:identity . "Julie Cain") (:element . "wind") (:faction . lever))

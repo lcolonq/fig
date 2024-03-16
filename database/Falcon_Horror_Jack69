@@ -1,2 +1,0 @@
-((:rpg-character . #s(fig//rpg-character "Falcon_Horror_Jack69" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 1 #s(fig//rpg-ability-scores 14 10 14 17 16 13))) (:element . "lightning") (:ancestor . #s(fig//ancestor nil "Burtthebashful" nil nil "Falcon_Horror_Jack69" "sculpture model" 1728 1800 "succumbed to pneumonia.
-")) (:faction . lever))

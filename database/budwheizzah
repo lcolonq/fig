@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor nil "Erniehudson" nil nil "budwheizzah" "tailor" 1514 1540 "succumbed to the bubonic plague.
-")) (:rpg-character . #s(fig//rpg-character "budwheizzah" 1 #s(fig//rpg-class "Cleric" fig//rpg-ability-scores-wis 8 #s(fig//rpg-ability-scores 6 3 6 6 9 6) (2 . 3) #s(fig//rpg-saves 14 16 10 13 15)) 3 #s(fig//rpg-ability-scores 12 13 16 12 13 9))) (:identity . "Rose Rich") (:element . "fire") (:faction . tony))

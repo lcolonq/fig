@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor nil "Darkolivegreen4beard" nil nil "HAXICHAN" "plank walker" 1332 1363 "walked off the plank during a pirate attack.
-")) (:rpg-character . #s(fig//rpg-character "HAXICHAN" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 6 #s(fig//rpg-ability-scores 13 11 10 11 6 16))) (:identity . "Jaslyn Parks") (:element . "water") (:faction . lever))

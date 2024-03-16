@@ -1,2 +1,0 @@
-((:boost . 1) (:ancestor . #s(fig//ancestor nil "Dodgerbluebeard" nil nil "tmutilation21" "buccaneer" 1211 1278 "was slain in a ship battle with a rival pirate crew.
-")) (:rpg-character . #s(fig//rpg-character "tmutilation21" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 1 #s(fig//rpg-ability-scores 11 12 8 13 13 12))) (:identity . "Angie Ellis") (:element . "wind") (:faction . lever))

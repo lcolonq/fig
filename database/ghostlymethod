@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor nil "Foreman" nil nil "ghostlymethod" "fake wizard" 1692 1717 "was struck by lightning during a storm while performing a ritual.
-")) (:rpg-character . #s(fig//rpg-character "ghostlymethod" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 7 #s(fig//rpg-ability-scores 16 12 9 13 8 15))) (:element . "water") (:faction . tony))

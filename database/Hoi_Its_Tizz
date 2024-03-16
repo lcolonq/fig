@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor "Count" "Beorhtric" nil nil "Hoi_Its_Tizz" "count" 1069 1105 "succumbed to wounds sustained in a jousting tournament.
-")) (:rpg-character . #s(fig//rpg-character "Hoi_Its_Tizz" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 2 #s(fig//rpg-ability-scores 14 13 8 17 13 10))) (:identity . "Teresa Horton") (:element . "wind") (:faction . nate))

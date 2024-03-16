@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor nil "Janbi" nil nil "OGma_badparenting101" "artificer" 1797 1799 "succumbed to a childhood illness exacerbated by lead-based paint exposure in his artificer workshop environment.
-")) (:rpg-character . #s(fig//rpg-character "OGma_badparenting101" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 4 #s(fig//rpg-ability-scores 14 17 12 17 14 17))) (:element . "water") (:faction . nate))

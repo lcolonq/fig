@@ -1,2 +1,0 @@
-((:identity . "Abril English") (:ancestor . #s(fig//ancestor "Marquess" "Eadgyð" nil nil "neunmalelf" "marquess" 1015 1054 "succumbed to a sudden outbreak of the plague.
-")) (:rpg-character . #s(fig//rpg-character "neunmalelf" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 2 #s(fig//rpg-ability-scores 17 13 16 14 15 15))) (:element . "earth") (:boost . 7) (:faction . tony))

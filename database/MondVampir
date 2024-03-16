@@ -1,2 +1,0 @@
-((:identity . "Joyce Berger") (:ancestor . #s(fig//ancestor "Marquess" "Mildþryð" nil nil "MondVampir" "marquess" 1165 1219 "succumbed to a plague outbreak.
-")) (:rpg-character . #s(fig//rpg-character "MondVampir" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 2 #s(fig//rpg-ability-scores 15 17 10 11 14 14))) (:element . "earth") (:faction . tony))

@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor nil "Punchinello" nil nil "HardcorexHunter" "alchemist" 1763 1847 "accidentally poisoned himself with a toxic substance while experimenting with alchemical mixtures.
-")) (:rpg-character . #s(fig//rpg-character "HardcorexHunter" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 5 #s(fig//rpg-ability-scores 14 10 15 11 11 12))) (:identity . "Ellen Lee") (:element . "heart") (:faction . nate))

@@ -1,2 +1,0 @@
-((:identity . "Belen Sloan") (:ancestor . #s(fig//ancestor "Viscountess" "Wærmund" nil nil "NineteenNinetyX" "viscountess" 1001 1059 "succumbed to a sudden and severe outbreak of the plague.
-")) (:rpg-character . #s(fig//rpg-character "NineteenNinetyX" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 4 #s(fig//rpg-ability-scores 15 16 12 15 13 9))) (:element . "water") (:boost . 8) (:faction . lever))

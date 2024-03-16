@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor "Countess" "Cola" nil nil "superplink" "countess" 1004 1042 "poisoned at a royal banquet.
-")) (:rpg-character . #s(fig//rpg-character "superplink" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 9 #s(fig//rpg-ability-scores 15 18 9 14 13 9))) (:identity . "Claudia Pineda") (:element . "wind") (:faction . nate))

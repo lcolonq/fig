@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor nil "Secretagentn" nil nil "Kwata_X11" "electric fish tickler" 1619 1653 "was electrocuted by an electric eel during a fish-tickling session.
-")) (:rpg-character . #s(fig//rpg-character "Kwata_X11" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 3 #s(fig//rpg-ability-scores 11 15 14 18 8 13))) (:identity . "Jazmin Avila") (:element . "earth") (:faction . lever))

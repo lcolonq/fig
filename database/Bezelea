@@ -1,2 +1,0 @@
-((:identity . "Arely Jacobs") (:ancestor . #s(fig//ancestor "Duchess" "Ealdhelm" nil "The Drunk" "Bezelea" "duchess" 1088 1124 "poisoned by a tainted bottle of wine
-")) (:rpg-character . #s(fig//rpg-character "Bezelea" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 2 #s(fig//rpg-ability-scores 11 12 13 15 8 12))) (:element . "fire") (:hexamedia-cards ("Clover Power" . 8) ("Radish Riot" . 10)) (:equity . 1) (:faction . tony) (:note . 69))

@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor nil "Bobby" nil nil "code_stank" "Forex Trader and Crypto Trader" 1915 2009 "suffered a heart attack while monitoring volatile market fluctuations.
-")) (:rpg-character . #s(fig//rpg-character "code_stank" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 7 #s(fig//rpg-ability-scores 17 10 12 13 11 17))) (:identity . "Kate Chung") (:element . "heart") (:faction . tony))

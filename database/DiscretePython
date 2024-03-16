@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor nil "Gary" nil nil "DiscretePython" "Lawyer" 1936 1996 "suffered a heart attack.
-")) (:rpg-character . #s(fig//rpg-character "DiscretePython" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 8 #s(fig//rpg-ability-scores 16 11 10 12 12 13))) (:element . "wind") (:faction . nate))

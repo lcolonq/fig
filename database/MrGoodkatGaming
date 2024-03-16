@@ -1,2 +1,0 @@
-((:identity . "Isabell Livingston") (:ancestor . #s(fig//ancestor "Sir" "Coggan" nil nil "MrGoodkatGaming" "poor starving orphan child" 1817 1896 "succumbed to tuberculosis.
-")) (:rpg-character . #s(fig//rpg-character "MrGoodkatGaming" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 6 #s(fig//rpg-ability-scores 14 12 15 13 12 13))) (:element . "fire") (:faction . lever))

@@ -1,2 +1,0 @@
-((:ancestor . #s(fig//ancestor "Duchess" "Æthelweard" nil nil "Bellophon" "duchess" 1166 1172 "succumbed to a fever during a smallpox epidemic.
-")) (:rpg-character . #s(fig//rpg-character "Bellophon" 1 #s(fig//rpg-class "Fighter" fig//rpg-ability-scores-str 10 #s(fig//rpg-ability-scores 9 6 7 3 6 6) (1 . 1) #s(fig//rpg-saves 18 20 16 17 19)) 7 #s(fig//rpg-ability-scores 13 11 17 12 7 11))) (:identity . "Ashlynn Pennington") (:element . "wind") (:faction . tony))

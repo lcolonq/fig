@@ -1,2 +1,0 @@
-((:identity . "Cloe Bonilla") (:ancestor . #s(fig//ancestor "Sir" "Cogstopher" nil nil "zom_danni" "big daddy" 1881 1914 "succumbed to a deep-sea diving suit malfunction during an underwater maintenance operation.
-")) (:rpg-character . #s(fig//rpg-character "zom_danni" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 1 #s(fig//rpg-ability-scores 5 16 14 12 13 13))) (:element . "wind") (:faction . tony) (:note . 60) (:boost . 4))

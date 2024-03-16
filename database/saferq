@@ -1,2 +1,0 @@
-((:identity . "Marilyn Munoz") (:ancestor . #s(fig//ancestor nil "Darkmagentabeard" nil nil "saferq" "cartographer" 1276 1366 "succumbed to a fever contracted on an overseas mapping expedition.
-")) (:rpg-character . #s(fig//rpg-character "saferq" 1 #s(fig//rpg-class "Magic User" fig//rpg-ability-scores-int 4 #s(fig//rpg-ability-scores 3 6 6 9 6 6) (2 . 5) #s(fig//rpg-saves 11 15 14 13 12)) 2 #s(fig//rpg-ability-scores 8 14 16 15 10 10))) (:element . "heart") (:faction . nate) (:boost . 20))
