@@ -231,6 +231,7 @@
                 asset_path = "./fig-frontend-assets"
                 client_id = ""
                 auth_token = ""
+                db_host = ""
               '';
             };
           };
