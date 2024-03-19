@@ -1,3 +1,6 @@
+// output/Config/foreign.js
+var apiServer = globalThis.apiServer;
+
 // output/Control.Semigroupoid/index.js
 var semigroupoidFn = {
   compose: function(f) {
@@ -1465,50 +1468,6 @@ var unionWith = function(dictOrd) {
 var union = function(dictOrd) {
   return unionWith(dictOrd)($$const);
 };
-var member = function(dictOrd) {
-  var compare2 = compare(dictOrd);
-  return function(k) {
-    var go2 = function($copy_v) {
-      var $tco_done = false;
-      var $tco_result;
-      function $tco_loop(v) {
-        if (v instanceof Leaf) {
-          $tco_done = true;
-          return false;
-        }
-        ;
-        if (v instanceof Node) {
-          var v1 = compare2(k)(v.value2);
-          if (v1 instanceof LT) {
-            $copy_v = v.value4;
-            return;
-          }
-          ;
-          if (v1 instanceof GT) {
-            $copy_v = v.value5;
-            return;
-          }
-          ;
-          if (v1 instanceof EQ) {
-            $tco_done = true;
-            return true;
-          }
-          ;
-          throw new Error("Failed pattern match at Data.Map.Internal (line 457, column 7 - line 460, column 19): " + [v1.constructor.name]);
-        }
-        ;
-        throw new Error("Failed pattern match at Data.Map.Internal (line 454, column 8 - line 460, column 19): " + [v.constructor.name]);
-      }
-      ;
-      while (!$tco_done) {
-        $tco_result = $tco_loop($copy_v);
-      }
-      ;
-      return $tco_result;
-    };
-    return go2;
-  };
-};
 var lookup = function(dictOrd) {
   var compare2 = compare(dictOrd);
   return function(k) {
@@ -1798,20 +1757,6 @@ function setCanvasHeight(canvas) {
     };
   };
 }
-function setFillStyle(ctx) {
-  return function(style) {
-    return function() {
-      ctx.fillStyle = style;
-    };
-  };
-}
-function fillRect(ctx) {
-  return function(r) {
-    return function() {
-      ctx.fillRect(r.x, r.y, r.width, r.height);
-    };
-  };
-}
 function clearRect(ctx) {
   return function(r) {
     return function() {
@@ -1823,17 +1768,6 @@ function setFont(ctx) {
   return function(fontspec) {
     return function() {
       ctx.font = fontspec;
-    };
-  };
-}
-function fillText(ctx) {
-  return function(text5) {
-    return function(x) {
-      return function(y) {
-        return function() {
-          ctx.fillText(text5, x, y);
-        };
-      };
     };
   };
 }
@@ -1991,16 +1925,15 @@ var map1 = /* @__PURE__ */ map(functorArray);
 var union2 = /* @__PURE__ */ union(ordRecord2);
 var append3 = /* @__PURE__ */ append(semigroupArray);
 var lookup2 = /* @__PURE__ */ lookup(ordRecord2);
-var member2 = /* @__PURE__ */ member(ordRecord2);
-var $$for2 = /* @__PURE__ */ $$for(applicativeEffect)(traversableArray);
+var when2 = /* @__PURE__ */ when(applicativeEffect);
 var discard22 = /* @__PURE__ */ discard2(/* @__PURE__ */ bindStateT(monadEffect));
 var monadStateStateT2 = /* @__PURE__ */ monadStateStateT(monadEffect);
 var monadEffectState2 = /* @__PURE__ */ monadEffectState(monadEffectEffect);
 var applicativeStateT2 = /* @__PURE__ */ applicativeStateT(monadEffect);
 var pure1 = /* @__PURE__ */ pure(applicativeStateT2);
-var when2 = /* @__PURE__ */ when(applicativeStateT2);
+var when1 = /* @__PURE__ */ when(applicativeStateT2);
 var void1 = /* @__PURE__ */ $$void(/* @__PURE__ */ functorStateT(functorEffect));
-var for1 = /* @__PURE__ */ $$for(applicativeStateT2)(traversableArray);
+var $$for2 = /* @__PURE__ */ $$for(applicativeStateT2)(traversableArray);
 var GfxWhiteout = /* @__PURE__ */ function() {
   function GfxWhiteout2() {
   }
@@ -2046,36 +1979,37 @@ var EventMouseMove = /* @__PURE__ */ function() {
 }();
 var tick = function(dictMonadState) {
   return modify_(dictMonadState)(function(st) {
-    var $109 = {};
-    for (var $110 in st) {
-      if ({}.hasOwnProperty.call(st, $110)) {
-        $109[$110] = st[$110];
+    var $110 = {};
+    for (var $111 in st) {
+      if ({}.hasOwnProperty.call(st, $111)) {
+        $110[$111] = st[$111];
       }
       ;
     }
     ;
-    $109.tick = st.tick + 1 | 0;
-    $109.transitions = function() {
+    $110.tick = st.tick + 1 | 0;
+    $110.redraw = false;
+    $110.transitions = function() {
       var v1 = uncons(st.transitions);
       if (v1 instanceof Nothing) {
         return st.transitions;
       }
       ;
       if (v1 instanceof Just) {
-        var $105 = isEmpty(v1.value0.head.cells);
-        if ($105) {
+        var $106 = isEmpty(v1.value0.head.cells);
+        if ($106) {
           return v1.value0.tail;
         }
         ;
         return st.transitions;
       }
       ;
-      throw new Error("Failed pattern match at Main (line 217, column 19 - line 219, column 79): " + [v1.constructor.name]);
+      throw new Error("Failed pattern match at Main (line 239, column 19 - line 241, column 79): " + [v1.constructor.name]);
     }();
-    $109.inverse = filter2(function(v1) {
+    $110.inverse = filter2(function(v1) {
       return st.tick <= v1;
     })(st.inverse);
-    return $109;
+    return $110;
   });
 };
 var tick1 = /* @__PURE__ */ tick(monadStateStateT2);
@@ -2092,7 +2026,7 @@ var pickRandom = function(cells2) {
       return new Just(v.value0);
     }
     ;
-    throw new Error("Failed pattern match at Main (line 135, column 3 - line 137, column 28): " + [v.constructor.name]);
+    throw new Error("Failed pattern match at Main (line 139, column 3 - line 141, column 28): " + [v.constructor.name]);
   };
 };
 var pickCell = function(dictMonadState) {
@@ -2117,36 +2051,37 @@ var pickCell = function(dictMonadState) {
           ;
           if (v1 instanceof Just) {
             return put2(function() {
-              var $119 = {};
-              for (var $120 in st) {
-                if ({}.hasOwnProperty.call(st, $120)) {
-                  $119[$120] = st[$120];
+              var $120 = {};
+              for (var $121 in st) {
+                if ({}.hasOwnProperty.call(st, $121)) {
+                  $120[$121] = st[$121];
                 }
                 ;
               }
               ;
-              $119.cells = insert2(v1.value0.value0)(v1.value0.value1)(st.cells);
-              $119.transitions = cons(function() {
-                var $116 = {};
-                for (var $117 in v.value0.head) {
-                  if ({}.hasOwnProperty.call(v.value0.head, $117)) {
-                    $116[$117] = v["value0"]["head"][$117];
+              $120.redraw = true;
+              $120.cells = insert2(v1.value0.value0)(v1.value0.value1)(st.cells);
+              $120.transitions = cons(function() {
+                var $117 = {};
+                for (var $118 in v.value0.head) {
+                  if ({}.hasOwnProperty.call(v.value0.head, $118)) {
+                    $117[$118] = v["value0"]["head"][$118];
                   }
                   ;
                 }
                 ;
-                $116.cells = $$delete2(v1.value0.value0)(v.value0.head.cells);
-                return $116;
+                $117.cells = $$delete2(v1.value0.value0)(v.value0.head.cells);
+                return $117;
               }())(v.value0.tail);
-              return $119;
+              return $120;
             }());
           }
           ;
-          throw new Error("Failed pattern match at Main (line 249, column 49 - line 252, column 120): " + [v1.constructor.name]);
+          throw new Error("Failed pattern match at Main (line 271, column 49 - line 274, column 135): " + [v1.constructor.name]);
         });
       }
       ;
-      throw new Error("Failed pattern match at Main (line 246, column 3 - line 252, column 120): " + [v.constructor.name]);
+      throw new Error("Failed pattern match at Main (line 268, column 3 - line 274, column 135): " + [v.constructor.name]);
     });
   };
 };
@@ -2167,30 +2102,61 @@ var newContext = function __do() {
     })();
     var render = getContext2D(v.value0)();
     setFont(render)("bold 0.8vw Iosevka Comfy")();
-    var cellDim = toNumber(ceil2(width8 / 100));
+    var cellWidth = toNumber(ceil2(width8 / 200));
+    var cellHeight = cellWidth * 2;
     return new Just({
       window: w,
       canvas: v.value0,
       render,
       width: width8,
       height: height8,
-      cellDim,
-      widthCells: ceil2(100),
-      heightCells: ceil2(height8 / cellDim),
+      cellHeight,
+      cellWidth,
+      widthCells: ceil2(200),
+      heightCells: ceil2(height8 / cellHeight),
       events: [new EventGfx(GfxWhiteout.value)]
     });
   }
   ;
-  throw new Error("Failed pattern match at Main (line 77, column 45 - line 97, column 10): " + [v.constructor.name]);
+  throw new Error("Failed pattern match at Main (line 79, column 45 - line 101, column 10): " + [v.constructor.name]);
 };
 var initialState = {
   tick: 0,
   cells: empty2,
   inverse: empty2,
-  transitions: []
+  transitions: [],
+  redraw: true
 };
 var gfxTransitions = function(ctx) {
   return function(v) {
+    var linkRight = function(y) {
+      return function(fgc) {
+        return function(bgc) {
+          return function(str) {
+            return function(url) {
+              return fromFoldable2(mapWithIndex2(function(i) {
+                return function(c) {
+                  return new Tuple({
+                    x: ((ctx.widthCells - length2(str) | 0) - 8 | 0) + i | 0,
+                    y
+                  }, {
+                    bg: bgc,
+                    fg: fgc,
+                    "char": singleton4(c),
+                    click: function(st) {
+                      return function __do3() {
+                        $$void2(open(url)("_blank")("")(ctx.window))();
+                        return st;
+                      };
+                    }
+                  });
+                };
+              })(toCharArray(str)));
+            };
+          };
+        };
+      };
+    };
     var link = function(y) {
       return function(fgc) {
         return function(bgc) {
@@ -2219,7 +2185,7 @@ var gfxTransitions = function(ctx) {
         };
       };
     };
-    var fg = unions2([link(0)("purple")("white")("twitch.tv/lcolonq")("https://twitch.tv/lcolonq"), link(1)("blue")("white")("twitter.com/lcolonq")("https://twitter.com/lcolonq")]);
+    var fg = unions2([link(0)("purple")("white")("twitch.tv/lcolonq")("https://twitch.tv/lcolonq"), link(1)("blue")("white")("twitter.com/lcolonq")("https://twitter.com/lcolonq"), link(ctx.heightCells - 1 | 0)("white")("black")("the previous one")("https://pub.colonq.computer/~llll/cgi-bin/ring?me=llll&offset=-1"), linkRight(ctx.heightCells - 1 | 0)("white")("black")("the next one")("https://pub.colonq.computer/~llll/cgi-bin/ring?me=llll&offset=1")]);
     var bg = fromFoldable2(concat(flip(map1)(range2(0)(ctx.widthCells))(function(x) {
       return flip(map1)(range2(0)(ctx.heightCells))(function(y) {
         return new Tuple({
@@ -2239,7 +2205,7 @@ var gfxTransitions = function(ctx) {
               return singleton4(v1.value0);
             }
             ;
-            throw new Error("Failed pattern match at Main (line 182, column 12 - line 184, column 39): " + [v1.constructor.name]);
+            throw new Error("Failed pattern match at Main (line 188, column 12 - line 190, column 39): " + [v1.constructor.name]);
           }()
         });
       });
@@ -2275,7 +2241,8 @@ var pullEvents = function(dictMonadState) {
             if (v instanceof Just) {
               return discard3(liftEffect2(write({
                 canvas: ctx.canvas,
-                cellDim: ctx.cellDim,
+                cellHeight: ctx.cellHeight,
+                cellWidth: ctx.cellWidth,
                 height: ctx.height,
                 heightCells: ctx.heightCells,
                 render: ctx.render,
@@ -2288,6 +2255,7 @@ var pullEvents = function(dictMonadState) {
                   return pure22({
                     cells: st.cells,
                     inverse: st.inverse,
+                    redraw: st.redraw,
                     tick: st.tick,
                     transitions: append3(st.transitions)(gfxTransitions(ctx)(v.value0.head.value0))
                   });
@@ -2306,7 +2274,7 @@ var pullEvents = function(dictMonadState) {
                     return liftEffect2(v1.value0.click(st));
                   }
                   ;
-                  throw new Error("Failed pattern match at Main (line 234, column 11 - line 236, column 53): " + [v1.constructor.name]);
+                  throw new Error("Failed pattern match at Main (line 256, column 11 - line 258, column 53): " + [v1.constructor.name]);
                 }
                 ;
                 if (v.value0.head instanceof EventMouseMove) {
@@ -2320,17 +2288,18 @@ var pullEvents = function(dictMonadState) {
                   })));
                   return pure22({
                     cells: st.cells,
+                    redraw: st.redraw,
                     tick: st.tick,
                     transitions: st.transitions,
                     inverse: union2(inv)(st.inverse)
                   });
                 }
                 ;
-                throw new Error("Failed pattern match at Main (line 231, column 7 - line 240, column 53): " + [v.value0.head.constructor.name]);
+                throw new Error("Failed pattern match at Main (line 253, column 7 - line 262, column 53): " + [v.value0.head.constructor.name]);
               });
             }
             ;
-            throw new Error("Failed pattern match at Main (line 227, column 10 - line 240, column 53): " + [v.constructor.name]);
+            throw new Error("Failed pattern match at Main (line 249, column 10 - line 262, column 53): " + [v.constructor.name]);
           }())(function(st$prime) {
             return put2(st$prime);
           });
@@ -2340,69 +2309,16 @@ var pullEvents = function(dictMonadState) {
   };
 };
 var pullEvents1 = /* @__PURE__ */ pullEvents(monadStateStateT2)(monadEffectState2);
-var drawCell = function(ctx) {
-  return function(st) {
-    return function(v) {
-      return function(pos) {
-        var x = toNumber(pos.x) * ctx.cellDim;
-        var y = toNumber(pos.y) * ctx.cellDim;
-        var fg = function() {
-          var $150 = member2({
-            x: pos.x,
-            y: pos.y
-          })(st.inverse);
-          if ($150) {
-            return v.bg;
-          }
-          ;
-          return v.fg;
-        }();
-        var bg = function() {
-          var $151 = member2({
-            x: pos.x,
-            y: pos.y
-          })(st.inverse);
-          if ($151) {
-            return v.fg;
-          }
-          ;
-          return v.bg;
-        }();
-        return function __do3() {
-          setFillStyle(ctx.render)(bg)();
-          fillRect(ctx.render)({
-            x,
-            y,
-            width: ctx.cellDim,
-            height: ctx.cellDim
-          })();
-          setFillStyle(ctx.render)(fg)();
-          return fillText(ctx.render)(v["char"])(x + ctx.cellDim / 4)(y + ctx.cellDim / 1.4)();
-        };
-      };
-    };
-  };
-};
-var drawCells = function(ctx) {
-  return function(st) {
-    return function(cells2) {
-      return $$void2($$for2(toUnfoldable2(cells2))(function(v) {
-        return drawCell(ctx)(st)(v.value1)(v.value0);
-      }));
-    };
-  };
-};
 var loop2 = function(rc) {
   return function(st) {
     return function __do3() {
       var ctx = read(rc)();
-      clearRect(ctx.render)({
+      when2(st.redraw)(clearRect(ctx.render)({
         x: 0,
         y: 0,
         width: ctx.width,
         height: ctx.height
-      })();
-      drawCells(ctx)(st)(st.cells)();
+      }))();
       var v = flip(runStateT)(st)(discard22(tick1)(function() {
         return discard22(pullEvents1(rc))(function() {
           var v2 = head(st.transitions);
@@ -2411,12 +2327,12 @@ var loop2 = function(rc) {
           }
           ;
           if (v2 instanceof Just) {
-            return when2(rem(st.tick)(v2.value0.cadence) === 0)(void1(for1(range2(0)(v2.value0.speed))(function(v1) {
+            return when1(rem(st.tick)(v2.value0.cadence) === 0)(void1($$for2(range2(0)(v2.value0.speed))(function(v1) {
               return pickCell1;
             })));
           }
           ;
-          throw new Error("Failed pattern match at Main (line 264, column 5 - line 268, column 58): " + [v2.constructor.name]);
+          throw new Error("Failed pattern match at Main (line 287, column 5 - line 291, column 58): " + [v2.constructor.name]);
         });
       }))();
       return $$void2(requestAnimationFrame(loop2(rc)(v.value1))(ctx.window))();
@@ -2424,6 +2340,7 @@ var loop2 = function(rc) {
   };
 };
 var main = function __do2() {
+  log2(apiServer)();
   var w = windowImpl();
   (function __do3() {
     var v = newContext();
@@ -2444,7 +2361,7 @@ var main = function __do2() {
             return write(v1.value0)(rc)();
           }
           ;
-          throw new Error("Failed pattern match at Main (line 56, column 24 - line 58, column 41): " + [v1.constructor.name]);
+          throw new Error("Failed pattern match at Main (line 58, column 24 - line 60, column 41): " + [v1.constructor.name]);
         };
       })();
       addEventListener("resize")(lresize)(false)(toEventTarget(w))();
@@ -2462,19 +2379,20 @@ var main = function __do2() {
               var ctx = read(rc)();
               return write({
                 canvas: ctx.canvas,
-                cellDim: ctx.cellDim,
+                cellHeight: ctx.cellHeight,
+                cellWidth: ctx.cellWidth,
                 height: ctx.height,
                 heightCells: ctx.heightCells,
                 render: ctx.render,
                 width: ctx.width,
                 widthCells: ctx.widthCells,
                 window: ctx.window,
-                events: cons(h(floor2(px / ctx.cellDim))(floor2(py / ctx.cellDim)))(ctx.events)
+                events: cons(h(floor2(px / ctx.cellWidth))(floor2(py / ctx.cellHeight)))(ctx.events)
               })(rc)();
             };
           }
           ;
-          throw new Error("Failed pattern match at Main (line 60, column 42 - line 66, column 116): " + [v1.constructor.name]);
+          throw new Error("Failed pattern match at Main (line 62, column 42 - line 68, column 121): " + [v1.constructor.name]);
         });
       };
       var lmouseclick = lmouse(EventMouseClick.create)();
@@ -2484,7 +2402,7 @@ var main = function __do2() {
       return loop2(rc)(initialState)();
     }
     ;
-    throw new Error("Failed pattern match at Main (line 51, column 18 - line 71, column 27): " + [v.constructor.name]);
+    throw new Error("Failed pattern match at Main (line 53, column 18 - line 73, column 27): " + [v.constructor.name]);
   })();
   return unit;
 };

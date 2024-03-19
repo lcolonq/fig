@@ -271,6 +271,9 @@
           ps-tools.for-0_15.purescript-language-server
           purs-nix.esbuild
           purs-nix.purescript
+          pkgs.m4
+          pkgs.dhall
+          pkgs.dhall-json
         ];
       };
       packages.x86_64-linux = {

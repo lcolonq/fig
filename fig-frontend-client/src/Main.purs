@@ -2,13 +2,11 @@ module Main where
 
 import Prelude
 
+import Config as Config
 import Control.Monad.State (class MonadState, get, modify_, put, runStateT)
-import Data.Array (concat, cons, head, length, mapWithIndex, range, uncons, zip, (!!))
-import Data.Int (ceil, floor, rem, round, toNumber)
-import Data.Map (Map, delete, empty, filter, fromFoldable, insert, isEmpty, lookup, member, toUnfoldable, union, unions)
+import Data.Array (concat, cons, delete, filter, foldM, foldr, fromFoldable, head, length, mapWithIndex, null, range, uncons, updateAt, (!!))
+import Data.Int (ceil, floor, quot, rem, toNumber)
 import Data.Maybe (Maybe(..))
-import Data.Set (Set)
-import Data.Set as Set
 import Data.String.CodeUnits (toCharArray)
 import Data.String.CodeUnits as String
 import Data.Traversable (for)
@@ -16,6 +14,7 @@ import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Class (class MonadEffect, liftEffect)
 import Effect.Console (log)
+import Effect.Exception (throw)
 import Effect.Random (randomInt)
 import Effect.Ref (Ref, new, read, write)
 import Graphics.Canvas (CanvasElement, Context2D, clearRect, fillRect, fillText, getCanvasElementById, getContext2D, setCanvasDimensions, setFillStyle, setFont)
@@ -32,11 +31,26 @@ type Context =
   , render :: Context2D
   , width :: Number
   , height :: Number
-  , cellDim :: Number
+  , cellWidth :: Number
+  , cellHeight :: Number
   , widthCells :: Int
   , heightCells :: Int
   , events :: Array Event
   }
+
+lookupPos :: forall m a t. MonadEffect m => Context -> {x :: Int, y :: Int | t} -> Array a -> m a
+lookupPos ctx pos a = do
+  let idx = pos.y * ctx.widthCells + pos.x
+  case a !! idx of
+    Nothing -> liftEffect $ throw "index out of bounds"
+    Just x -> pure x
+
+updatePos :: forall m a t. MonadEffect m => Context -> {x :: Int, y :: Int | t} -> a -> Array a -> m (Array a)
+updatePos ctx pos v a = do
+  let idx = pos.y * ctx.widthCells + pos.x
+  case updateAt idx v a of
+    Nothing -> liftEffect $ throw "index out of bounds"
+    Just a' -> pure a'
 
 main :: Effect Unit
 main = do
@@ -47,6 +61,7 @@ main = do
   --     l <- eventListener \_e ->
   --       log "click"
   --     addEventListener click l false $ toEventTarget e
+  log $ Config.apiServer
   w <- window
   newContext >>= case _ of
     Nothing -> log "failed to find canvas"
@@ -63,7 +78,7 @@ main = do
               let px = toNumber $ pageX me
               let py = toNumber $ pageY me
               ctx <- read rc
-              write (ctx { events = cons (h (floor $ px / ctx.cellDim) (floor $ py / ctx.cellDim)) ctx.events }) rc
+              write (ctx { events = cons (h (floor $ px / ctx.cellWidth) (floor $ py / ctx.cellHeight)) ctx.events }) rc
       lmouseclick <- lmouse EventMouseClick
       addEventListener (EventType "click") lmouseclick false $ Window.toEventTarget w
       lmousemove <- lmouse EventMouseMove
@@ -82,17 +97,19 @@ newContext = do
       setCanvasDimensions canvas { width, height }
       render <- getContext2D canvas
       setFont render "bold 0.8vw Iosevka Comfy"
-      let widthCells = 100.0
-      let cellDim = toNumber $ ceil $ width / widthCells
+      let widthCells = 200.0
+      let cellWidth = toNumber $ ceil $ width / widthCells
+      let cellHeight = cellWidth * 2.0
       pure $ Just
         { window: w
         , canvas
         , render
         , width
         , height
-        , cellDim
+        , cellHeight
+        , cellWidth
         , widthCells: ceil widthCells
-        , heightCells: ceil $ height / cellDim
+        , heightCells: ceil $ height / cellHeight
         , events: [EventGfx GfxWhiteout]
         }
 
@@ -105,39 +122,43 @@ newtype Cell = Cell
 
 drawCell :: forall t. Context -> State -> Cell -> { x :: Int, y :: Int | t } -> Effect Unit
 drawCell ctx st (Cell c) pos = do
-  let x = toNumber pos.x * ctx.cellDim 
-  let y = toNumber pos.y * ctx.cellDim
-  let fg = if member { x: pos.x, y: pos.y } st.inverse then c.bg else c.fg
-  let bg = if member { x: pos.x, y: pos.y } st.inverse then c.fg else c.bg
+  let x = toNumber pos.x * ctx.cellWidth
+  let y = toNumber pos.y * ctx.cellHeight
+  inv <- lookupPos ctx pos st.inverse
+  let fg = if inv /= 0 then c.bg else c.fg
+  let bg = if inv /= 0 then c.fg else c.bg
   setFillStyle ctx.render bg
   fillRect ctx.render
     { x
     , y
-    , width: ctx.cellDim
-    , height: ctx.cellDim
+    , width: ctx.cellWidth
+    , height: ctx.cellHeight
     }
   setFillStyle ctx.render fg
-  fillText ctx.render c.char (x + ctx.cellDim / 4.0) (y + ctx.cellDim / 1.4)
+  fillText ctx.render c.char (x + ctx.cellWidth / 4.0) (y + ctx.cellHeight / 1.4)
 
-type Cells = Map { x :: Int, y :: Int } Cell
-
-drawCells :: Context -> State -> Cells -> Effect Unit
+drawCells :: Context -> State -> Array Cell -> Effect Unit
 drawCells ctx st cells = do
-  void $ for (toUnfoldable cells :: Array _) \(Tuple pos c) -> do
-    drawCell ctx st c pos
+  void $ for (range 0 ctx.widthCells) \x -> do
+    for (range 0 ctx.heightCells) \y -> do
+      let pos = { x, y }
+      c <- lookupPos ctx pos cells
+      drawCell ctx st c pos
 
-type Picker = Cells -> Effect (Maybe (Tuple { x :: Int, y :: Int} Cell))
+type Picker = Context -> Array Cell -> Effect (Maybe (Tuple { x :: Int, y :: Int} Cell))
 
 pickRandom :: Picker
-pickRandom cells = do
-  let arr = toUnfoldable cells
-  idx <- randomInt 0 $ length arr - 1
-  case arr !! idx of
+pickRandom ctx cells = do
+  idx <- randomInt 0 $ length cells - 1
+  case cells !! idx of
     Nothing -> pure Nothing
-    Just c -> pure $ Just c
+    Just c ->
+      pure
+      $ Just
+      $ Tuple { x: rem idx ctx.widthCells, y: quot idx ctx.widthCells } c
 
 type Transition =
-  { cells :: Cells 
+  { cells :: Array Cell
   , speed :: Int
   , cadence :: Int
   , picker :: Picker
@@ -145,17 +166,19 @@ type Transition =
 
 type State =
   { tick :: Int
-  , cells :: Cells
-  , inverse :: Map { x :: Int, y :: Int } Int
+  , cells :: Array Cell
+  , inverse :: Array Int
   , transitions :: Array Transition
+  , redraw :: Boolean
   }
 
 initialState :: State
 initialState =
   { tick: 0
-  , cells: empty
-  , inverse: empty
+  , cells: []
+  , inverse: []
   , transitions: []
+  , redraw: true
   }
 
 data Event
@@ -183,7 +206,7 @@ gfxTransitions ctx GfxWhiteout =
           Nothing -> "?"
           Just c -> String.singleton c
       }
-    link :: Int -> String -> String -> String -> String -> Cells
+    link :: Int -> String -> String -> String -> String -> Array Cell
     link y fgc bgc str url =
       fromFoldable $ mapWithIndex
       (\i c ->
@@ -196,12 +219,28 @@ gfxTransitions ctx GfxWhiteout =
         }
       )
       $ toCharArray str
-    fg =
-      unions
-      [ link 0 "purple" "white" "twitch.tv/lcolonq" "https://twitch.tv/lcolonq"
-      , link 1 "blue" "white" "twitter.com/lcolonq" "https://twitter.com/lcolonq"
-      ]
-    cells = union fg bg
+    linkRight :: Int -> String -> String -> String -> String -> Array Cell
+    linkRight y fgc bgc str url =
+      fromFoldable $ mapWithIndex
+      (\i c ->
+        Tuple { x: (ctx.widthCells - String.length str - 8) + i, y }
+        $ Cell
+        { bg: bgc, fg: fgc, char: String.singleton c
+        , click: \st -> do
+          void $ open url "_blank" "" ctx.window
+          pure st
+        }
+      )
+      $ toCharArray str
+    -- fg =
+    --   unions
+    --   [ link 0 "purple" "white" "twitch.tv/lcolonq" "https://twitch.tv/lcolonq"
+    --   , link 1 "blue" "white" "twitter.com/lcolonq" "https://twitter.com/lcolonq"
+    --   , link (ctx.heightCells - 1) "white" "black" "the previous one" "https://pub.colonq.computer/~llll/cgi-bin/ring?me=llll&offset=-1"
+    --   , linkRight (ctx.heightCells - 1) "white" "black" "the next one" "https://pub.colonq.computer/~llll/cgi-bin/ring?me=llll&offset=1"
+    --   ]
+    -- cells = union fg bg
+    cells = bg
   in
    [ { cells
      , speed: 20
@@ -214,9 +253,10 @@ tick :: forall m. MonadState State m => m Unit
 tick = modify_ \st ->
   st
   { tick = st.tick + 1
+  , redraw = false
   , transitions = case uncons st.transitions of
     Nothing -> st.transitions
-    Just { head, tail } -> if isEmpty head.cells then tail else st.transitions
+    Just { head, tail } -> if null head.cells then tail else st.transitions
   , inverse = filter (st.tick <= _) st.inverse
   }
 
@@ -231,39 +271,41 @@ pullEvents rc = do
       case head of
         EventGfx gfx -> pure $ st { transitions = st.transitions <> gfxTransitions ctx gfx }
         EventMouseClick mx my ->
-          case lookup { x: mx, y: my } st.cells of
+          lookupPos ctx { x: mx, y: my } st.cells >>= case _ of
             Nothing -> pure st
             Just (Cell c) -> liftEffect $ c.click st
         EventMouseMove mx my -> do
-          let inv = fromFoldable $ concat $ flip map (range (mx - 1) (mx + 1)) \x ->
-                flip map (range (my - 1) (my + 1)) \y -> Tuple { x, y } (st.tick + 30)
-          pure st { inverse = union inv st.inverse }
+          inv <- foldM (\inv pos -> updatePos ctx pos (st.tick + 30) inv) st.inverse $ map (\x -> map (\y -> { x, y }) (range (my - 1) (my + 1))) (range (mx - 1) (mx + 1))
+          pure st { inverse = inv }
   put st'
 
-pickCell :: forall m. MonadState State m => MonadEffect m => m Unit
-pickCell = do
+pickCell :: forall m. MonadState State m => MonadEffect m => Context -> m Unit
+pickCell ctx = do
   st <- get
   case uncons st.transitions of
     Nothing -> pure unit
     Just { head: trans, tail } ->
       liftEffect (trans.picker trans.cells) >>= case _ of
         Nothing -> pure unit
-        Just (Tuple pk pv) ->
-          put st { cells = insert pk pv st.cells, transitions = cons (trans { cells = (delete pk trans.cells) }) tail }
+        Just (Tuple pk pv) -> do
+          cells <- updatePos ctx pk pv st.cells
+          put st { redraw = true, cells = cells, transitions = cons (trans { cells = (delete pk trans.cells) }) tail }
 
 loop :: Ref Context -> State -> Effect Unit
 loop rc st = do
   ctx <- read rc
   -- render
-  clearRect ctx.render { x: 0.0, y: 0.0, width: ctx.width, height: ctx.height }
-  drawCells ctx st st.cells
+  when st.redraw do
+    clearRect ctx.render { x: 0.0, y: 0.0, width: ctx.width, height: ctx.height }
+    drawCells ctx st st.cells
   -- update
-  Tuple _ st' <- flip runStateT st do
-    tick
-    pullEvents rc
-    case head st.transitions of
-      Nothing -> pure unit
-      Just trans -> do
-        when (rem st.tick trans.cadence == 0) do
-          void $ for (range 0 trans.speed) \_ -> pickCell
-  void $ requestAnimationFrame (loop rc st') ctx.window
+  -- Tuple _ st' <- flip runStateT st do
+  --   tick
+  --   pullEvents rc
+  --   case head st.transitions of
+  --     Nothing -> pure unit
+  --     Just trans -> do
+  --       when (rem st.tick trans.cadence == 0) do
+  --         void $ for (range 0 trans.speed) \_ -> pickCell
+  -- void $ requestAnimationFrame (loop rc st') ctx.window
+  void $ requestAnimationFrame (loop rc st) ctx.window

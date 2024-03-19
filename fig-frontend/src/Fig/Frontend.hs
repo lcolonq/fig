@@ -7,14 +7,12 @@ import Fig.Prelude
 import Control.Lens (use)
 
 import qualified Data.Text as Text
+import qualified Data.ByteString.Base64 as BS.Base64
 
 import qualified Network.Wai.Middleware.Static as Wai.Static
 import qualified Network.Wai.Handler.Warp as Warp
 
 import qualified Web.Twain as Tw
-
-import qualified Lucid as L
-import qualified Lucid.Base as L
 
 import Fig.Utils.SExpr
 import Fig.Bus.Client
@@ -34,9 +32,14 @@ server cfg busAddr = do
     (\_ _ -> pure ())
     (pure ())
 
+sexprStr :: Text -> SExpr
+sexprStr = SExprString . BS.Base64.encodeBase64 . encodeUtf8
+
 app :: Config -> Commands IO -> IO Tw.Application
 app cfg cmds = do
-  db <- DB.connect
+  log "Connecting to database..."
+  db <- DB.connect cfg
+  log "Connected! Server active."
   st <- stateRef
   pure $ foldr' @[] ($)
     (Tw.notFound . Tw.send $ Tw.text "not found")
@@ -57,10 +60,10 @@ app cfg cmds = do
         input <- Tw.paramMaybe "input"
         liftIO $ cmds.publish [sexp|(frontend redeem incoming)|]
           $ mconcat
-            [ [ SExprString me
-              , SExprString name
+            [ [ sexprStr me
+              , sexprStr name
               ]
-            , maybe [] ((:[]) . SExprString) input
+            , maybe [] ((:[]) . sexprStr) input
             ]
         Tw.send $ Tw.text "it worked"
     , Tw.get "/api/songs" do
@@ -75,7 +78,7 @@ app cfg cmds = do
     , Tw.get "/api/poke/:name" do
         target <- encodeUtf8 . Text.toLower <$> Tw.param "name"
         inbox <- fromMaybe [] <$> DB.smembers db ("pokeinbox:" <> target)
-        Tw.send . Tw.text . pretty . SExprList @Void $ SExprString . decodeUtf8 <$> inbox
+        Tw.send . Tw.text . pretty . SExprList @Void $ sexprStr . decodeUtf8 <$> inbox
     , Tw.post "/api/poke/:name" do
         me <- encodeUtf8 . Text.toLower <$> Tw.param "ayem"
         target <- encodeUtf8 . Text.toLower <$> Tw.param "name"

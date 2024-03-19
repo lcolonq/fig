@@ -5,10 +5,11 @@ import Control.Error.Util (hush)
 import qualified Database.Redis as Redis
 
 import Fig.Prelude
+import Fig.Frontend.Utils
 
-connect :: MonadIO m => m Redis.Connection
-connect = liftIO $ Redis.checkedConnect Redis.defaultConnectInfo
-  { Redis.connectHost = "shiro"
+connect :: MonadIO m => Config -> m Redis.Connection
+connect cfg = liftIO $ Redis.checkedConnect Redis.defaultConnectInfo
+  { Redis.connectHost = unpack cfg.dbHost
   }
 
 get :: MonadIO m => Redis.Connection -> ByteString -> m (Maybe ByteString)

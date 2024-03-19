@@ -19,10 +19,11 @@ newtype FigFrontendException = FigFrontendException Text
 instance Exception FigFrontendException
 
 data Config = Config
-  { port :: Int
-  , assetPath :: FilePath
-  , clientId :: Text
-  , authToken :: Text
+  { port :: !Int
+  , assetPath :: !FilePath
+  , clientId :: !Text
+  , authToken :: !Text
+  , dbHost :: !Text
   } deriving (Show, Eq, Ord)
 
 configCodec :: Toml.TomlCodec Config
@@ -31,6 +32,7 @@ configCodec = do
   assetPath <- Toml.string "asset_path" Toml..= (\a -> a.assetPath)
   clientId <- Toml.text "client_id" Toml..= (\a -> a.clientId)
   authToken <- Toml.text "auth_token" Toml..= (\a -> a.authToken)
+  dbHost <- Toml.text "db_host" Toml..= (\a -> a.dbHost)
   pure $ Config{..}
 
 loadConfig :: FilePath -> IO Config
