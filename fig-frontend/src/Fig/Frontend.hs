@@ -54,9 +54,9 @@ app cfg cmds = do
         DB.get db ("user:" <> encodeUtf8 name) >>= \case
           Nothing -> Tw.send . Tw.status Tw.status404 $ Tw.text "user not found"
           Just val -> Tw.send . Tw.text $ decodeUtf8 val
-    , Tw.post "/api/redeem/:name" do
+    , Tw.post "/api/redeem" do
         me <- Text.toLower <$> Tw.param "ayem"
-        name <- Text.toLower <$> Tw.param "name"
+        name <- Tw.param "name"
         input <- Tw.paramMaybe "input"
         liftIO $ cmds.publish [sexp|(frontend redeem incoming)|]
           $ mconcat
