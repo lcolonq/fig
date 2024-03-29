@@ -4,7 +4,9 @@ module Fig.Frontend where
 
 import Fig.Prelude
 
-import Control.Lens (use)
+import System.Random (randomRIO)
+
+import Control.Lens (use, (^?), Ixed (..))
 
 import qualified Data.Text as Text
 import qualified Data.ByteString.Base64 as BS.Base64
@@ -49,6 +51,16 @@ app cfg cmds = do
     , Tw.put "/api/buffer" do
         buf <- withState st $ use buffer 
         Tw.send $ Tw.text buf
+    , Tw.get "/api/motd" do
+        DB.get db "motd" >>= \case
+          Nothing -> Tw.send $ Tw.text ""
+          Just val -> Tw.send . Tw.text $ decodeUtf8 val
+    , Tw.get "/api/catchphrase" do
+        let catchphrases = ["foo", "bar", "baz"] :: [Text]
+        i <- randomRIO (0, length catchphrases - 1)
+        case catchphrases ^? ix i of
+          Nothing -> Tw.send $ Tw.text "man of letters"
+          Just val -> Tw.send $ Tw.text val
     , Tw.get "/api/user/:name" do
         name <- Text.toLower <$> Tw.param "name"
         DB.get db ("user:" <> encodeUtf8 name) >>= \case

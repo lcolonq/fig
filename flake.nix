@@ -42,6 +42,9 @@
           "web-dom"
           "web-uievents"
           "canvas"
+          "argonaut"
+          "fetch"
+          "fetch-argonaut"
         ];
         dir = ./fig-frontend-client;
         srcs = [ "src" ];

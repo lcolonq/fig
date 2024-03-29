@@ -29,6 +29,7 @@ common deps
     , megaparsec
     , mtl
     , network
+    , random
     , req
     , safe-exceptions
     , text

@@ -3,6 +3,11 @@
     src: url("assets/iosevka-comfy-regular.ttf") format("truetype");
 }
 
+html {
+    font-family: "Iosevka Comfy";
+    font-size: 16pt;
+}
+
 html, body {
     overflow: hidden;
     margin: 0 !important;
@@ -14,15 +19,19 @@ html, body {
 body {
     font-family: "Iosevka Comfy";
     font-weight: bold;
-    background-color: #050505;
-    color: white;
+    color: black;
     user-select: none;
     image-rendering: pixelated;
+    background-color: #eeeeee;
+    background-size: 40px 40px;
+    background-image:
+        linear-gradient(to right, grey 1px, transparent 1px),
+        linear-gradient(to bottom, grey 1px, transparent 1px);
 }
 
 #lcolonq-title {
     position: absolute;
-    top: 0px;
+    top: 2rem;
     bottom: 0px;
     left: 0px;
     right: 0px;
@@ -30,8 +39,61 @@ body {
     font-size: 20vw;
 }
 
+.lcolonq-letter {
+    display: inline-block;
+}
+
+.lcolonq-letter:hover {
+    color: #333333;
+}
+
 #lcolonq-subtitle {
     font-size: 5vw;
+    margin-top: -5vw;
+}
+
+#lcolonq-header {
+    background-color: #cccccf;
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    top: 0px;
+    height: 2rem;
+    border-bottom: 0.2rem ridge;
+}
+
+#lcolonq-header a {
+    color: black;
+}
+
+#lcolonq-header marquee {
+    color: black;
+    padding-top: 0.4rem;
+}
+
+#lcolonq-footer {
+    background-color: #cccccf;
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    height: 2rem;
+    border-top: 0.2rem groove;
+}
+
+#lcolonq-footer a {
+    display: inline-block;
+    color: black;
+    margin-top: 0.2rem;
+    margin-left: 0.1rem;
+    margin-right: 0.1rem;
+    padding: 0.1rem;
+    text-decoration: none;
+    border: 0.1rem outset;
+}
+
+#lcolonq-footer a:active {
+    border: 0.1rem inset;
 }
 
 #lcolonq-canvas {
@@ -46,4 +108,8 @@ body {
 
 button {
     color: red;
+}
+
+.right {
+    float: right;
 }
