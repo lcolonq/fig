@@ -2679,6 +2679,112 @@ var fetch2 = function() {
   };
 };
 
+// output/Model/foreign.js
+var canvas = document.getElementById("lcolonq-canvas");
+var socket = new WebSocket("wss://colonq.computer/bullfrog/api/channel/listen/model");
+var currentFrame = null;
+socket.addEventListener("open", (ev) => {
+  console.log("connected");
+});
+async function decompress(blob3) {
+  let ds = new DecompressionStream("gzip");
+  let stream = blob3.stream();
+  let out = await new Response(stream.pipeThrough(ds));
+  return out.arrayBuffer();
+}
+function readCell(dv, base) {
+  let cell = {};
+  let o = base;
+  if (dv.getUint8(o) == 0) {
+    return [{ type: "bg" }, o + 1];
+  } else {
+    cell.type = "fg";
+    cell.custom = dv.getUint8(o + 1);
+    cell.r = dv.getUint8(o + 2);
+    cell.g = dv.getUint8(o + 3);
+    cell.b = dv.getUint8(o + 4);
+    cell.g0 = dv.getUint32(o + 5);
+    if (dv.getUint8(o + 9) == 0) {
+      return [cell, o + 10];
+    } else {
+      cell.g1 = dv.getUint32(o + 10);
+      return [cell, o + 14];
+    }
+  }
+}
+function readKeyframe(dv, base) {
+  let ret = [];
+  let o = base;
+  for (let idx = 0; idx < 64 * 64; ++idx) {
+    let res = readCell(dv, o);
+    ret.push(res[0]);
+    o = res[1];
+  }
+  currentFrame = ret;
+}
+function readDiff(dv, base) {
+  if (currentFrame) {
+    let len = dv.getUint32(base);
+    let o = base + 4;
+    for (let idx = 0; idx < len; ++idx) {
+      let x = dv.getUint8(o);
+      let y = dv.getUint8(o + 1);
+      let c = readCell(dv, o + 2);
+      currentFrame[x + y * 64] = c[0];
+      o = c[1];
+    }
+  }
+}
+function readPacket(dv) {
+  if (dv.getUint8(0) == 0) {
+    readKeyframe(dv, 1);
+  } else {
+    readDiff(dv, 1);
+  }
+}
+function renderCellCanvas(ctx2, x, y, c) {
+  if (c) {
+    let msg = c.g1 ? String.fromCodePoint(c.g0, c.g1) : String.fromCodePoint(c.g0);
+    if (msg.trim().length) {
+      ctx2.fillStyle = "black";
+      ctx2.fillRect(13 * y, 13 * x, 13, 13);
+      ctx2.fillStyle = `rgba(${c.r}, ${c.g}, ${c.b}, 1.0)`;
+      ctx2.fillText(msg, 13 * y, 13 * x + 10);
+    }
+  }
+}
+function renderCanvas() {
+  if (canvas.width != canvas.clientWidth) {
+    canvas.width = canvas.clientWidth;
+  }
+  if (canvas.height != canvas.clientHeight) {
+    canvas.height = canvas.clientHeight;
+  }
+  if (currentFrame) {
+    let ctx2 = canvas.getContext("2d");
+    ctx2.clearRect(0, 0, canvas.width, canvas.height);
+    ctx2.font = "12px Iosevka Comfy";
+    for (let y = 0; y < 64; ++y) {
+      for (let x = 0; x < 64; ++x) {
+        renderCellCanvas(ctx2, x, y, currentFrame[x * 64 + y]);
+      }
+    }
+  }
+}
+var _startModel = () => {
+  socket.addEventListener("message", async (ev) => {
+    let arr = await decompress(ev.data);
+    let view = new DataView(arr);
+    readPacket(view);
+    renderCanvas();
+  });
+};
+
+// output/Model/index.js
+var startModel = function(dictMonadEffect) {
+  return liftEffect(dictMonadEffect)(_startModel);
+};
+
 // output/Web.DOM.Document/foreign.js
 var getEffProp = function(name15) {
   return function(doc) {
@@ -2819,9 +2925,10 @@ function document2(window2) {
 
 // output/Main/index.js
 var map6 = /* @__PURE__ */ map(functorEffect);
-var discard2 = /* @__PURE__ */ discard(discardUnit)(bindAff);
 var bind4 = /* @__PURE__ */ bind(bindAff);
 var fetch3 = /* @__PURE__ */ fetch2()()(/* @__PURE__ */ toCoreRequestOptionsRowRo()()(toCoreRequestOptionsHelpe));
+var discard2 = /* @__PURE__ */ discard(discardUnit)(bindAff);
+var startModel2 = /* @__PURE__ */ startModel(monadEffectAff);
 var for_2 = /* @__PURE__ */ for_(applicativeAff)(foldableArray);
 var show2 = /* @__PURE__ */ show(showInt);
 var playVoice2 = /* @__PURE__ */ playVoice(monadEffectEffect);
@@ -2872,20 +2979,29 @@ var byId = function(dictMonadEffect) {
   };
 };
 var byId1 = /* @__PURE__ */ byId(monadEffectAff);
+var updateSubtitle = /* @__PURE__ */ bind4(/* @__PURE__ */ byId1("lcolonq-subtitle"))(function(subtitle) {
+  return bind4(fetch3(apiServer + "/catchphrase")({}))(function(v) {
+    return bind4(v.text)(setText1(subtitle));
+  });
+});
 var main = /* @__PURE__ */ launchAff_(/* @__PURE__ */ discard2(/* @__PURE__ */ liftEffect(monadEffectAff)(/* @__PURE__ */ log("hi")))(function() {
-  return bind4(byId1("lcolonq-marquee"))(function(marq) {
-    return bind4(fetch3(apiServer + "/motd")({}))(function(v) {
-      return discard2(bind4(v.text)(setText1(marq)))(function() {
-        return bind4(byId1("lcolonq-subtitle"))(function(subtitle) {
-          return bind4(fetch3(apiServer + "/catchphrase")({}))(function(v1) {
-            return discard2(bind4(v1.text)(setText1(subtitle)))(function() {
-              return for_2(range2(0)(6))(function(i) {
-                return bind4(byId1("lcolonq-letter-" + show2(i)))(function(letter) {
-                  return discard2(listen1(letter)("click")(function(_ev) {
-                    return playVoice2(true)(i);
-                  }))(function() {
-                    return listen1(letter)("mouseover")(function(_ev) {
-                      return playVoice2(false)(i);
+  return discard2(startModel2)(function() {
+    return bind4(byId1("lcolonq-marquee"))(function(marq) {
+      return bind4(fetch3(apiServer + "/motd")({}))(function(v) {
+        return discard2(bind4(v.text)(setText1(marq)))(function() {
+          return discard2(updateSubtitle)(function() {
+            return bind4(byId1("lcolonq-subtitle"))(function(subtitle) {
+              return discard2(listen1(subtitle)("click")(function(_ev) {
+                return launchAff_(updateSubtitle);
+              }))(function() {
+                return for_2(range2(0)(6))(function(i) {
+                  return bind4(byId1("lcolonq-letter-" + show2(i)))(function(letter) {
+                    return discard2(listen1(letter)("click")(function(_ev) {
+                      return playVoice2(true)(i);
+                    }))(function() {
+                      return listen1(letter)("mouseover")(function(_ev) {
+                        return playVoice2(false)(i);
+                      });
                     });
                   });
                 });

@@ -50,6 +50,8 @@ body {
 #lcolonq-subtitle {
     font-size: 5vw;
     margin-top: -5vw;
+    margin-right: 12vw;
+    text-align: right;
 }
 
 #lcolonq-header {
@@ -98,16 +100,10 @@ body {
 
 #lcolonq-canvas {
     position: absolute;
-    top: 0px;
-    bottom: 0px;
+    bottom: 2rem;
     left: 0px;
-    right: 0px;
-    width: 100%;
-    height: 100%;
-}
-
-button {
-    color: red;
+    width: 832px;
+    height: 832px;
 }
 
 .right {

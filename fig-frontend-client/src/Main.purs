@@ -2,9 +2,8 @@ module Main where
 
 import Prelude
 
-import Config as Config
 import Audio as Audio
-
+import Config as Config
 import Data.Array as Array
 import Data.Maybe (Maybe(..))
 import Data.Traversable (for, for_)
@@ -14,6 +13,7 @@ import Effect.Class (class MonadEffect, liftEffect)
 import Effect.Console (log)
 import Effect.Exception (throw)
 import Fetch (fetch)
+import Model (startModel)
 import Web.DOM as DOM
 import Web.DOM.Document as DOM.Doc
 import Web.DOM.Element as DOM.El
@@ -41,16 +41,24 @@ listen e ev f = do
 setText :: forall m. MonadEffect m => DOM.Element -> String -> m Unit
 setText e s = liftEffect $ DOM.Node.setTextContent s $ DOM.El.toNode e
 
+updateSubtitle :: Aff Unit
+updateSubtitle = do
+  subtitle <- byId "lcolonq-subtitle"
+  { text: catchphrase } <- fetch (Config.apiServer <> "/catchphrase") {}
+  catchphrase >>= setText subtitle
+
 main :: Effect Unit
 main = launchAff_ do
   liftEffect $ log "hi"
+  startModel
   marq <- byId "lcolonq-marquee"
   { text: motd } <- fetch (Config.apiServer <> "/motd") {}
   motd >>= setText marq
 
+  updateSubtitle
   subtitle <- byId "lcolonq-subtitle"
-  { text: catchphrase } <- fetch (Config.apiServer <> "/catchphrase") {}
-  catchphrase >>= setText subtitle
+  listen subtitle "click" \_ev -> do
+    launchAff_ updateSubtitle
   
   for_ (Array.range 0 6) \i -> do
     letter <- byId $ "lcolonq-letter-" <> show i

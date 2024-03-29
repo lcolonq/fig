@@ -56,7 +56,19 @@ app cfg cmds = do
           Nothing -> Tw.send $ Tw.text ""
           Just val -> Tw.send . Tw.text $ decodeUtf8 val
     , Tw.get "/api/catchphrase" do
-        let catchphrases = ["foo", "bar", "baz"] :: [Text]
+        let catchphrases =
+              [ "vtuber (male)"
+              , "man of letters"
+              , "cool guy, online"
+              , "internet clown man"
+              , "professional emacs fan"
+              , "web freak"
+              , "guy who really likes programming"
+              , "i use nixos btw"
+              , "(are these funny or cringe or both?)"
+              , "haha yay"
+              , "Joel"
+              ] :: [Text]
         i <- randomRIO (0, length catchphrases - 1)
         case catchphrases ^? ix i of
           Nothing -> Tw.send $ Tw.text "man of letters"
