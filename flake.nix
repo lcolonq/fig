@@ -25,6 +25,7 @@
         fig-monitor-bullfrog = self.callCabal2nix "fig-monitor-bullfrog" ./fig-monitor-bullfrog {};
         fig-bridge-irc-discord = self.callCabal2nix "fig-bridge-irc-discord" ./fig-bridge-irc-discord {};
         fig-bless = self.callCabal2nix "fig-bless" ./fig-bless {};
+        fig-emulator-gb = self.callCabal2nix "fig-emulator-gb" ./fig-emulator-gb {};
         fig-frontend = self.callCabal2nix "fig-frontend" ./fig-frontend {};
         };
       haskellPackages = pkgs.haskell.packages.ghc94.override {
@@ -266,6 +267,7 @@
           fig-bridge-irc-discord
           fig-bless
           fig-frontend
+          fig-emulator-gb
         ];
         withHoogle = true;
         buildInputs = [
@@ -289,6 +291,7 @@
         figBridgeIRCDiscord = haskellPackages.fig-bridge-irc-discord;
         figBless = haskellPackages.fig-bless;
         # figBlessStatic = haskellPackagesStatic.fig-bless;
+        figEmulatorGB = haskellPackages.fig-emulator-gb;
         figFrontend = haskellPackages.fig-frontend;
       };
       apps.x86_64-linux.default = {

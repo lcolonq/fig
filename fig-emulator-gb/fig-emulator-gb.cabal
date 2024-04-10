@@ -1,0 +1,59 @@
+cabal-version: 3.4
+name: fig-emulator-gb
+version: 0.1.0.0
+
+common defaults
+  ghc-options: -Wall
+  default-language: GHC2021
+  default-extensions: NoImplicitPrelude PackageImports LambdaCase MultiWayIf OverloadedStrings OverloadedLists RecordWildCards BlockArguments ViewPatterns TypeFamilies DataKinds GADTs
+
+common deps
+  build-depends:
+      base
+    , aeson
+    , async
+    , base64
+    , binary
+    , bytestring
+    , containers
+    , data-default-class
+    , discord-haskell
+    , directory
+    , filepath
+    , lens
+    , megaparsec
+    , mtl
+    , network
+    , pcre-heavy
+    , safe-exceptions
+    , sdl2
+    , text
+    , time
+    , tomland
+    , transformers
+    , unordered-containers
+    , vector
+    , fig-utils
+    , fig-bus
+
+library
+  import: defaults
+  import: deps
+  hs-source-dirs: src
+  exposed-modules:
+    Fig.Emulator.GB
+    Fig.Emulator.GB.Utils
+    Fig.Emulator.GB.CPU
+    Fig.Emulator.GB.CPU.Instruction
+    Fig.Emulator.GB.Bus
+    Fig.Emulator.GB.Component.ROM
+    Fig.Emulator.GB.Component.RAM
+    Fig.Emulator.GB.Component.Video
+
+executable fig-emulator-gb
+  import: defaults
+  import: deps
+  build-depends: fig-emulator-gb, optparse-applicative
+  hs-source-dirs:
+    main
+  main-is: Main.hs

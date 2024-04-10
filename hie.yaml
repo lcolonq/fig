@@ -34,3 +34,7 @@ cradle:
       config: { cradle: { cabal: { component: "fig-bless:lib:fig-bless" } } }
     - path: "./fig-bless/main/"
       config: { cradle: { cabal: { component: "fig-bless:exe:fig-bless" } } }
+    - path: "./fig-emulator-gb/src/"
+      config: { cradle: { cabal: { component: "fig-emulator-gb:lib:fig-emulator-gb" } } }
+    - path: "./fig-emulator-gb/main/"
+      config: { cradle: { cabal: { component: "fig-emulator-gb:exe:fig-emulator-gb" } } }
