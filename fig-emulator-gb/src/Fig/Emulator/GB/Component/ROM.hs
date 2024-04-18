@@ -25,7 +25,7 @@ compROM bs = Component
   { compState = V.fromList $ BS.unpack bs
   , compMatches = \a ->
       a >= start && a < end
-  , compUpdate = pure
+  , compUpdate = \s _ -> pure s
   , compWrite = \s _ad _v ->
       pure s
       -- throwM . ROMError $ mconcat

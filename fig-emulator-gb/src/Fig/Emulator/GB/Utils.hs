@@ -4,9 +4,17 @@ import Fig.Prelude
 
 import Prelude (fromIntegral)
 
+import qualified Text.Printf as Pr
+
 import Data.Word (Word8, Word16)
 import Data.Int (Int8)
 import Data.Bits
+
+show8 :: Word8 -> Text
+show8 = pack . Pr.printf "%02X"
+
+show16 :: Word8 -> Text
+show16 = pack . Pr.printf "%04X"
 
 w8w8 :: Word8 -> Word8 -> Word16
 w8w8 high low = shiftL (fromIntegral high) 8 .|. fromIntegral low

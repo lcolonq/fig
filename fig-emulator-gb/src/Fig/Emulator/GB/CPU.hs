@@ -1,30 +1,34 @@
 {-# Language TemplateHaskell, ImplicitParams #-}
-module Fig.Emulator.GB.CPU where
+module Fig.Emulator.GB.CPU
+  ( CPU(..)
+  , Registers(..), initialRegs
+  , Emulating
+  , running, regs, bus, regPC
+  , updateComps
+  , decode
+  , step
+  , logCPUState
+  ) where
 
 import Control.Lens.TH (makeLenses)
+
+import Data.Maybe (fromJust)
 
 import Fig.Prelude
 import Prelude (fromIntegral)
 
-import System.IO (withFile, IOMode (WriteMode))
-
 import qualified Text.Printf as Pr
 
 import Control.Lens ((.=), use, (^.))
-import Control.Monad (when, unless)
-import Control.Monad.State (StateT(..))
+import Control.Monad (when)
 
 import Data.Word (Word8, Word16)
+import Data.Int (Int8)
 import Data.Bits
-
-import qualified SDL
 
 import Fig.Emulator.GB.Utils
 import Fig.Emulator.GB.Bus (Bus(..), Addr(..))
 import qualified Fig.Emulator.GB.Bus as Bus
-import Fig.Emulator.GB.Component.RAM
-import Fig.Emulator.GB.Component.ROM
-import Fig.Emulator.GB.Component.Video
 import Fig.Emulator.GB.CPU.Instruction
 
 newtype CPUError = CPUError Text
@@ -65,6 +69,7 @@ initialRegs = Registers
 data CPU m = CPU
   { _lastPC :: !Word16
   , _lastIns :: !Instruction
+  , _running :: !Bool
   , _regs :: !Registers
   , _bus :: !(Bus m)
   }
@@ -73,27 +78,15 @@ makeLenses 'CPU
 type EmulatingT f m = (MonadIO m, MonadThrow m, MonadState (CPU f) m, ?log :: Handle)
 type Emulating m = EmulatingT IO m
 
-cpuDMG :: (MonadIO m, MonadThrow m) => ByteString -> CPU m
-cpuDMG rom = CPU
-  { _lastPC = 0x0
-  , _lastIns = Nop
-  , _regs = initialRegs
-  , _bus = Bus
-    [ compROM rom
-    , compWRAM 0x8000 $ 8 * 1024 -- vram placeholder
-    , compWRAM 0xc000 $ 8 * 1024
-    , compLCD
-    ]
-  }
-
 logCPUState :: Emulating m => m ()
 logCPUState = do
   rs <- use regs
   let pc = rs ^. regPC
-  m0 <- read8 $ Addr pc
-  m1 <- read8 $ Addr pc + 1
-  m2 <- read8 $ Addr pc + 2
-  m3 <- read8 $ Addr pc + 3
+  b <- use bus
+  m0 <- fromJust <$> liftIO (Bus.read b $ Addr pc)
+  m1 <- fromJust <$> liftIO (Bus.read b $ Addr pc + 1)
+  m2 <- fromJust <$> liftIO (Bus.read b $ Addr pc + 2)
+  m3 <- fromJust <$> liftIO (Bus.read b $ Addr pc + 3)
   liftIO . hPutStrLn ?log $ mconcat 
     [ "A:", rreg8 $ rs ^. regA
     , " F:", rreg8 $ flagsw8 (rs ^. regFlagZ) (rs ^. regFlagN) (rs ^. regFlagH) (rs ^. regFlagC)
@@ -111,8 +104,15 @@ logCPUState = do
     rreg8 = pack . Pr.printf "%02X"
     rreg16 = pack . Pr.printf "%04X"
 
+updateComps :: Emulating m => Int -> m ()
+updateComps t = do
+  b <- use bus
+  b' <- liftIO $ Bus.update t b
+  bus .= b'
+
 decode :: Emulating m => m Instruction
 decode = do
+  updateComps 4
   b <- use bus
   pc <- use $ regs . regPC
   lastPC .= pc
@@ -129,6 +129,7 @@ cond CondC = use (regs . regFlagC)
 
 read8 :: Emulating m => Addr -> m Word8
 read8 a = do
+  updateComps 4
   b <- use bus
   pc <- use lastPC
   ins <- use lastIns
@@ -152,6 +153,7 @@ read16 a = do
 
 write8 :: Emulating m => Addr -> Word8 -> m ()
 write8 a v = do
+  updateComps 4
   b <- use bus
   b' <- liftIO $ Bus.write b a v
   bus .= b'
@@ -238,22 +240,6 @@ r16Mem R16MemHLMinus = do
   hl <- r16 R16HL
   setR16 R16HL $ hl - 1
   pure hl
-
-renderTile :: Emulating m => SDL.Renderer -> Addr -> Int -> Int -> m ()
-renderTile renderer a bx by = do
-  (ps :: [(Int, Int, Word8)]) <- mconcat <$> forM [0..8] \y -> do
-    mconcat <$> forM [0 .. 1] \x -> do
-      b <- read8 $ a + Addr (y * 2 + x)
-      pure
-        [ (bx + fromIntegral x, by + fromIntegral y, w8bits2 7 b)
-        , (bx + fromIntegral x, by + fromIntegral y, w8bits2 5 b)
-        , (bx + fromIntegral x, by + fromIntegral y, w8bits2 3 b)
-        , (bx + fromIntegral x, by + fromIntegral y, w8bits2 1 b)
-        ]
-  SDL.rendererDrawColor renderer SDL.$= SDL.V4 0 0 0 255
-  forM_ ps \(x, y, p) -> do
-    unless (p == 0) do
-      SDL.drawPoint renderer . SDL.P $ SDL.V2 (fromIntegral x) (fromIntegral y)
 
 step :: forall m. Emulating m => Instruction -> m ()
 step ins = do
@@ -571,11 +557,51 @@ step ins = do
     CbRlcR8 _ -> unimplemented
     CbRrcR8 _ -> unimplemented
     CbRlR8 _ -> unimplemented
-    CbRrR8 _ -> unimplemented
-    CbSlaR8 _ -> unimplemented
-    CbSraR8 _ -> unimplemented
-    CbSwapR8 _ -> unimplemented
-    CbSrlR8 _ -> unimplemented
+    CbRrR8 r -> do
+      v <- r8 r
+      c <- use $ regs . regFlagC
+      regs . regFlagH .= False
+      regs . regFlagZ .= False
+      regs . regFlagN .= False
+      regs . regFlagC .= w8bit 0 v
+      setR8 R8A $ rotateR v 1 .|. if c then 0b10000000 else 0
+    CbSlaR8 r -> do
+      v <- r8 r
+      let res = shiftL v 1
+      regs . regFlagZ .= (res == 0)
+      regs . regFlagH .= False
+      regs . regFlagN .= False
+      regs . regFlagC .= w8bit 7 v
+      setR8 R8A res
+    CbSraR8 r -> do
+      v <- r8 r
+      let
+        vs :: Int8
+        vs = fromIntegral v
+        ress = shiftR vs 1
+        res :: Word8
+        res = fromIntegral ress
+      regs . regFlagZ .= (res == 0)
+      regs . regFlagH .= False
+      regs . regFlagN .= False
+      regs . regFlagC .= w8bit 0 v
+      setR8 R8A res
+    CbSwapR8 r -> do
+      v <- r8 r
+      let res = rotate v 4
+      regs . regFlagZ .= (res == 0)
+      regs . regFlagH .= False
+      regs . regFlagN .= False
+      regs . regFlagC .= False
+      setR8 R8A res
+    CbSrlR8 r -> do
+      v <- r8 r
+      let res = shiftR v 1
+      regs . regFlagZ .= (res == 0)
+      regs . regFlagH .= False
+      regs . regFlagN .= False
+      regs . regFlagC .= w8bit 0 v
+      setR8 R8A res
     CbBitB3R8 _ _ -> unimplemented
     CbResB3R8 _ _ -> unimplemented
     CbSetB3R8 _ _ -> unimplemented
@@ -589,33 +615,3 @@ step ins = do
         , "): "
         , tshow ins
         ]
-
-testRun :: forall m. (MonadIO m, MonadThrow m) => ByteString -> m ()
-testRun rom = do
-  SDL.initializeAll
-  window <- SDL.createWindow "taking" SDL.defaultWindow
-  renderer <- SDL.createRenderer window (-1) SDL.defaultRenderer
-  let cpu = cpuDMG rom
-  let
-    loop :: forall m'. Emulating m' => Int -> m' ()
-    loop cycle = do
-      -- pc <- use $ regs . regPC
-      ins <- decode
-      -- log $ mconcat
-      --   [ pretty $ Addr pc
-      --   , ": ", tshow ins
-      --   ]
-      step ins
-      -- logCPUState
-      when (rem cycle 70224 == 0) do
-        SDL.rendererDrawColor renderer SDL.$= SDL.V4 255 255 255 255
-        SDL.clear renderer
-        forM_ ([0..255] :: [Int]) \i -> do
-          renderTile renderer (Addr . fromIntegral $ 0x8000 + i * 16) 0 0
-        SDL.present renderer
-      loop $ cycle + 1
-  liftIO $ withFile "log.txt" WriteMode \h -> do
-    let ?log = h
-    void $ flip runStateT cpu do
-      -- logCPUState
-      loop 0

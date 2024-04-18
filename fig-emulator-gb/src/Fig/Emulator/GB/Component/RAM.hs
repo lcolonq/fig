@@ -25,7 +25,7 @@ compWRAM start size = Component
   { compState = V.replicate size 0 :: V.Vector Word8
   , compMatches = \a ->
       a >= start && a < end
-  , compUpdate = pure
+  , compUpdate = \s _ -> pure s
   , compWrite = \s ad v -> do
       let offset = fromIntegral . unAddr $ ad - start
       pure $ V.modify (\ms -> MV.write ms offset v) s

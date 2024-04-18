@@ -22,16 +22,16 @@ instance Pretty Addr where
 data Component m = forall (s :: Type). Component
   { compState :: !s
   , compMatches :: !(Addr -> Bool)
-  , compUpdate :: !(s -> m s)
+  , compUpdate :: !(s -> Int -> m s)
   , compWrite :: !(s -> Addr -> Word8 -> m s)
   , compRead :: !(s -> Addr -> m Word8)
   }
 
 newtype Bus m = Bus { busComponents :: [Component m] }
 
-update :: forall m. MonadIO m => Bus m -> m (Bus m)
-update b = Bus <$> forM (busComponents b) \Component{..} -> do
-  s <- compUpdate compState
+update :: forall m. MonadIO m => Int -> Bus m -> m (Bus m)
+update t b = Bus <$> forM (busComponents b) \Component{..} -> do
+  s <- compUpdate compState t
   pure Component { compState = s, ..}
 
 write :: forall m. MonadIO m => Bus m -> Addr -> Word8 -> m (Bus m)

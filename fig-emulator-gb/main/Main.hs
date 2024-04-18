@@ -8,7 +8,7 @@ import Options.Applicative
 
 import qualified Data.ByteString as BS
 
-import Fig.Emulator.GB.CPU
+import Fig.Emulator.GB
 
 newtype Options = Options
   { romPath :: FilePath
