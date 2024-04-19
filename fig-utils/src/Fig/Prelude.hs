@@ -1,7 +1,7 @@
 {-# Language UndecidableInstances #-}
 
 module Fig.Prelude
-  ( quot, mod, rem, quotRem
+  ( quot, mod, rem, quotRem, fromIntegral
   , module GHC.Generics
   , module GHC.Num
   , module GHC.Float
@@ -52,7 +52,7 @@ module Fig.Prelude
   , Fix(..), unFix
   ) where
 
-import Prelude (quot, mod, rem, quotRem)
+import Prelude (quot, mod, rem, quotRem, fromIntegral)
 
 import GHC.Generics (Generic)
 import GHC.Num (Num(..), Integer)

@@ -16,13 +16,11 @@ instance Exception FigMonitorDiscordException
 
 data Config = Config
   { authToken :: Text
-  , channel :: Int
   } deriving (Show, Eq, Ord)
 
 configCodec :: Toml.TomlCodec Config
 configCodec = do
   authToken <- Toml.text "auth_token" Toml..= (\a -> a.authToken)
-  channel <- Toml.int "channel" Toml..= (\a -> a.channel)
   pure $ Config{..}
 
 loadConfig :: FilePath -> IO Config

@@ -2,29 +2,28 @@ module Fig.Frontend.Auth where
 
 import Fig.Prelude
 
-import GHC.Generics (Generic)
-
 import qualified Network.HTTP.Req as R
 
 import qualified Data.Aeson as Aeson
 import qualified Data.Aeson.Types as Aeson
 
-import qualified Web.Twain as Tw
-
 import qualified Jose.Jwk as Jwk
 import qualified Jose.Jwt as Jwt
+
+import qualified Web.Scotty as Sc
+import qualified Web.Scotty.Cookie as Sc.C
 
 import Fig.Frontend.Utils
 
 data TokenContents = TokenContents
-  { aud :: Text
-  , exp :: Int
-  , iat :: Int
-  , iss :: Text
-  , sub :: Text
-  , azp :: Text
-  , nonce :: Text
-  , preferred_username :: Text
+  { aud :: !Text
+  , exp :: !Int
+  , iat :: !Int
+  , iss :: !Text
+  , sub :: !Text
+  , azp :: !Text
+  , nonce :: !Text
+  , preferred_username :: !Text
   } deriving (Show, Eq, Generic)
 instance Aeson.FromJSON TokenContents
 
@@ -52,14 +51,14 @@ validateToken encodedToken = fetchJwk >>= \case
       log $ tshow contents
       pure $ Aeson.decodeStrict contents
 
-data Auth = Auth { id :: Text, name :: Text } deriving Show
-checkAuth :: Config -> Tw.ResponderM (Maybe Auth)
+data Auth = Auth { id :: !Text, name :: !Text } deriving Show
+checkAuth :: Config -> Sc.ActionM (Maybe Auth)
 checkAuth cfg = (,)
-  <$> Tw.cookieParamMaybe "id_token"
-  <*> Tw.cookieParamMaybe "authnonce"
+  <$> Sc.C.getCookie "id_token"
+  <*> Sc.C.getCookie "authnonce"
   >>= \case
     (Just token, Just nonce) -> do
-      validateToken token >>= \case
+      validateToken (encodeUtf8 token) >>= \case
         Just tc 
           | tc.aud == cfg.clientId
           , tc.nonce == nonce
@@ -69,10 +68,12 @@ checkAuth cfg = (,)
                 { name = tc.preferred_username
                 , id = tc.sub
                 }
-        _ -> pure Nothing
-    _ -> pure Nothing
+        _else -> pure Nothing
+    _else -> pure Nothing
 
-authed :: Config -> (Auth -> Tw.ResponderM a) -> Tw.ResponderM a
+authed :: Config -> (Auth -> Sc.ActionM ()) -> Sc.ActionM ()
 authed cfg f = checkAuth cfg >>= \case
-  Nothing -> Tw.send . Tw.status Tw.status401 $ Tw.text "unauthorized"
+  Nothing -> do
+    Sc.status status401
+    Sc.text "unauthorized"
   Just auth -> f auth

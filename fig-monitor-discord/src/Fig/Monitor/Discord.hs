@@ -4,8 +4,6 @@ module Fig.Monitor.Discord where
 
 import Fig.Prelude
 
-import GHC.Real (fromIntegral)
-
 import Control.Monad (unless)
 import Control.Monad.Reader (runReaderT)
 import qualified Control.Concurrent.Async as Async
@@ -27,7 +25,8 @@ import Fig.Bus.Client
 import Fig.Monitor.Discord.Utils
 
 data OutgoingMessage = OutgoingMessage
-  { user :: Text
+  { chan :: Integer
+  , user :: Text
   , msg :: Text
   }
 
@@ -44,7 +43,6 @@ stickerUrl sid ty = base <> sid <> "." <> ext
 discordBot :: Config -> (Text, Text) -> IO ()
 discordBot cfg busAddr = do
   outgoing <- Chan.newChan @OutgoingMessage
-  let cid = Dis.DiscordId $ Dis.Snowflake $ fromIntegral cfg.channel
   busClient busAddr
     (\cmds -> do
         cmds.subscribe [sexp|(monitor discord chat outgoing)|]
@@ -62,6 +60,7 @@ discordBot cfg busAddr = do
               dst <- ask
               liftIO . void . Async.async . forever $ flip runReaderT dst do
                 o <- liftIO $ Chan.readChan outgoing
+                let cid = Dis.DiscordId $ Dis.Snowflake $ fromIntegral o.chan
                 void . Dis.restCall . Dis.CreateMessage cid $ mconcat
                   [ "`<", o.user, ">` "
                   , o.msg
@@ -79,6 +78,7 @@ discordBot cfg busAddr = do
                 void . Dis.restCall . Dis.CreateInteractionResponse (Dis.interactionId cmd) (Dis.interactionToken cmd) $ Dis.interactionResponseBasic "pong"
               Dis.MessageCreate m ->
                 let
+                  chan = Dis.messageChannelId m
                   auth = Dis.messageAuthor m
                   mmemb = Dis.messageMember m
                   msticker = Dis.messageStickerItems m >>= headMay
@@ -122,7 +122,8 @@ discordBot cfg busAddr = do
                 in unless (Dis.userIsBot auth) do
                   log $ "Received: " <> processedMsg <> " (from " <> name <> ")"
                   liftIO $ cmds.publish [sexp|(monitor discord chat incoming)|]
-                    [ SExprString . BS.Base64.encodeBase64 $ encodeUtf8 name
+                    [ SExprInteger . fromIntegral . Dis.unSnowflake $ Dis.unId chan
+                    , SExprString . BS.Base64.encodeBase64 $ encodeUtf8 name
                     , SExprList []
                     , SExprString . BS.Base64.encodeBase64 . encodeUtf8 . Text.intercalate " "
                       $ maybe [] ((:[]) . (<>":")) replyStr <>
@@ -136,7 +137,7 @@ discordBot cfg busAddr = do
     )
     (\_cmds d -> do
         case d of
-          SExprList [ev, SExprString euser, SExprString emsg]
+          SExprList [ev, SExprInteger chan, SExprString euser, SExprString emsg]
             | ev == [sexp|(monitor discord chat outgoing)|]
             , Right user <- decodeUtf8 <$> BS.Base64.decodeBase64 (encodeUtf8 euser)
             , Right msg <- decodeUtf8 <$> BS.Base64.decodeBase64 (encodeUtf8 emsg) -> do
@@ -147,7 +148,7 @@ discordBot cfg busAddr = do
                       , (":mrred:", "<:mrred:1154524307649724449>")
                       ]
                 let newMsg = foldr' (\(n, r) h -> Text.replace n r h) msg replacements
-                Chan.writeChan outgoing OutgoingMessage { user = user, msg = newMsg }
+                Chan.writeChan outgoing OutgoingMessage { chan, user, msg = newMsg }
           _ -> log $ "Invalid outgoing message: " <> tshow d
     )
     (pure ())

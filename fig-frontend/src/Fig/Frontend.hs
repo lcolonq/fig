@@ -9,12 +9,14 @@ import System.Random (randomRIO)
 import Control.Lens (use, (^?), Ixed (..))
 
 import qualified Data.Text as Text
+import qualified Data.Text.Lazy as Text.L
 import qualified Data.ByteString.Base64 as BS.Base64
 
+import qualified Network.Wai as Wai
 import qualified Network.Wai.Middleware.Static as Wai.Static
 import qualified Network.Wai.Handler.Warp as Warp
 
-import qualified Web.Twain as Tw
+import qualified Web.Scotty as Sc
 
 import Fig.Utils.SExpr
 import Fig.Bus.Client
@@ -37,83 +39,93 @@ server cfg busAddr = do
 sexprStr :: Text -> SExpr
 sexprStr = SExprString . BS.Base64.encodeBase64 . encodeUtf8
 
-app :: Config -> Commands IO -> IO Tw.Application
+app :: Config -> Commands IO -> IO Wai.Application
 app cfg cmds = do
   log "Connecting to database..."
   db <- DB.connect cfg
   log "Connected! Server active."
   st <- stateRef
-  pure $ foldr' @[] ($)
-    (Tw.notFound . Tw.send $ Tw.text "not found")
-    [ Wai.Static.staticPolicy $ Wai.Static.addBase cfg.assetPath
-    , Tw.get "/api/check" $ authed cfg \auth -> do
-        Tw.send $ Tw.json @[Text] [auth.id, auth.name]
-    , Tw.put "/api/buffer" do
-        buf <- withState st $ use buffer 
-        Tw.send $ Tw.text buf
-    , Tw.get "/api/motd" do
-        DB.get db "motd" >>= \case
-          Nothing -> Tw.send $ Tw.text ""
-          Just val -> Tw.send . Tw.text $ decodeUtf8 val
-    , Tw.get "/api/catchphrase" do
-        let catchphrases =
-              [ "vtuber (male)"
-              , "man of letters"
-              , "cool guy, online"
-              , "internet clown man"
-              , "professional emacs fan"
-              , "web freak"
-              , "guy who really likes programming"
-              , "i use nixos btw"
-              , "(are these funny or cringe or both?)"
-              , "haha yay"
-              , "Joel"
-              ] :: [Text]
-        i <- randomRIO (0, length catchphrases - 1)
-        case catchphrases ^? ix i of
-          Nothing -> Tw.send $ Tw.text "man of letters"
-          Just val -> Tw.send $ Tw.text val
-    , Tw.get "/api/user/:name" do
-        name <- Text.toLower <$> Tw.param "name"
-        DB.get db ("user:" <> encodeUtf8 name) >>= \case
-          Nothing -> Tw.send . Tw.status Tw.status404 $ Tw.text "user not found"
-          Just val -> Tw.send . Tw.text $ decodeUtf8 val
-    , Tw.post "/api/redeem" do
-        me <- Text.toLower <$> Tw.param "ayem"
-        name <- Tw.param "name"
-        input <- Tw.paramMaybe "input"
-        liftIO $ cmds.publish [sexp|(frontend redeem incoming)|]
-          $ mconcat
-            [ [ sexprStr me
-              , sexprStr name
-              ]
-            , maybe [] ((:[]) . sexprStr) input
+  Sc.scottyApp do
+    Sc.middleware $ Wai.Static.staticPolicy $ Wai.Static.addBase cfg.assetPath
+    Sc.get "/api/check" $ authed cfg \auth -> do
+      Sc.json @[Text] [auth.id, auth.name]
+    Sc.put "/api/buffer" do
+      buf <- withState st $ use buffer 
+      Sc.text $ Text.L.fromStrict buf
+    Sc.get "/api/motd" do
+      DB.get db "motd" >>= \case
+        Nothing -> Sc.text ""
+        Just val -> Sc.text . Text.L.fromStrict $ decodeUtf8 val
+    Sc.get "/api/motd" do
+      DB.get db "motd" >>= \case
+        Nothing -> Sc.text ""
+        Just val -> Sc.text . Text.L.fromStrict $ decodeUtf8 val
+    Sc.get "/api/catchphrase" do
+      let catchphrases =
+            [ "vtuber (male)"
+            , "man of letters"
+            , "cool guy, online"
+            , "internet clown man"
+            , "professional emacs fan"
+            , "web freak"
+            , "guy who really likes programming"
+            , "i use nixos btw"
+            , "(are these funny or cringe or both?)"
+            , "haha yay"
+            , "Joel"
+            ] :: [Text]
+      i <- randomRIO (0, length catchphrases - 1)
+      case catchphrases ^? ix i of
+        Nothing -> Sc.text "man of letters"
+        Just val -> Sc.text $ Text.L.fromStrict val
+    Sc.get "/api/user/:name" do
+      name <- Text.toLower <$> Sc.pathParam "name"
+      DB.get db ("user:" <> encodeUtf8 name) >>= \case
+        Nothing -> do
+          Sc.status status404
+          Sc.text "user not found"
+        Just val -> Sc.text . Text.L.fromStrict $ decodeUtf8 val
+    Sc.post "/api/redeem" do
+      me <- Text.toLower <$> Sc.formParam "ayem"
+      name <- Sc.formParam "name"
+      input <- Sc.formParamMaybe "input"
+      liftIO $ cmds.publish [sexp|(frontend redeem incoming)|]
+        $ mconcat
+          [ [ sexprStr me
+            , sexprStr name
             ]
-        Tw.send $ Tw.text "it worked"
-    , Tw.get "/api/songs" do
-        DB.hvals db "songnames" >>= \case
-          Nothing -> Tw.send . Tw.status Tw.status404 $ Tw.text "no sounds found :("
-          Just songs -> Tw.send . Tw.text . pretty . SExprList @Void $ SExprString . decodeUtf8 <$> songs
-    , Tw.get "/api/song/:hash" do
-        hash <- Tw.param "hash"
-        DB.hget db "songnotes" hash >>= \case
-          Nothing -> Tw.send . Tw.status Tw.status404 $ Tw.text "song not found"
-          Just val -> Tw.send . Tw.text $ decodeUtf8 val
-    , Tw.get "/api/poke/:name" do
-        target <- encodeUtf8 . Text.toLower <$> Tw.param "name"
-        inbox <- fromMaybe [] <$> DB.smembers db ("pokeinbox:" <> target)
-        Tw.send . Tw.text . pretty . SExprList @Void $ sexprStr . decodeUtf8 <$> inbox
-    , Tw.post "/api/poke/:name" do
-        me <- encodeUtf8 . Text.toLower <$> Tw.param "ayem"
-        target <- encodeUtf8 . Text.toLower <$> Tw.param "name"
-        DB.sismember db ("pokeinbox:" <> me) target >>= \case
-          True -> do
-            log . tshow $ "handshake between " <> me <> " and " <> target <> " complete!"
-            DB.srem db ("pokeinbox:" <> target) [me]
-            DB.srem db ("pokeinbox:" <> me) [target]
-            Tw.send $ Tw.text "complete"
-          False -> do
-            log . tshow $ "partial handshake from " <> me <> " to " <> target
-            DB.sadd db ("pokeinbox:" <> target) [me]
-            Tw.send $ Tw.text "partial"
-    ]
+          , maybe [] ((:[]) . sexprStr) input
+          ]
+      Sc.text "it worked"
+    Sc.get "/api/songs" do
+      DB.hvals db "songnames" >>= \case
+        Nothing -> do
+          Sc.status status404
+          Sc.text "no sounds found :("
+        Just songs -> Sc.text . Text.L.fromStrict . pretty . SExprList @Void $ SExprString . decodeUtf8 <$> songs
+    Sc.get "/api/song/:hash" do
+      hash <- Sc.pathParam "hash"
+      DB.hget db "songnotes" hash >>= \case
+        Nothing -> do
+          Sc.status status404
+          Sc.text "song not found"
+        Just val -> Sc.text . Text.L.fromStrict $ decodeUtf8 val
+    Sc.get "/api/poke/:name" do
+      target <- encodeUtf8 . Text.toLower <$> Sc.pathParam "name"
+      inbox <- fromMaybe [] <$> DB.smembers db ("pokeinbox:" <> target)
+      Sc.text . Text.L.fromStrict . pretty . SExprList @Void $ sexprStr . decodeUtf8 <$> inbox
+    Sc.post "/api/poke/:name" do
+      me <- encodeUtf8 . Text.toLower <$> Sc.formParam "ayem"
+      target <- encodeUtf8 . Text.toLower <$> Sc.pathParam "name"
+      DB.sismember db ("pokeinbox:" <> me) target >>= \case
+        True -> do
+          log . tshow $ "handshake between " <> me <> " and " <> target <> " complete!"
+          DB.srem db ("pokeinbox:" <> target) [me]
+          DB.srem db ("pokeinbox:" <> me) [target]
+          Sc.text "complete"
+        False -> do
+          log . tshow $ "partial handshake from " <> me <> " to " <> target
+          DB.sadd db ("pokeinbox:" <> target) [me]
+          Sc.text "partial"
+    Sc.notFound do
+      Sc.text "not found"

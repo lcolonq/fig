@@ -3,23 +3,30 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    ps-tools.follows = "purs-nix/ps-tools";
-    purs-nix.url = "github:purs-nix/purs-nix/ps-0.15";
+    # commented pending https://github.com/purs-nix/purs-nix/issues/55
+    # ps-tools.follows = "purs-nix/ps-tools";
+    # purs-nix.url = "github:purs-nix/purs-nix/ps-0.15";
   };
 
   outputs = { self, nixpkgs, ... }@inputs:
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
-      ps-tools = inputs.ps-tools.legacyPackages.${system};
-      purs-nix = inputs.purs-nix { inherit system; };
+      # ps-tools = inputs.ps-tools.legacyPackages.${system};
+      # purs-nix = inputs.purs-nix { inherit system; };
 
       haskellOverrides = self: super: {
+        scotty = self.callHackageDirect {
+          pkg = "scotty";
+          ver = "0.21";
+          sha256 = "sha256-coeQZJT7COSmoyA1eiykoMFv3+xNnxkF5tX4mlFcd84=";
+        } {};
         discord-haskell = self.callCabal2nix "discord-haskell" ./deps/discord-haskell {};
         irc-conduit = self.callCabal2nix "irc-conduit" ./deps/irc-conduit {};
         irc-client = self.callCabal2nix "irc-client" ./deps/irc-client {};
         fig-utils = self.callCabal2nix "fig-utils" ./fig-utils {};
         fig-bus = self.callCabal2nix "fig-bus" ./fig-bus {};
+        fig-monitor-twitch = self.callCabal2nix "fig-monitor-twitch" ./fig-monitor-twitch {};
         fig-monitor-discord = self.callCabal2nix "fig-monitor-discord" ./fig-monitor-discord {};
         fig-monitor-irc = self.callCabal2nix "fig-monitor-irc" ./fig-monitor-irc {};
         fig-monitor-bullfrog = self.callCabal2nix "fig-monitor-bullfrog" ./fig-monitor-bullfrog {};
@@ -32,25 +39,25 @@
         overrides = haskellOverrides;
       };
 
-      purescript = purs-nix.purs {
-        dependencies = [
-          "console"
-          "effect"
-          "prelude"
-          "random"
-          "refs"
-          "web-html"
-          "web-dom"
-          "web-uievents"
-          "canvas"
-          "argonaut"
-          "fetch"
-          "fetch-argonaut"
-        ];
-        dir = ./fig-frontend-client;
-        srcs = [ "src" ];
-      };
-      fig-frontend-client = purescript.bundle {};
+      # purescript = purs-nix.purs {
+      #   dependencies = [
+      #     "console"
+      #     "effect"
+      #     "prelude"
+      #     "random"
+      #     "refs"
+      #     "web-html"
+      #     "web-dom"
+      #     "web-uievents"
+      #     "canvas"
+      #     "argonaut"
+      #     "fetch"
+      #     "fetch-argonaut"
+      #   ];
+      #   dir = ./fig-frontend-client;
+      #   srcs = [ "src" ];
+      # };
+      # fig-frontend-client = purescript.bundle {};
 
       figBusModule = { config, lib, ... }:
         let
@@ -108,7 +115,6 @@
               description = "Path to config file";
               default = pkgs.writeText "fig-monitor-discord.toml" ''
                 auth_token = ""
-                channel = 1064660360533135551
               '';
             };
           };
@@ -153,8 +159,7 @@
                 host = "colonq.computer"
                 port = 26697
                 nick = "discord"
-                sendchannel = "#cyberspace"
-                channels = ["#cyberspace"]
+                channels = ["#cyberspace", "#geiserzone", "#jakerealm"]
               '';
             };
           };
@@ -192,6 +197,23 @@
               default = 32050;
               description = "Address of message bus";
             };
+            configFile = lib.mkOption {
+              type = lib.types.path;
+              description = "Path to config file";
+              default = pkgs.writeText "fig-bridge-irc-discord.toml" ''
+                [[mapping]]
+                irc = "#cyberspace"
+                discord = 1064660360533135551 # the-computer in clonkcord
+                
+                [[mapping]]
+                irc = "#geiserzone"
+                discord = 1117224697914990662 # bot-test in clonkcord
+                
+                [[mapping]]
+                irc = "#jakerealm"
+                discord = 1135088202114412628 # general in jakecord
+              '';
+            };
           };
           config = lib.mkIf cfg.enable {
             systemd.services."colonq.fig-bridge-irc-discord" = {
@@ -199,7 +221,7 @@
               after = ["colonq.fig-bus.service"];
               serviceConfig = {
                 Restart = "on-failure";
-                ExecStart = "${haskellPackages.fig-bridge-irc-discord}/bin/fig-bridge-irc-discord --bus-host ${cfg.busHost} --bus-port ${toString cfg.busPort}";
+                ExecStart = "${haskellPackages.fig-bridge-irc-discord}/bin/fig-bridge-irc-discord --bus-host ${cfg.busHost} --bus-port ${toString cfg.busPort} --config ${cfg.configFile}";
                 DynamicUser = "yes";
                 RuntimeDirectory = "colonq.fig-bridge-irc-discord";
                 RuntimeDirectoryMode = "0755";
@@ -261,6 +283,7 @@
         packages = hspkgs: with hspkgs; [
           fig-utils
           fig-bus
+          fig-monitor-twitch
           fig-monitor-discord
           fig-monitor-irc
           fig-monitor-bullfrog
@@ -273,10 +296,10 @@
         buildInputs = [
           haskellPackages.haskell-language-server
           pkgs.nodejs
-          (purescript.command {})
-          ps-tools.for-0_15.purescript-language-server
-          purs-nix.esbuild
-          purs-nix.purescript
+          # (purescript.command {})
+          # ps-tools.for-0_15.purescript-language-server
+          # purs-nix.esbuild
+          # purs-nix.purescript
           pkgs.m4
           pkgs.dhall
           pkgs.dhall-json
@@ -285,6 +308,7 @@
       packages.x86_64-linux = {
         default = haskellPackages.fig-bus;
         figBus = haskellPackages.fig-bus;
+        figMonitorTwitch = haskellPackages.fig-monitor-twitch;
         figMonitorDiscord = haskellPackages.fig-monitor-discord;
         figMonitorIRC = haskellPackages.fig-monitor-irc;
         figMonitorBullfrog = haskellPackages.fig-monitor-bullfrog;

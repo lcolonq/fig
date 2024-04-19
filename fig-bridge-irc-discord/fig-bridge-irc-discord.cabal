@@ -37,6 +37,7 @@ library
   hs-source-dirs: src
   exposed-modules:
     Fig.Bridge.IRCDiscord
+    Fig.Bridge.IRCDiscord.Utils
 
 executable fig-bridge-irc-discord
   import: defaults

@@ -32,11 +32,11 @@ common deps
     , random
     , req
     , safe-exceptions
+    , scotty
     , text
     , time
     , tomland
     , transformers
-    , twain
     , unordered-containers
     , vector
     , wai
