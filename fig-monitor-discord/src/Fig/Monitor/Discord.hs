@@ -127,8 +127,9 @@ discordBot cfg busAddr = do
                     , SExprList []
                     , SExprString . BS.Base64.encodeBase64 . encodeUtf8 . Text.intercalate " "
                       $ maybe [] ((:[]) . (<>":")) replyStr <>
-                        [ processedMsg
-                        , Text.intercalate " " attach
+                        mconcat
+                        [ [processedMsg]
+                        , attach
                         ]
                     ]
               _ -> pure ()
