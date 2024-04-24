@@ -1,8 +1,6 @@
-{-# Language ImplicitParams #-}
 module Fig.Emulator.GB where
 
 import Fig.Prelude
-import Prelude (fromIntegral)
 
 import System.IO (withFile, IOMode (WriteMode))
 
@@ -21,8 +19,8 @@ import Fig.Emulator.GB.Component.Video
 import Fig.Emulator.GB.Component.Joystick
 import Fig.Emulator.GB.Component.Serial
 
-cpuDMG :: (MonadIO m, MonadThrow m) => ByteString -> Framebuffer -> CPU m
-cpuDMG rom fb = CPU
+cpuDMG :: (MonadIO m, MonadThrow m) => Handle -> ByteString -> Framebuffer -> CPU m
+cpuDMG h rom fb = CPU
   { _lastPC = 0x0
   , _lastIns = Nop
   , _running = True
@@ -32,52 +30,49 @@ cpuDMG rom fb = CPU
     , compWRAM 0xc000 $ 8 * 1024
     , compVideo fb
     , compJoystick
-    , compSerial
+    , compSerial h
     , compWRAM 0xff80 0x7e -- HRAM
     ]
   }
 
-testRun :: forall m. (MonadIO m, MonadThrow m) => ByteString -> m ()
-testRun rom = do
+testRun :: forall m. (MonadIO m, MonadThrow m) => FilePath -> ByteString -> m ()
+testRun serialOut rom = do
   SDL.initializeAll
   window <- SDL.createWindow "taking" SDL.defaultWindow
   fb <- initializeFramebuffer
-  let cpu = cpuDMG rom fb
-  let
-    loop :: forall m'. Emulating m' => Int -> m' ()
-    loop cycle = do
-      events <- SDL.pollEvents
-      forM_ events \ev ->
-        case SDL.eventPayload ev of
-          SDL.QuitEvent -> running .= False
-          _else -> pure ()
-      pc <- use $ regs . regPC
-      ins <- decode
-      when (pc == 0x2817) do
-        log $ mconcat
-          [ pretty $ Addr pc
-          , ": ", tshow ins
-          ]
-      step ins
-      -- logCPUState
-      when (rem cycle 70224 == 0) do
-        ws <- SDL.getWindowSurface window
-        SDL.surfaceFillRect ws Nothing $ SDL.V4 0x00 0x00 0x00 0xff
-        void $
-          SDL.surfaceBlitScaled
-          (fbSurface fb)
-          Nothing
-          ws
-          (Just $ SDL.Rectangle
-           (SDL.P $ SDL.V2 0 0)
-           (SDL.V2
-            (fromIntegral screenWidth * 8)
-            (fromIntegral screenHeight * 8)))
-        SDL.updateWindowSurface window
-      r <- use running
-      when r . loop $ cycle + 1
-  liftIO $ withFile "log.txt" WriteMode \h -> do
-    let ?log = h
+  liftIO $ withFile serialOut WriteMode \hserial -> do
+    let cpu = cpuDMG hserial rom fb
+    let
+      loop :: forall m'. Emulating m' => Int -> m' ()
+      loop cycle = do
+        events <- SDL.pollEvents
+        forM_ events \ev ->
+          case SDL.eventPayload ev of
+            SDL.QuitEvent -> running .= False
+            _else -> pure ()
+        pc <- use $ regs . regPC
+        ins <- decode
+        when (pc == 0x2817) do
+          log $ mconcat
+            [ pretty $ Addr pc
+            , ": ", tshow ins
+            ]
+        step ins
+        when (rem cycle 70224 == 0) do
+          ws <- SDL.getWindowSurface window
+          SDL.surfaceFillRect ws Nothing $ SDL.V4 0x00 0x00 0x00 0xff
+          void $
+            SDL.surfaceBlitScaled
+            (fbSurface fb)
+            Nothing
+            ws
+            (Just $ SDL.Rectangle
+             (SDL.P $ SDL.V2 0 0)
+             (SDL.V2
+              (fromIntegral screenWidth * 8)
+              (fromIntegral screenHeight * 8)))
+          SDL.updateWindowSurface window
+        r <- use running
+        when r . loop $ cycle + 1
     void $ flip runStateT cpu do
-      -- logCPUState
       loop 0

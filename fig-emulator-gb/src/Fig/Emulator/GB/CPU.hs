@@ -1,27 +1,26 @@
-{-# Language TemplateHaskell, ImplicitParams #-}
+{-# Language TemplateHaskell #-}
 module Fig.Emulator.GB.CPU
   ( CPU(..)
   , Registers(..), initialRegs
   , Emulating
-  , running, regs, bus, regPC
+  , running, regs, bus, regPC, regSP
+  , regA, regB, regC, regD, regE, regH, regL
+  , regFlagZ, regFlagN, regFlagH, regFlagC
   , updateComps
   , decode
   , step
-  , logCPUState
   ) where
 
 import Control.Lens.TH (makeLenses)
 
-import Data.Maybe (fromJust)
-
 import Fig.Prelude
-import Prelude (fromIntegral)
 
 import qualified Text.Printf as Pr
 
 import Control.Lens ((.=), use, (^.))
 import Control.Monad (when)
 
+import Data.Maybe (fromJust)
 import Data.Word (Word8, Word16)
 import Data.Int (Int8)
 import Data.Bits
@@ -75,34 +74,34 @@ data CPU m = CPU
   }
 makeLenses 'CPU
 
-type EmulatingT f m = (MonadIO m, MonadThrow m, MonadState (CPU f) m, ?log :: Handle)
+type EmulatingT f m = (MonadIO m, MonadThrow m, MonadState (CPU f) m)
 type Emulating m = EmulatingT IO m
 
-logCPUState :: Emulating m => m ()
-logCPUState = do
-  rs <- use regs
-  let pc = rs ^. regPC
-  b <- use bus
-  m0 <- fromJust <$> liftIO (Bus.read b $ Addr pc)
-  m1 <- fromJust <$> liftIO (Bus.read b $ Addr pc + 1)
-  m2 <- fromJust <$> liftIO (Bus.read b $ Addr pc + 2)
-  m3 <- fromJust <$> liftIO (Bus.read b $ Addr pc + 3)
-  liftIO . hPutStrLn ?log $ mconcat 
-    [ "A:", rreg8 $ rs ^. regA
-    , " F:", rreg8 $ flagsw8 (rs ^. regFlagZ) (rs ^. regFlagN) (rs ^. regFlagH) (rs ^. regFlagC)
-    , " B:", rreg8 $ rs ^. regB
-    , " C:", rreg8 $ rs ^. regC
-    , " D:", rreg8 $ rs ^. regD
-    , " E:", rreg8 $ rs ^. regE
-    , " H:", rreg8 $ rs ^. regH
-    , " L:", rreg8 $ rs ^. regL
-    , " SP:", rreg16 $ rs ^. regSP
-    , " PC:", rreg16 pc
-    , " PCMEM:", rreg8 m0, ",", rreg8 m1, ",", rreg8 m2, ",", rreg8 m3
-    ]
-  where
-    rreg8 = pack . Pr.printf "%02X"
-    rreg16 = pack . Pr.printf "%04X"
+-- logCPUState :: Emulating m => m ()
+-- logCPUState = do
+--   rs <- use regs
+--   let pc = rs ^. regPC
+--   b <- use bus
+--   m0 <- fromJust <$> liftIO (Bus.read b $ Addr pc)
+--   m1 <- fromJust <$> liftIO (Bus.read b $ Addr pc + 1)
+--   m2 <- fromJust <$> liftIO (Bus.read b $ Addr pc + 2)
+--   m3 <- fromJust <$> liftIO (Bus.read b $ Addr pc + 3)
+--   liftIO . hPutStrLn ?log $ mconcat 
+--     [ "A:", rreg8 $ rs ^. regA
+--     , " F:", rreg8 $ flagsw8 (rs ^. regFlagZ) (rs ^. regFlagN) (rs ^. regFlagH) (rs ^. regFlagC)
+--     , " B:", rreg8 $ rs ^. regB
+--     , " C:", rreg8 $ rs ^. regC
+--     , " D:", rreg8 $ rs ^. regD
+--     , " E:", rreg8 $ rs ^. regE
+--     , " H:", rreg8 $ rs ^. regH
+--     , " L:", rreg8 $ rs ^. regL
+--     , " SP:", rreg16 $ rs ^. regSP
+--     , " PC:", rreg16 pc
+--     , " PCMEM:", rreg8 m0, ",", rreg8 m1, ",", rreg8 m2, ",", rreg8 m3
+--     ]
+--   where
+--     rreg8 = pack . Pr.printf "%02X"
+--     rreg16 = pack . Pr.printf "%04X"
 
 updateComps :: Emulating m => Int -> m ()
 updateComps t = do
@@ -289,7 +288,7 @@ step ins = do
         res = x + y
       regs . regFlagH .= (shiftR res 11 .&. 0b1 == 0b1)
       regs . regFlagC .= (shiftR res 15 .&. 0b1 == 0b1)
-      regs . regFlagZ .= (res .&. 0xffff == 0)
+      regs . regFlagZ .= (res == 0)
       regs . regFlagN .= False
       setR16 R16HL res
     IncR8 r -> do

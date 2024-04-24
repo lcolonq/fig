@@ -44,6 +44,14 @@ flagsw8 z n h c =
   .|. shiftL (if h then 1 else 0) 5
   .|. shiftL (if c then 1 else 0) 4
 
+w8flags :: Word8 -> (Bool, Bool, Bool, Bool)
+w8flags x = (z, n, h, c)
+  where
+    z = w8bit 7 x
+    n = w8bit 6 x
+    h = w8bit 5 x
+    c = w8bit 4 x
+
 zext :: Word8 -> Word16
 zext = fromIntegral
 

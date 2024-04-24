@@ -1,7 +1,8 @@
 module Fig.Emulator.GB.Component.Serial where
 
 import Fig.Prelude
-import Prelude (fromIntegral)
+
+import GHC.IO.Handle (hPutChar)
 
 import Data.Char (chr)
 
@@ -17,8 +18,8 @@ instance Pretty SerialError where
     , b
     ]
 
-compSerial :: (MonadIO m, MonadThrow m) => Component m
-compSerial = Component
+compSerial :: (MonadIO m, MonadThrow m) => Handle -> Component m
+compSerial h = Component
   { compState = ()
   , compMatches = (== 0xff01)
   , compUpdate = \s _ -> pure s
@@ -26,6 +27,7 @@ compSerial = Component
       log $ mconcat
         [ "wrote serial byte: ", tshow $ chr $ fromIntegral v
         ]
+      liftIO . hPutChar h . chr $ fromIntegral v
       pure s
   , compRead = \_ _ -> pure 0x00
   }

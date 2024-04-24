@@ -24,7 +24,7 @@ compWRAM :: (MonadIO m, MonadThrow m) => Addr -> Int -> Component m
 compWRAM start size = Component
   { compState = V.replicate size 0 :: V.Vector Word8
   , compMatches = \a ->
-      a >= start && a < end
+      a >= start && a <= end
   , compUpdate = \s _ -> pure s
   , compWrite = \s ad v -> do
       let offset = fromIntegral . unAddr $ ad - start
@@ -38,4 +38,4 @@ compWRAM start size = Component
         Just v -> pure v
   }
   where
-    end = start + Addr (fromIntegral size)
+    end = start + Addr (fromIntegral (size - 1))
