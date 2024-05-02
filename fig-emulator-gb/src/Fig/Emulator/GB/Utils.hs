@@ -68,7 +68,7 @@ addC :: Bool -> Word8 -> Word8 -> (Word8, Bool)
 addC c x y = (trunc res, shiftR res 8 .&. 1 == 1)
   where
     res :: Word16
-    res = sext x + sext y + if c then 1 else 0
+    res = zext x + zext y + if c then 1 else 0
 
 addH :: Bool -> Word8 -> Word8 -> Bool
 addH c x y = shiftR res 4 .&. 1 == 1
@@ -78,5 +78,13 @@ addH c x y = shiftR res 4 .&. 1 == 1
     res :: Word8
     res = xlo + ylo + if c then 1 else 0
 
-subH :: Word8 -> Word8 -> Bool
-subH x y = w8bits4 3 x < w8bits4 3 y
+subC :: Bool -> Word8 -> Word8 -> (Word8, Bool)
+subC c x y = (trunc $ xs - ys, yz > xz)
+  where
+    xs = sext x
+    ys = sext y + if c then 1 else 0
+    xz = zext x
+    yz = zext y + if c then 1 else 0
+
+subH :: Bool -> Word8 -> Word8 -> Bool
+subH c x y = zext (w8bits4 3 x) < (zext (w8bits4 3 y) + if c then 1 else 0)

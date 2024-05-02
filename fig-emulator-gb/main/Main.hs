@@ -4,7 +4,11 @@ module Main where
 
 import Fig.Prelude
 
+import qualified System.Directory as Dir
+
 import Options.Applicative
+
+import Control.Monad (unless)
 
 import Control.Exception.Safe (Handler(..), catches)
 
@@ -34,8 +38,8 @@ parseInstrTestOptions = do
   pure InstrTestOptions{..}
 
 data Command
-  = CommandRun RunOptions
-  | CommandInstrTest InstrTestOptions
+  = CommandRun !RunOptions
+  | CommandInstrTest !InstrTestOptions
   deriving Show
 
 parseOptions :: Parser Command
@@ -56,8 +60,12 @@ main = do
       testRun (serialOut opts) rom
     CommandInstrTest opts -> catches
       ( do
-          tcs <- readTestcases $ testcasesPath opts
-          forM_ tcs runTestcase
+          paths <- Dir.listDirectory $ testcasesPath opts
+          forM_ paths \p -> do
+            unless (p == "README.md") do
+              hPutStrLn stderr $ "Running test file: " <> pack p <> "..."
+              tcs <- readTestcases $ testcasesPath opts <> "/" <> p
+              forM_ tcs runTestcase
       )
       [ Handler \(e :: InstrTestError) -> liftIO . hPutStrLn stderr $ pretty e
       ]

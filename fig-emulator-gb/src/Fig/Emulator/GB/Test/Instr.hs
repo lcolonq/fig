@@ -9,6 +9,8 @@ import Control.Monad.State (StateT(..))
 import Data.Word (Word8, Word16)
 import qualified Data.Aeson as Aeson
 
+import qualified Text.Printf as Pr
+
 import Fig.Prelude
 import Fig.Emulator.GB.Utils
 import Fig.Emulator.GB.CPU
@@ -102,35 +104,63 @@ cpuInstrTest vs = do
     , _bus = finalBus
     }
 
-checkCPU :: forall m. (MonadIO m, MonadThrow m) => Text -> TestVals -> CPU m -> m ()
-checkCPU tnm vs c = do
+checkCPU :: forall m. (MonadIO m, MonadThrow m) => Text -> TestVals -> CPU m -> CPU m -> m ()
+checkCPU tnm vs initial c = do
   let
-    check :: (Eq a, Show a) => Text -> a -> a -> m ()
-    check nm eval aval = if eval == aval
+    flag f = if f then "1" else "0"
+    rreg8 = pack . Pr.printf "%02X"
+    rreg16 = pack . Pr.printf "%04X"
+    dumpRegs :: Text -> Registers -> Text
+    dumpRegs prefix r = mconcat
+      [ prefix, " registers:\t"
+      , "A: ", rreg8 $ r ^. regA
+      , ", B: ", rreg8 $ r ^. regB
+      , ", C: ", rreg8 $ r ^. regC
+      , ", D: ", rreg8 $ r ^. regD
+      , ", E: ", rreg8 $ r ^. regE
+      , ", H: ", rreg8 $ r ^. regH
+      , ", L: ", rreg8 $ r ^. regL
+      , ", PC: ", rreg16 $ r ^. regPC
+      , ", SP: ", rreg16 $ r ^. regSP
+      ]
+    dumpFlags :: Text -> Registers -> Text
+    dumpFlags prefix r = mconcat
+      [ prefix, " flags:\t"
+      , "Z: ", flag $ r ^. regFlagZ
+      , ", N: ", flag $ r ^. regFlagN
+      , ", H: ", flag $ r ^. regFlagH
+      , ", C: ", flag $ r ^. regFlagC
+      ]
+    check :: (Eq a) => (a -> Text) -> Text -> a -> a -> m ()
+    check pr nm eval aval = if eval == aval
       then pure ()
       else throwM . InstrTestError $ mconcat
       [ "while running test ", tnm, ":\n"
       , nm <> " mismatch: expected "
-      , tshow eval,  ", got ", tshow aval
+      , pr eval, ", got ", pr aval
+      , "\n", dumpRegs "Initial" $ initial ^. regs
+      , "\n", dumpRegs "Final" $ c ^. regs
+      , "\n", dumpFlags "Initial" $ initial ^. regs
+      , "\n", dumpFlags "Final" $ c ^. regs
       ]
-  check "register A" (vs ^. testvalsA) (c ^. regs . regA)
-  check "register B" (vs ^. testvalsB) (c ^. regs . regB)
-  check "register C" (vs ^. testvalsC) (c ^. regs . regC)
-  check "register D" (vs ^. testvalsD) (c ^. regs . regD)
-  check "register E" (vs ^. testvalsE) (c ^. regs . regE)
-  check "register H" (vs ^. testvalsH) (c ^. regs . regH)
-  check "register L" (vs ^. testvalsL) (c ^. regs . regL)
-  check "PC" (vs ^. testvalsPC - 1) (c ^. regs . regPC)
-  check "SP" (vs ^. testvalsSP) (c ^. regs . regSP)
+  check rreg8 "register A" (vs ^. testvalsA) (c ^. regs . regA)
+  check rreg8 "register B" (vs ^. testvalsB) (c ^. regs . regB)
+  check rreg8 "register C" (vs ^. testvalsC) (c ^. regs . regC)
+  check rreg8 "register D" (vs ^. testvalsD) (c ^. regs . regD)
+  check rreg8 "register E" (vs ^. testvalsE) (c ^. regs . regE)
+  check rreg8 "register H" (vs ^. testvalsH) (c ^. regs . regH)
+  check rreg8 "register L" (vs ^. testvalsL) (c ^. regs . regL)
+  check rreg16 "PC" (vs ^. testvalsPC - 1) (c ^. regs . regPC)
+  check rreg16 "SP" (vs ^. testvalsSP) (c ^. regs . regSP)
   let (fz, fn, fh, fc) = w8flags $ vs ^. testvalsF
-  check "flag Z" fz (c ^. regs . regFlagZ)
-  check "flag N" fn (c ^. regs . regFlagN)
-  check "flag H" fh (c ^. regs . regFlagH)
-  check "flag C" fc (c ^. regs . regFlagC)
+  check flag "flag Z" fz (c ^. regs . regFlagZ)
+  check flag "flag N" fn (c ^. regs . regFlagN)
+  check flag "flag H" fh (c ^. regs . regFlagH)
+  check flag "flag C" fc (c ^. regs . regFlagC)
   forM_ (vs ^. testvalsRAM) \(Addr -> addr, eval) -> do
     Bus.read (c ^. bus) addr >>= \case
       Nothing -> throwM . InstrTestError $ "failed to read expected address: " <> pretty addr
-      Just aval -> check ("memory address " <> pretty addr) eval aval
+      Just aval -> check rreg8 ("memory address " <> pretty addr) eval aval
 
 runTestcase :: (MonadIO m, MonadThrow m) => Testcase -> m ()
 runTestcase tc = liftIO do
@@ -142,5 +172,4 @@ runTestcase tc = liftIO do
       step ins
       pure ins
   (ins, final) <- runStateT body initial
-  checkCPU (tc ^. testcaseName <> " (" <> tshow ins <> ")") (tc ^. testcaseFinal) final
-  log $ "Passed: " <> tc ^. testcaseName
+  checkCPU (tc ^. testcaseName <> " (" <> tshow ins <> ")") (tc ^. testcaseFinal) initial final

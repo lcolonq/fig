@@ -15,13 +15,10 @@ import Control.Lens.TH (makeLenses)
 
 import Fig.Prelude
 
-import qualified Text.Printf as Pr
-
 import Control.Lens ((.=), use, (^.))
 import Control.Monad (when)
 
-import Data.Maybe (fromJust)
-import Data.Word (Word8, Word16)
+import Data.Word (Word8, Word16, Word32)
 import Data.Int (Int8)
 import Data.Bits
 
@@ -284,11 +281,12 @@ step ins = do
       x <- r16 R16HL
       y <- r16 r
       let
+        resl :: Word32
+        resl = fromIntegral x + fromIntegral y
         res :: Word16
-        res = x + y
-      regs . regFlagH .= (shiftR res 11 .&. 0b1 == 0b1)
-      regs . regFlagC .= (shiftR res 15 .&. 0b1 == 0b1)
-      regs . regFlagZ .= (res == 0)
+        res = fromIntegral resl
+      regs . regFlagH .= (shiftR ((x .&. 0xfff) + (y .&. 0xfff)) 12 .&. 0b1 == 0b1)
+      regs . regFlagC .= (shiftR resl 16 .&. 0b1 == 0b1)
       regs . regFlagN .= False
       setR16 R16HL res
     IncR8 r -> do
@@ -303,7 +301,7 @@ step ins = do
       let
         res :: Word8
         res = v - 1
-      regs . regFlagH .= subH v 1
+      regs . regFlagH .= subH False v 1
       regs . regFlagZ .= (res == 0)
       regs . regFlagN .= True
       setR8 r res
@@ -329,7 +327,7 @@ step ins = do
       regs . regFlagZ .= False
       regs . regFlagN .= False
       regs . regFlagC .= w8bit 7 v
-      setR8 R8A $ rotateL v 1 .|. if c then 1 else 0
+      setR8 R8A $ shiftL v 1 .|. if c then 1 else 0
     Rra -> do
       v <- r8 R8A
       c <- use $ regs . regFlagC
@@ -337,8 +335,24 @@ step ins = do
       regs . regFlagZ .= False
       regs . regFlagN .= False
       regs . regFlagC .= w8bit 0 v
-      setR8 R8A $ rotateR v 1 .|. if c then 0b10000000 else 0
-    Daa -> unimplemented
+      setR8 R8A $ shiftR v 1 .|. if c then 0b10000000 else 0
+    Daa -> do
+      v <- r8 R8A
+      halfcarry <- use $ regs . regFlagH
+      carry <- use $ regs . regFlagC
+      subtract <- use $ regs . regFlagN
+      let
+        o0 :: Word8
+        o0 = if (not subtract && v .&. 0xf > 0x09) || halfcarry then 0x06 else 0x00
+        c = (not subtract && v > 0x99) || carry
+        o1 :: Word8
+        o1 = if c then o0 .|. 0x60 else o0
+        res = if subtract then v - o1 else v + o1
+      regs . regA .= res
+      regs . regFlagH .= False
+      regs . regFlagZ .= (res == 0)
+      regs . regFlagC .= c
+      pure ()
     Cpl -> do
       v <- r8 R8A
       regs . regFlagH .= True
@@ -388,18 +402,27 @@ step ins = do
     SubAR8 i -> do
       x <- r8 R8A
       y <- r8 i
-      res <- sub8 (-) x y
+      let (res, carry) = subC False x y
+      regs . regFlagH .= subH False x y
+      regs . regFlagC .= carry
+      regs . regFlagZ .= (res .&. 0xff == 0)
+      regs . regFlagN .= True
       regs . regA .= res
     SbcAR8 i -> do
       x <- r8 R8A
       y <- r8 i
       c <- use $ regs . regFlagC
-      res <- sub8 (\a b -> a - (b + if c then 1 else 0)) x y
+      let (res, carry) = subC c x y
+      regs . regFlagH .= subH c x y
+      regs . regFlagC .= carry
+      regs . regFlagZ .= (res .&. 0xff == 0)
+      regs . regFlagN .= True
       regs . regA .= res
     AndAR8 i -> do
       x <- r8 R8A
       y <- r8 i
       res <- bitwise8 (.&.) x y
+      regs . regFlagH .= True
       regs . regA .= res
     XorAR8 i -> do
       x <- r8 R8A
@@ -414,7 +437,11 @@ step ins = do
     CpAR8 i -> do
       x <- r8 R8A
       y <- r8 i
-      void $ sub8 (-) x y
+      let (res, carry) = subC False x y
+      regs . regFlagH .= subH False x y
+      regs . regFlagC .= carry
+      regs . regFlagZ .= (res .&. 0xff == 0)
+      regs . regFlagN .= True
     AddAImm8 (Imm8 y) -> do
       x <- r8 R8A
       let (res, carry) = addC False x y
@@ -434,16 +461,25 @@ step ins = do
       regs . regA .= res
     SubAImm8 (Imm8 y) -> do
       x <- r8 R8A
-      res <- sub8 (-) x y
+      let (res, carry) = subC False x y
+      regs . regFlagH .= subH False x y
+      regs . regFlagC .= carry
+      regs . regFlagZ .= (res .&. 0xff == 0)
+      regs . regFlagN .= True
       regs . regA .= res
     SbcAImm8 (Imm8 y) -> do
       x <- r8 R8A
       c <- use $ regs . regFlagC
-      res <- sub8 (\a b -> a - (b + if c then 1 else 0)) x y
+      let (res, carry) = subC c x y
+      regs . regFlagH .= subH c x y
+      regs . regFlagC .= carry
+      regs . regFlagZ .= (res .&. 0xff == 0)
+      regs . regFlagN .= True
       regs . regA .= res
     AndAImm8 (Imm8 y) -> do
       x <- r8 R8A
       res <- bitwise8 (.&.) x y
+      regs . regFlagH .= True
       regs . regA .= res
     XorAImm8 (Imm8 y) -> do
       x <- r8 R8A
@@ -468,7 +504,12 @@ step ins = do
       v <- read16 $ Addr sp
       setR16 R16SP $ sp + 2
       regs . regPC .= v
-    Reti -> unimplemented
+    Reti -> do
+      regs . regFlagIME .= True
+      sp <- r16 R16SP
+      v <- read16 $ Addr sp
+      setR16 R16SP $ sp + 2
+      regs . regPC .= v
     JpCondImm16 c (Imm16 i) -> do
       b <- cond c
       when b do
@@ -533,8 +574,9 @@ step ins = do
       let
         res :: Word16
         res = x + sext y
-      regs . regFlagH .= (shiftR res 3 .&. 0b1 == 0b1)
-      regs . regFlagC .= (shiftR res 7 .&. 0b1 == 0b1)
+        (_, carry) = addC False (w16lo x) y
+      regs . regFlagH .= addH False (w16lo x) y
+      regs . regFlagC .= carry
       regs . regFlagZ .= False
       regs . regFlagN .= False
       setR16 R16SP res
@@ -543,8 +585,9 @@ step ins = do
       let
         res :: Word16
         res = x + sext y
-      regs . regFlagH .= (shiftR res 3 .&. 0b1 == 0b1)
-      regs . regFlagC .= (shiftR res 7 .&. 0b1 == 0b1)
+        (_, carry) = addC False (w16lo x) y
+      regs . regFlagH .= addH False (w16lo x) y
+      regs . regFlagC .= carry
       regs . regFlagZ .= False
       regs . regFlagN .= False
       setR16 R16HL res
@@ -553,17 +596,40 @@ step ins = do
       setR16 R16SP v
     Di -> regs . regFlagIME .= False
     Ei -> regs . regFlagIME .= True
-    CbRlcR8 _ -> unimplemented
-    CbRrcR8 _ -> unimplemented
-    CbRlR8 _ -> unimplemented
+    CbRlcR8 r -> do
+      v <- r8 r
+      let res = rotateL v 1
+      regs . regFlagH .= False
+      regs . regFlagZ .= (res == 0)
+      regs . regFlagN .= False
+      regs . regFlagC .= w8bit 7 v
+      setR8 r res
+    CbRrcR8 r -> do
+      v <- r8 r
+      let res = rotateR v 1
+      regs . regFlagH .= False
+      regs . regFlagZ .= (res == 0)
+      regs . regFlagN .= False
+      regs . regFlagC .= w8bit 0 v
+      setR8 r res
+    CbRlR8 r -> do
+      v <- r8 r
+      c <- use $ regs . regFlagC
+      let res = shiftL v 1 .|. if c then 0b1 else 0
+      regs . regFlagH .= False
+      regs . regFlagZ .= (res == 0)
+      regs . regFlagN .= False
+      regs . regFlagC .= w8bit 7 v
+      setR8 r res
     CbRrR8 r -> do
       v <- r8 r
       c <- use $ regs . regFlagC
+      let rizz = shiftR v 1 .|. if c then 0b10000000 else 0
       regs . regFlagH .= False
-      regs . regFlagZ .= False
+      regs . regFlagZ .= (rizz == 0)
       regs . regFlagN .= False
       regs . regFlagC .= w8bit 0 v
-      setR8 R8A $ rotateR v 1 .|. if c then 0b10000000 else 0
+      setR8 r rizz
     CbSlaR8 r -> do
       v <- r8 r
       let res = shiftL v 1
@@ -571,7 +637,7 @@ step ins = do
       regs . regFlagH .= False
       regs . regFlagN .= False
       regs . regFlagC .= w8bit 7 v
-      setR8 R8A res
+      setR8 r res
     CbSraR8 r -> do
       v <- r8 r
       let
@@ -584,7 +650,7 @@ step ins = do
       regs . regFlagH .= False
       regs . regFlagN .= False
       regs . regFlagC .= w8bit 0 v
-      setR8 R8A res
+      setR8 r res
     CbSwapR8 r -> do
       v <- r8 r
       let res = rotate v 4
@@ -592,7 +658,7 @@ step ins = do
       regs . regFlagH .= False
       regs . regFlagN .= False
       regs . regFlagC .= False
-      setR8 R8A res
+      setR8 r res
     CbSrlR8 r -> do
       v <- r8 r
       let res = shiftR v 1
@@ -600,10 +666,18 @@ step ins = do
       regs . regFlagH .= False
       regs . regFlagN .= False
       regs . regFlagC .= w8bit 0 v
-      setR8 R8A res
-    CbBitB3R8 _ _ -> unimplemented
-    CbResB3R8 _ _ -> unimplemented
-    CbSetB3R8 _ _ -> unimplemented
+      setR8 r res
+    CbBitB3R8 (B3 idx) r -> do
+      v <- r8 r
+      regs . regFlagH .= True
+      regs . regFlagN .= False
+      regs . regFlagZ .= not (w8bit idx v)
+    CbResB3R8 (B3 idx) r -> do
+      v <- r8 r
+      setR8 r $ v .&. (0xff .^. shiftL 0b1 idx)
+    CbSetB3R8 (B3 idx) r -> do
+      v <- r8 r
+      setR8 r $ v .|. shiftL 0b1 idx
   where
     unimplemented :: m ()
     unimplemented = do
