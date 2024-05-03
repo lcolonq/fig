@@ -108,6 +108,7 @@ discordBot cfg busAddr = do
                         "mrgreen" -> "🟢"
                         "mrred" -> "🔴"
                         "mrblue" -> "🔵"
+                        "mryellow" -> "🟡"
                         _ -> ":" <> emotename <> ":"
                       _ -> "<unknown emote>"
                     )
