@@ -1,7 +1,7 @@
 module Fig.Emulator.GB.Component.Video where
 
 import Fig.Prelude
-import Prelude (error, fromIntegral)
+import Prelude (error)
 
 import qualified Foreign.Ptr as Ptr
 import qualified Foreign.Storable as St
@@ -16,7 +16,6 @@ import qualified SDL
 
 import Fig.Emulator.GB.Utils
 import Fig.Emulator.GB.Bus
-import Data.Vector.Generic.Lens (vector)
 
 newtype VideoError = VideoError Text
   deriving Show
@@ -93,8 +92,8 @@ blitTile v (Addr a) (bx, by) fb = do
         (x, y) fb
 
 data VideoAddrRange
-  = VideoAddrVRAM !Addr
-  | VideoAddrStatus !Addr
+  = VideoAddrVRAM Addr
+  | VideoAddrStatus Addr
   deriving Show
 
 videoAddrRange :: Addr -> Maybe VideoAddrRange
@@ -111,14 +110,14 @@ data RenderState
   deriving Show
 
 data VideoState = VideoState
-  { vstFb :: !Framebuffer
-  , vstVRAM :: !(V.Vector Word8)
-  , vstScx :: !Word8
-  , vstScy :: !Word8
-  , vstLy :: !Word8
-  , vstLx :: !Word8
-  , vstRenderState :: !RenderState
-  , vstTick :: !Word16
+  { vstFb :: Framebuffer
+  , vstVRAM :: V.Vector Word8
+  , vstScx :: Word8
+  , vstScy :: Word8
+  , vstLy :: Word8
+  , vstLx :: Word8
+  , vstRenderState :: RenderState
+  , vstTick :: Word16
   }
 
 compVideo :: (MonadIO m, MonadThrow m) => Framebuffer -> Component m
@@ -134,7 +133,7 @@ compVideo framebuffer = Component
     , vstTick = 0
     }
   , compMatches = isJust  . videoAddrRange
-  , compUpdate = \olds t -> do
+  , compUpdate = \olds t -> {-# SCC "ComponentVideoUpdate" #-} do
       let tick = vstTick olds + fromIntegral t
       let s = olds { vstTick = tick }
       case vstRenderState s of
@@ -162,13 +161,13 @@ compVideo framebuffer = Component
               let ly = vstLy olds + 1
               if ly == 153
                 then do
-                log "vblank"
+                -- log "vblank"
                 -- logTilemap $ vstVRAM s
-                forM_ (zip [0..] [48,52,45,111,112,32,114,44,105,109,109] :: [(Int, Int)]) \(idx, b) -> do
-                  blitTile (vstVRAM s)
-                    (fromIntegral $ b * 16)
-                    (fromIntegral $ idx * 8, 0)
-                    $ vstFb s
+                -- forM_ (zip [0..] [48,52,45,111,112,32,114,44,105,109,109] :: [(Int, Int)]) \(idx, b) -> do
+                --   blitTile (vstVRAM s)
+                --     (fromIntegral $ b * 16)
+                --     (fromIntegral $ idx * 8, 0)
+                --     $ vstFb s
                 -- forM_ ([0..10] :: [Int]) \x -> do
                 --   forM_ ([0..10] :: [Int]) \y -> do
                 --     let i = y * 10 + x
@@ -180,7 +179,7 @@ compVideo framebuffer = Component
                 else
                 pure s { vstTick = 0, vstLy = ly }
           | otherwise -> pure s
-  , compWrite = \s a v -> case videoAddrRange a of
+  , compWrite = \s a v -> {-# SCC "ComponentVideoWrite" #-} case videoAddrRange a of
       Nothing -> throwM $ VideoError $ mconcat
         [ "write address out of bounds for video system: "
         , pretty a
@@ -205,7 +204,7 @@ compVideo framebuffer = Component
         0xa -> pure s
         0xb -> pure s
         _ -> pure s
-  , compRead = \s a -> case videoAddrRange a of
+  , compRead = \s a -> {-# SCC "ComponentVideoRead" #-} case videoAddrRange a of
       Nothing -> throwM $ VideoError $ mconcat
         [ "read address out of bounds for video system: "
         , pretty a

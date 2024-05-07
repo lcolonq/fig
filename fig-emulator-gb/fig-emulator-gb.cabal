@@ -5,7 +5,7 @@ version: 0.1.0.0
 common defaults
   ghc-options: -Wall
   default-language: GHC2021
-  default-extensions: NoImplicitPrelude PackageImports LambdaCase MultiWayIf OverloadedStrings OverloadedLists RecordWildCards BlockArguments ViewPatterns TypeFamilies DataKinds GADTs
+  default-extensions: NoImplicitPrelude PackageImports LambdaCase MultiWayIf OverloadedStrings OverloadedLists RecordWildCards BlockArguments ViewPatterns TypeFamilies DataKinds GADTs Strict StrictData
 
 common deps
   build-depends:
@@ -51,6 +51,7 @@ library
     Fig.Emulator.GB.Component.Video
     Fig.Emulator.GB.Component.Joystick
     Fig.Emulator.GB.Component.Serial
+    Fig.Emulator.GB.Component.Interrupt
     Fig.Emulator.GB.Test.Instr
 
 executable fig-emulator-gb

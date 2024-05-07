@@ -9,3 +9,4 @@ packages:
   fig-frontend/
   fig-bless/
   fig-emulator-gb/
+optimization: 2

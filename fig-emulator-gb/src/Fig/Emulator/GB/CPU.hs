@@ -63,11 +63,11 @@ initialRegs = Registers
   }
 
 data CPU m = CPU
-  { _lastPC :: !Word16
-  , _lastIns :: !Instruction
-  , _running :: !Bool
-  , _regs :: !Registers
-  , _bus :: !(Bus m)
+  { _lastPC :: Word16
+  , _lastIns :: Instruction
+  , _running :: Bool
+  , _regs :: Registers
+  , _bus :: Bus m
   }
 makeLenses 'CPU
 
@@ -108,7 +108,7 @@ updateComps t = do
 
 decode :: Emulating m => m Instruction
 decode = do
-  updateComps 4
+  -- updateComps 4
   b <- use bus
   pc <- use $ regs . regPC
   lastPC .= pc
@@ -125,7 +125,7 @@ cond CondC = use (regs . regFlagC)
 
 read8 :: Emulating m => Addr -> m Word8
 read8 a = do
-  updateComps 4
+  -- updateComps 4
   b <- use bus
   pc <- use lastPC
   ins <- use lastIns
@@ -149,7 +149,7 @@ read16 a = do
 
 write8 :: Emulating m => Addr -> Word8 -> m ()
 write8 a v = do
-  updateComps 4
+  -- updateComps 4
   b <- use bus
   b' <- liftIO $ Bus.write b a v
   bus .= b'
@@ -257,27 +257,27 @@ step ins = do
       regs . regFlagN .= False
       pure res
   case ins of
-    Nop -> pure ()
-    LdR16Imm16 r (Imm16 i) -> setR16 r i
-    LdR16MemA r -> do
+    Nop -> {-# SCC "Nop" #-} pure ()
+    LdR16Imm16 r (Imm16 i) -> {-# SCC "LdR16Imm16" #-} setR16 r i
+    LdR16MemA r -> {-# SCC "LdR16MemA" #-} do
       addr <- r16Mem r
       a <- r8 R8A
       write8 (Addr addr) a
-    LdAR16Mem r -> do
+    LdAR16Mem r -> {-# SCC "LdAR16Mem" #-} do
       addr <- r16Mem r
       v <- read8 $ Addr addr
       setR8 R8A v
-    LdImm16Sp (Imm16 addr) -> do
+    LdImm16Sp (Imm16 addr) -> {-# SCC "LdImm16Sp" #-} do
       sp <- r16 R16SP
       write8 (Addr addr) $ w16lo sp
       write8 (Addr addr + 1) $ w16hi sp
-    IncR16 r -> do
+    IncR16 r -> {-# SCC "IncR16" #-} do
       v <- r16 r
       setR16 r $ v + 1
-    DecR16 r -> do
+    DecR16 r -> {-# SCC "DecR16" #-} do
       v <- r16 r
       setR16 r $ v - 1
-    AddHlR16 r -> do
+    AddHlR16 r -> {-# SCC "AddHlR16" #-} do
       x <- r16 R16HL
       y <- r16 r
       let
@@ -289,14 +289,14 @@ step ins = do
       regs . regFlagC .= (shiftR resl 16 .&. 0b1 == 0b1)
       regs . regFlagN .= False
       setR16 R16HL res
-    IncR8 r -> do
+    IncR8 r -> {-# SCC "IncR8" #-} do
       v <- r8 r
       let (res, _) = addC False v 1
       regs . regFlagH .= addH False v 1
       regs . regFlagZ .= (res == 0)
       regs . regFlagN .= False
       setR8 r res
-    DecR8 r -> do
+    DecR8 r -> {-# SCC "DecR8" #-} do
       v <- r8 r
       let
         res :: Word8
@@ -305,22 +305,22 @@ step ins = do
       regs . regFlagZ .= (res == 0)
       regs . regFlagN .= True
       setR8 r res
-    LdR8Imm8 r (Imm8 i) -> setR8 r i
-    Rlca -> do
+    LdR8Imm8 r (Imm8 i) -> {-# SCC "LdR8Imm8" #-} setR8 r i
+    Rlca -> {-# SCC "Rlca" #-} do
       v <- r8 R8A
       regs . regFlagH .= False
       regs . regFlagZ .= False
       regs . regFlagN .= False
       regs . regFlagC .= w8bit 7 v
       setR8 R8A $ rotateL v 1
-    Rrca -> do
+    Rrca -> {-# SCC "Rrca" #-} do
       v <- r8 R8A
       regs . regFlagH .= False
       regs . regFlagZ .= False
       regs . regFlagN .= False
       regs . regFlagC .= w8bit 0 v
       setR8 R8A $ rotateR v 1
-    Rla -> do
+    Rla -> {-# SCC "Rla" #-} do
       v <- r8 R8A
       c <- use $ regs . regFlagC
       regs . regFlagH .= False
@@ -328,7 +328,7 @@ step ins = do
       regs . regFlagN .= False
       regs . regFlagC .= w8bit 7 v
       setR8 R8A $ shiftL v 1 .|. if c then 1 else 0
-    Rra -> do
+    Rra -> {-# SCC "Rra" #-} do
       v <- r8 R8A
       c <- use $ regs . regFlagC
       regs . regFlagH .= False
@@ -336,7 +336,7 @@ step ins = do
       regs . regFlagN .= False
       regs . regFlagC .= w8bit 0 v
       setR8 R8A $ shiftR v 1 .|. if c then 0b10000000 else 0
-    Daa -> do
+    Daa -> {-# SCC "Daa" #-} do
       v <- r8 R8A
       halfcarry <- use $ regs . regFlagH
       carry <- use $ regs . regFlagC
@@ -353,34 +353,34 @@ step ins = do
       regs . regFlagZ .= (res == 0)
       regs . regFlagC .= c
       pure ()
-    Cpl -> do
+    Cpl -> {-# SCC "Cpl" #-} do
       v <- r8 R8A
       regs . regFlagH .= True
       regs . regFlagN .= True
       setR8 R8A $ complement v
-    Scf -> do
+    Scf -> {-# SCC "Scf" #-} do
       regs . regFlagH .= False
       regs . regFlagN .= False
       regs . regFlagC .= True
-    Ccf -> do
+    Ccf -> {-# SCC "Ccf" #-} do
       c <- use $ regs . regFlagC
       regs . regFlagH .= False
       regs . regFlagN .= False
       regs . regFlagC .= not c
-    JrImm8 (Imm8 i) -> do
+    JrImm8 (Imm8 i) -> {-# SCC "JrImm8" #-} do
       pc <- use $ regs . regPC
       regs . regPC .= pc + sext i
-    JrCondImm8 c (Imm8 i) -> do
+    JrCondImm8 c (Imm8 i) -> {-# SCC "JrCondImm8" #-} do
       b <- cond c
       when b do
         pc <- use $ regs . regPC
         regs . regPC .= pc + sext i
-    Stop -> unimplemented
-    LdR8R8 dst src -> do
+    Stop -> {-# SCC "Stop" #-} unimplemented
+    LdR8R8 dst src -> {-# SCC "LdR8R8" #-} do
       v <- r8 src
       setR8 dst v
-    Halt -> unimplemented
-    AddAR8 i -> do
+    Halt -> {-# SCC "Halt" #-} unimplemented
+    AddAR8 i -> {-# SCC "AddAR8" #-} do
       x <- r8 R8A
       y <- r8 i
       let (res, carry) = addC False x y
@@ -389,7 +389,7 @@ step ins = do
       regs . regFlagZ .= (res .&. 0xff == 0)
       regs . regFlagN .= False
       regs . regA .= res
-    AdcAR8 i -> do
+    AdcAR8 i -> {-# SCC "AdcAR8" #-} do
       x <- r8 R8A
       y <- r8 i
       c <- use $ regs . regFlagC
@@ -399,7 +399,7 @@ step ins = do
       regs . regFlagZ .= (res .&. 0xff == 0)
       regs . regFlagN .= False
       regs . regA .= res
-    SubAR8 i -> do
+    SubAR8 i -> {-# SCC "SubAR8" #-} do
       x <- r8 R8A
       y <- r8 i
       let (res, carry) = subC False x y
@@ -408,7 +408,7 @@ step ins = do
       regs . regFlagZ .= (res .&. 0xff == 0)
       regs . regFlagN .= True
       regs . regA .= res
-    SbcAR8 i -> do
+    SbcAR8 i -> {-# SCC "SbcAR8" #-} do
       x <- r8 R8A
       y <- r8 i
       c <- use $ regs . regFlagC
@@ -418,23 +418,23 @@ step ins = do
       regs . regFlagZ .= (res .&. 0xff == 0)
       regs . regFlagN .= True
       regs . regA .= res
-    AndAR8 i -> do
+    AndAR8 i -> {-# SCC "AndAR8" #-} do
       x <- r8 R8A
       y <- r8 i
       res <- bitwise8 (.&.) x y
       regs . regFlagH .= True
       regs . regA .= res
-    XorAR8 i -> do
+    XorAR8 i -> {-# SCC "XorAR8" #-} do
       x <- r8 R8A
       y <- r8 i
       res <- bitwise8 xor x y
       regs . regA .= res
-    OrAR8 i -> do
+    OrAR8 i -> {-# SCC "OrAR8" #-} do
       x <- r8 R8A
       y <- r8 i
       res <- bitwise8 (.|.) x y
       regs . regA .= res
-    CpAR8 i -> do
+    CpAR8 i -> {-# SCC "CpAR8" #-} do
       x <- r8 R8A
       y <- r8 i
       let (res, carry) = subC False x y
@@ -442,7 +442,7 @@ step ins = do
       regs . regFlagC .= carry
       regs . regFlagZ .= (res .&. 0xff == 0)
       regs . regFlagN .= True
-    AddAImm8 (Imm8 y) -> do
+    AddAImm8 (Imm8 y) -> {-# SCC "AddAImm8" #-} do
       x <- r8 R8A
       let (res, carry) = addC False x y
       regs . regFlagH .= addH False x y
@@ -450,7 +450,7 @@ step ins = do
       regs . regFlagZ .= (res .&. 0xff == 0)
       regs . regFlagN .= False
       regs . regA .= res
-    AdcAImm8 (Imm8 y) -> do
+    AdcAImm8 (Imm8 y) -> {-# SCC "AdcAImm8" #-} do
       x <- r8 R8A
       c <- use $ regs . regFlagC
       let (res, carry) = addC c x y
@@ -459,7 +459,7 @@ step ins = do
       regs . regFlagZ .= (res .&. 0xff == 0)
       regs . regFlagN .= False
       regs . regA .= res
-    SubAImm8 (Imm8 y) -> do
+    SubAImm8 (Imm8 y) -> {-# SCC "SubAImm8" #-} do
       x <- r8 R8A
       let (res, carry) = subC False x y
       regs . regFlagH .= subH False x y
@@ -467,7 +467,7 @@ step ins = do
       regs . regFlagZ .= (res .&. 0xff == 0)
       regs . regFlagN .= True
       regs . regA .= res
-    SbcAImm8 (Imm8 y) -> do
+    SbcAImm8 (Imm8 y) -> {-# SCC "SbcAImm8" #-} do
       x <- r8 R8A
       c <- use $ regs . regFlagC
       let (res, carry) = subC c x y
@@ -476,50 +476,50 @@ step ins = do
       regs . regFlagZ .= (res .&. 0xff == 0)
       regs . regFlagN .= True
       regs . regA .= res
-    AndAImm8 (Imm8 y) -> do
+    AndAImm8 (Imm8 y) -> {-# SCC "AndAImm8" #-} do
       x <- r8 R8A
       res <- bitwise8 (.&.) x y
       regs . regFlagH .= True
       regs . regA .= res
-    XorAImm8 (Imm8 y) -> do
+    XorAImm8 (Imm8 y) -> {-# SCC "XorAImm8" #-} do
       x <- r8 R8A
       res <- bitwise8 xor x y
       regs . regA .= res
-    OrAImm8 (Imm8 y) -> do
+    OrAImm8 (Imm8 y) -> {-# SCC "OrAImm8" #-} do
       x <- r8 R8A
       res <- bitwise8 (.|.) x y
       regs . regA .= res
-    CpAImm8 (Imm8 y) -> do
+    CpAImm8 (Imm8 y) -> {-# SCC "CpAImm8" #-} do
       x <- r8 R8A
       void $ sub8 (-) x y
-    RetCond c -> do
+    RetCond c -> {-# SCC "RetCond" #-} do
       b <- cond c
       when b do
         sp <- r16 R16SP
         v <- read16 $ Addr sp
         setR16 R16SP $ sp + 2
         regs . regPC .= v
-    Ret -> do
+    Ret -> {-# SCC "Ret" #-} do
       sp <- r16 R16SP
       v <- read16 $ Addr sp
       setR16 R16SP $ sp + 2
       regs . regPC .= v
-    Reti -> do
+    Reti -> {-# SCC "Reti" #-} do
       regs . regFlagIME .= True
       sp <- r16 R16SP
       v <- read16 $ Addr sp
       setR16 R16SP $ sp + 2
       regs . regPC .= v
-    JpCondImm16 c (Imm16 i) -> do
+    JpCondImm16 c (Imm16 i) -> {-# SCC "JpCondImm16" #-} do
       b <- cond c
       when b do
         regs . regPC .= i
-    JpImm16 (Imm16 i) -> do
+    JpImm16 (Imm16 i) -> {-# SCC "JpImm16" #-} do
       regs . regPC .= i
-    JpHl -> do
+    JpHl -> {-# SCC "JpHl" #-} do
       hl <- r16 R16HL
       regs . regPC .= hl
-    CallCondImm16 c (Imm16 i) -> do
+    CallCondImm16 c (Imm16 i) -> {-# SCC "CallCondImm16" #-} do
       b <- cond c
       when b do
         next <- use $ regs . regPC
@@ -527,49 +527,49 @@ step ins = do
         setR16 R16SP sp
         write16 (Addr sp) next
         regs . regPC .= i
-    CallImm16 (Imm16 i) -> do
+    CallImm16 (Imm16 i) -> {-# SCC "CallImm16" #-} do
       next <- use $ regs . regPC
       sp <- (\x -> x - 2) <$> r16 R16SP
       setR16 R16SP sp
       write16 (Addr sp) next
       regs . regPC .= i
-    RstTgt3 (Tgt3 v) -> do
+    RstTgt3 (Tgt3 v) -> {-# SCC "RstTgt3" #-} do
       next <- use $ regs . regPC
       sp <- (\x -> x - 2) <$> r16 R16SP
       setR16 R16SP sp
       write16 (Addr sp) next
       regs . regPC .= shiftL (fromIntegral v) 3
-    PopR16Stk r -> do
+    PopR16Stk r -> {-# SCC "PopR16Stk" #-} do
       sp <- r16 R16SP
       v <- read16 $ Addr sp
       setR16 R16SP $ sp + 2
       setR16Stk r v
-    PushR16Stk r -> do
+    PushR16Stk r -> {-# SCC "PushR16Stk" #-} do
       sp <- (\x -> x - 2) <$> r16 R16SP
       v <- r16Stk r
       setR16 R16SP sp
       write16 (Addr sp) v
-    LdhCA -> do
+    LdhCA -> {-# SCC "LdhCA" #-} do
       c <- r8 R8C
       a <- r8 R8A
       write8 (Addr $ 0xff00 + zext c) a
-    LdhImm8A (Imm8 i) -> do
+    LdhImm8A (Imm8 i) -> {-# SCC "LdhImm8A" #-} do
       a <- r8 R8A
       write8 (Addr $ 0xff00 + zext i) a
-    LdImm16A (Imm16 i) -> do
+    LdImm16A (Imm16 i) -> {-# SCC "LdImm16A" #-} do
       a <- r8 R8A
       write8 (Addr i) a
-    LdhAC -> do
+    LdhAC -> {-# SCC "LdhAC" #-} do
       c <- r8 R8C
       v <- read8 (Addr $ 0xff00 + zext c)
       setR8 R8A v
-    LdhAImm8 (Imm8 i) -> do
+    LdhAImm8 (Imm8 i) -> {-# SCC "LdhAImm8" #-} do
       v <- read8 (Addr $ 0xff00 + zext i)
       setR8 R8A v
-    LdAImm16 (Imm16 i) -> do
+    LdAImm16 (Imm16 i) -> {-# SCC "LdAImm16" #-} do
       v <- read8 (Addr i)
       setR8 R8A v
-    AddSpImm8 (Imm8 y) -> do
+    AddSpImm8 (Imm8 y) -> {-# SCC "AddSpImm8" #-} do
       x <- r16 R16SP
       let
         res :: Word16
@@ -580,7 +580,7 @@ step ins = do
       regs . regFlagZ .= False
       regs . regFlagN .= False
       setR16 R16SP res
-    LdHlSpPlusImm8 (Imm8 y) -> do
+    LdHlSpPlusImm8 (Imm8 y) -> {-# SCC "LdHlSpPlusImm8" #-} do
       x <- r16 R16SP
       let
         res :: Word16
@@ -591,12 +591,12 @@ step ins = do
       regs . regFlagZ .= False
       regs . regFlagN .= False
       setR16 R16HL res
-    LdSpHl -> do
+    LdSpHl -> {-# SCC "LdSpHl" #-} do
       v <- r16 R16HL
       setR16 R16SP v
-    Di -> regs . regFlagIME .= False
-    Ei -> regs . regFlagIME .= True
-    CbRlcR8 r -> do
+    Di -> {-# SCC "Di" #-} regs . regFlagIME .= False
+    Ei -> {-# SCC "Ei" #-} regs . regFlagIME .= True
+    CbRlcR8 r -> {-# SCC "CbRlcR8" #-} do
       v <- r8 r
       let res = rotateL v 1
       regs . regFlagH .= False
@@ -604,7 +604,7 @@ step ins = do
       regs . regFlagN .= False
       regs . regFlagC .= w8bit 7 v
       setR8 r res
-    CbRrcR8 r -> do
+    CbRrcR8 r -> {-# SCC "CbRrcR8" #-} do
       v <- r8 r
       let res = rotateR v 1
       regs . regFlagH .= False
@@ -612,7 +612,7 @@ step ins = do
       regs . regFlagN .= False
       regs . regFlagC .= w8bit 0 v
       setR8 r res
-    CbRlR8 r -> do
+    CbRlR8 r -> {-# SCC "CbRlR8" #-} do
       v <- r8 r
       c <- use $ regs . regFlagC
       let res = shiftL v 1 .|. if c then 0b1 else 0
@@ -621,7 +621,7 @@ step ins = do
       regs . regFlagN .= False
       regs . regFlagC .= w8bit 7 v
       setR8 r res
-    CbRrR8 r -> do
+    CbRrR8 r -> {-# SCC "CbRrR8" #-} do
       v <- r8 r
       c <- use $ regs . regFlagC
       let rizz = shiftR v 1 .|. if c then 0b10000000 else 0
@@ -630,7 +630,7 @@ step ins = do
       regs . regFlagN .= False
       regs . regFlagC .= w8bit 0 v
       setR8 r rizz
-    CbSlaR8 r -> do
+    CbSlaR8 r -> {-# SCC "CbSlaR8" #-} do
       v <- r8 r
       let res = shiftL v 1
       regs . regFlagZ .= (res == 0)
@@ -638,7 +638,7 @@ step ins = do
       regs . regFlagN .= False
       regs . regFlagC .= w8bit 7 v
       setR8 r res
-    CbSraR8 r -> do
+    CbSraR8 r -> {-# SCC "CbSraR8" #-} do
       v <- r8 r
       let
         vs :: Int8
@@ -651,7 +651,7 @@ step ins = do
       regs . regFlagN .= False
       regs . regFlagC .= w8bit 0 v
       setR8 r res
-    CbSwapR8 r -> do
+    CbSwapR8 r -> {-# SCC "CbSwapR8" #-} do
       v <- r8 r
       let res = rotate v 4
       regs . regFlagZ .= (res == 0)
@@ -659,7 +659,7 @@ step ins = do
       regs . regFlagN .= False
       regs . regFlagC .= False
       setR8 r res
-    CbSrlR8 r -> do
+    CbSrlR8 r -> {-# SCC "CbSrlR8" #-} do
       v <- r8 r
       let res = shiftR v 1
       regs . regFlagZ .= (res == 0)
@@ -667,15 +667,15 @@ step ins = do
       regs . regFlagN .= False
       regs . regFlagC .= w8bit 0 v
       setR8 r res
-    CbBitB3R8 (B3 idx) r -> do
+    CbBitB3R8 (B3 idx) r -> {-# SCC "CbBitB3R8" #-} do
       v <- r8 r
       regs . regFlagH .= True
       regs . regFlagN .= False
       regs . regFlagZ .= not (w8bit idx v)
-    CbResB3R8 (B3 idx) r -> do
+    CbResB3R8 (B3 idx) r -> {-# SCC "CbResB3R8" #-} do
       v <- r8 r
       setR8 r $ v .&. (0xff .^. shiftL 0b1 idx)
-    CbSetB3R8 (B3 idx) r -> do
+    CbSetB3R8 (B3 idx) r -> {-# SCC "CbSetB3R8" #-} do
       v <- r8 r
       setR8 r $ v .|. shiftL 0b1 idx
   where

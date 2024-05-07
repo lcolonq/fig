@@ -18,16 +18,18 @@ instance Pretty SerialError where
     , b
     ]
 
-compSerial :: (MonadIO m, MonadThrow m) => Handle -> Component m
-compSerial h = Component
+compSerial :: (MonadIO m, MonadThrow m) => Maybe Handle -> Component m
+compSerial mh = Component
   { compState = ()
   , compMatches = (== 0xff01)
   , compUpdate = \s _ -> pure s
   , compWrite = \s _ v -> do
-      log $ mconcat
-        [ "wrote serial byte: ", tshow $ chr $ fromIntegral v
-        ]
-      liftIO . hPutChar h . chr $ fromIntegral v
+      -- log $ mconcat
+      --   [ "wrote serial byte: ", tshow $ chr $ fromIntegral v
+      --   ]
+      case mh of
+        Nothing -> pure ()
+        Just h -> liftIO . hPutChar h . chr $ fromIntegral v
       pure s
   , compRead = \_ _ -> pure 0x00
   }

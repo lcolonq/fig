@@ -4,7 +4,7 @@ module Fig.Emulator.GB.Test.Instr where
 import Control.Lens.TH (makeLenses)
 
 import Control.Lens ((^.))
-import Control.Monad.State (StateT(..))
+import Control.Monad.State.Strict (StateT(..))
 
 import Data.Word (Word8, Word16)
 import qualified Data.Aeson as Aeson

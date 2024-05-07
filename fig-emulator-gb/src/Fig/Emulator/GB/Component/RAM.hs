@@ -3,7 +3,6 @@ module Fig.Emulator.GB.Component.RAM
   ) where
 
 import Fig.Prelude
-import Prelude (fromIntegral)
 
 import qualified Data.Vector as V
 import qualified Data.Vector.Mutable as MV
@@ -25,11 +24,11 @@ compWRAM start size = Component
   { compState = V.replicate size 0 :: V.Vector Word8
   , compMatches = \a ->
       a >= start && a <= end
-  , compUpdate = \s _ -> pure s
-  , compWrite = \s ad v -> do
+  , compUpdate = \s _ -> {-# SCC "ComponentWRAMUpdate" #-} pure s
+  , compWrite = \s ad v -> {-# SCC "ComponentWRAMWrite" #-} do
       let offset = fromIntegral . unAddr $ ad - start
       pure $ V.modify (\ms -> MV.write ms offset v) s
-  , compRead = \s ad -> do
+  , compRead = \s ad -> {-# SCC "ComponentWRAMRead" #-} do
       let offset = fromIntegral . unAddr $ ad - start
       case s V.!? offset of
         Nothing -> throwM . RAMError $ mconcat

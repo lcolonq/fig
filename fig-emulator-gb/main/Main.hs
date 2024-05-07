@@ -19,13 +19,13 @@ import Fig.Emulator.GB.Test.Instr
 
 data RunOptions = RunOptions
   { romPath :: !FilePath
-  , serialOut :: !FilePath
+  , serialOut :: !(Maybe FilePath)
   } deriving Show
 
 parseRunOptions :: Parser RunOptions
 parseRunOptions = do
   romPath <- argument str (metavar "PATH")
-  serialOut <- strOption (long "serial" <> metavar "PATH" <> help "Path to write link cable serial output")
+  serialOut <- optional $ strOption (long "serial" <> metavar "PATH" <> help "Path to write link cable serial output")
   pure RunOptions{..}
 
 newtype InstrTestOptions = InstrTestOptions
