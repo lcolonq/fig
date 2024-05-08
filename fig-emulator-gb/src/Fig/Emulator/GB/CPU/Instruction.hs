@@ -209,24 +209,24 @@ data Instruction
 readInstruction ::
   Bus.Bus -> Addr ->
   IO (Instruction, Addr)
-readInstruction b a = {-# SCC "TheWholeWorldOfDecodingcraft" #-} do
-  op <- {-# SCC "TheDecodeBusRead" #-} Bus.read b a >>= \case
+readInstruction b a = do
+  op <- Bus.read b a >>= \case
     Just o -> pure o
     Nothing -> throwM . DecodeError $ mconcat
       [ "failed to read opcode at unmapped address "
       , pretty a
       ]
-  let blk = {-# SCC "TheDecodeBlk" #-} w8bits2 7 op
-  let bot3 = {-# SCC "TheDecodeBot3" #-} w8bits3 2 op
-  let bot4 = {-# SCC "TheDecodeBot4" #-} w8bits4 3 op
-  let no i = {-# SCC "TheDecodeNo" #-} pure (i, a + 1)
-  let imm8 f = {-# SCC "TheDecodeImm8" #-} do
+  let blk = w8bits2 7 op
+  let bot3 = w8bits3 2 op
+  let bot4 = w8bits4 3 op
+  let no i = pure (i, a + 1)
+  let imm8 f = do
         x <- readImm8 b $ a + 1
         pure (f x, a + 2)
-  let imm16 f = {-# SCC "TheDecodeImm16" #-} do
+  let imm16 f = do
         x <- readImm16 b $ a + 1
         pure (f x, a + 3)
-  {-# SCC "TheBigDecodeCaseTbh" #-} case {-# SCC "TheDecodeTuple" #-} (op, blk, bot4, bot3) of
+  case (op, blk, bot4, bot3) of
     -- Block 0
     (0b00000000, _, _, _) -> {-# SCC "DecodeNop" #-} no Nop
 
