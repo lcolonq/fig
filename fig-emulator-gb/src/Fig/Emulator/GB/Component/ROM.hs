@@ -20,7 +20,7 @@ instance Pretty ROMError where
     ]
 
 -- | Initialize base ROM (no mapper) from a ByteString
-compROM :: (MonadIO m, MonadThrow m) => ByteString -> Component m
+compROM :: ByteString -> Component
 compROM bs = Component
   { compState = V.fromList $ BS.unpack bs
   , compMatches = \a ->

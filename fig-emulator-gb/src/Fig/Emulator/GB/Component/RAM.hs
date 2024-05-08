@@ -19,7 +19,7 @@ instance Pretty RAMError where
     , b
     ]
 
-compWRAM :: (MonadIO m, MonadThrow m) => Addr -> Int -> Component m
+compWRAM :: Addr -> Int -> Component
 compWRAM start size = Component
   { compState = V.replicate size 0 :: V.Vector Word8
   , compMatches = \a ->

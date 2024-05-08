@@ -86,7 +86,7 @@ instance ExtractFromOpcode Tgt3 where
 
 newtype Imm8 = Imm8 Word8
   deriving (Show)
-readImm8 :: (MonadIO m, MonadThrow m) => Bus.Bus m -> Addr -> m Imm8
+readImm8 :: Bus.Bus -> Addr -> IO Imm8
 readImm8 b a = Bus.read b a >>= \case
   Just i -> pure $ Imm8 i
   Nothing -> throwM . DecodeError $ mconcat
@@ -96,7 +96,7 @@ readImm8 b a = Bus.read b a >>= \case
 
 newtype Imm16 = Imm16 Word16
   deriving (Show)
-readImm16 :: (MonadIO m, MonadThrow m) => Bus.Bus m -> Addr -> m Imm16
+readImm16 :: Bus.Bus -> Addr -> IO Imm16
 readImm16 b a = do
   mlo <- Bus.read b a
   mhi <- Bus.read b $ a + 1
@@ -207,106 +207,105 @@ data Instruction
   deriving (Show)
 
 readInstruction ::
-  (MonadIO m, MonadThrow m) =>
-  Bus.Bus m -> Addr ->
-  m (Instruction, Addr)
-readInstruction b a = do
-  op <- Bus.read b a >>= \case
+  Bus.Bus -> Addr ->
+  IO (Instruction, Addr)
+readInstruction b a = {-# SCC "TheWholeWorldOfDecodingcraft" #-} do
+  op <- {-# SCC "TheDecodeBusRead" #-} Bus.read b a >>= \case
     Just o -> pure o
     Nothing -> throwM . DecodeError $ mconcat
       [ "failed to read opcode at unmapped address "
       , pretty a
       ]
-  let blk = w8bits2 7 op
-  let bot3 = w8bits3 2 op
-  let bot4 = w8bits4 3 op
-  let no i = pure (i, a + 1)
-  let imm8 f = do
+  let blk = {-# SCC "TheDecodeBlk" #-} w8bits2 7 op
+  let bot3 = {-# SCC "TheDecodeBot3" #-} w8bits3 2 op
+  let bot4 = {-# SCC "TheDecodeBot4" #-} w8bits4 3 op
+  let no i = {-# SCC "TheDecodeNo" #-} pure (i, a + 1)
+  let imm8 f = {-# SCC "TheDecodeImm8" #-} do
         x <- readImm8 b $ a + 1
         pure (f x, a + 2)
-  let imm16 f = do
+  let imm16 f = {-# SCC "TheDecodeImm16" #-} do
         x <- readImm16 b $ a + 1
         pure (f x, a + 3)
-  case (op, blk, bot4, bot3) of
+  {-# SCC "TheBigDecodeCaseTbh" #-} case {-# SCC "TheDecodeTuple" #-} (op, blk, bot4, bot3) of
     -- Block 0
-    (0b00000000, _, _, _) -> no Nop
+    (0b00000000, _, _, _) -> {-# SCC "DecodeNop" #-} no Nop
 
-    (_, 0b00, 0b0001, _) -> imm16 $ LdR16Imm16 (ext $ w8bits2 5 op)
-    (_, 0b00, 0b0010, _) -> no $ LdR16MemA (ext $ w8bits2 5 op)
-    (_, 0b00, 0b1010, _) -> no $ LdAR16Mem (ext $ w8bits2 5 op)
-    (0b00001000, _, _, _) -> imm16 LdImm16Sp
+    (_, 0b00, 0b0001, _) -> {-# SCC "DecodeLdR16Imm16" #-} imm16 $ LdR16Imm16 (ext $ w8bits2 5 op)
+    (_, 0b00, 0b0010, _) -> {-# SCC "DecodeLdR16MemA" #-} no $ LdR16MemA (ext $ w8bits2 5 op)
+    (_, 0b00, 0b1010, _) -> {-# SCC "DecodeLdAR16Mem" #-} no $ LdAR16Mem (ext $ w8bits2 5 op)
+    (0b00001000, _, _, _) -> {-# SCC "DecodeLdImm16Sp" #-} imm16 LdImm16Sp
 
-    (_, 0b00, 0b0011, _) -> no $ IncR16 (ext $ w8bits2 5 op)
-    (_, 0b00, 0b1011, _) -> no $ DecR16 (ext $ w8bits2 5 op)
-    (_, 0b00, 0b1001, _) -> no $ AddHlR16 (ext $ w8bits2 5 op)
+    (_, 0b00, 0b0011, _) -> {-# SCC "DecodeIncR16" #-} no $ IncR16 (ext $ w8bits2 5 op)
+    (_, 0b00, 0b1011, _) -> {-# SCC "DecodeDecR16" #-} no $ DecR16 (ext $ w8bits2 5 op)
+    (_, 0b00, 0b1001, _) -> {-# SCC "DecodeAddHlR16" #-} no $ AddHlR16 (ext $ w8bits2 5 op)
 
-    (_, 0b00, _, 0b100) -> no $ IncR8 (ext $ w8bits3 5 op)
-    (_, 0b00, _, 0b101) -> no $ DecR8 (ext $ w8bits3 5 op)
+    (_, 0b00, _, 0b100) -> {-# SCC "DecodeIncR8" #-} no $ IncR8 (ext $ w8bits3 5 op)
+    (_, 0b00, _, 0b101) -> {-# SCC "DecodeDecR8" #-} no $ DecR8 (ext $ w8bits3 5 op)
 
-    (_, 0b00, _, 0b110) -> imm8 $ LdR8Imm8 (ext $ w8bits3 5 op)
+    (_, 0b00, _, 0b110) -> {-# SCC "DecodeLdR8Imm8" #-} imm8 $ LdR8Imm8 (ext $ w8bits3 5 op)
 
-    (0b00000111, _, _, _) -> no Rlca
-    (0b00001111, _, _, _) -> no Rrca
-    (0b00010111, _, _, _) -> no Rla
-    (0b00011111, _, _, _) -> no Rra
-    (0b00100111, _, _, _) -> no Daa
-    (0b00101111, _, _, _) -> no Cpl
-    (0b00110111, _, _, _) -> no Scf
-    (0b00111111, _, _, _) -> no Ccf
+    (0b00000111, _, _, _) -> {-# SCC "DecodeRlca" #-} no Rlca
+    (0b00001111, _, _, _) -> {-# SCC "DecodeRrca" #-} no Rrca
+    (0b00010111, _, _, _) -> {-# SCC "DecodeRla" #-} no Rla
+    (0b00011111, _, _, _) -> {-# SCC "DecodeRra" #-} no Rra
+    (0b00100111, _, _, _) -> {-# SCC "DecodeDaa" #-} no Daa
+    (0b00101111, _, _, _) -> {-# SCC "DecodeCpl" #-} no Cpl
+    (0b00110111, _, _, _) -> {-# SCC "DecodeScf" #-} no Scf
+    (0b00111111, _, _, _) -> {-# SCC "DecodeCcf" #-} no Ccf
 
-    (0b00011000, _, _, _) -> imm8 JrImm8
-    (0b00010000, _, _, _) -> no Stop
-    (_, 0b00, _, 0b000) -> imm8 $ JrCondImm8 (ext $ w8bits2 4 op)
+    (0b00011000, _, _, _) -> {-# SCC "DecodeJrImm8" #-} imm8 JrImm8
+    (0b00010000, _, _, _) -> {-# SCC "DecodeStop" #-} no Stop
+    (_, 0b00, _, 0b000) -> {-# SCC "DecodeJrCondImm8" #-} imm8 $ JrCondImm8 (ext $ w8bits2 4 op)
 
     -- Block 1
-    (0b01110110, _, _, _) -> no Halt
-    (_, 0b01, _, _) -> no $ LdR8R8 (ext $ w8bits3 5 op) (ext $ w8bits3 2 op)
+    (0b01110110, _, _, _) -> {-# SCC "DecodeHalt" #-} no Halt
+    (_, 0b01, _, _) -> {-# SCC "DecodeLdR8R8" #-} no $ LdR8R8 (ext $ w8bits3 5 op) (ext $ w8bits3 2 op)
 
     -- Block 2
     (_, 0b10, _, _) -> do
       let ins = case w8bits3 5 op of
-            0b000 -> AddAR8
-            0b001 -> AdcAR8
-            0b010 -> SubAR8
-            0b011 -> SbcAR8
-            0b100 -> AndAR8
-            0b101 -> XorAR8
-            0b110 -> OrAR8
-            0b111 -> CpAR8
+            0b000 -> {-# SCC "DecodeAddAR8" #-} AddAR8
+            0b001 -> {-# SCC "DecodeAdcAR8" #-} AdcAR8
+            0b010 -> {-# SCC "DecodeSubAR8" #-} SubAR8
+            0b011 -> {-# SCC "DecodeSbcAR8" #-} SbcAR8
+            0b100 -> {-# SCC "DecodeAndAR8" #-} AndAR8
+            0b101 -> {-# SCC "DecodeXorAR8" #-} XorAR8
+            0b110 -> {-# SCC "DecodeOrAR8" #-} OrAR8
+            0b111 -> {-# SCC "DecodeCpAR8" #-} CpAR8
             _ -> error "unreachable"
       no $ ins (ext $ w8bits3 2 op)
 
     -- Block 3
-    (0b11000110, _, _, _) -> imm8 AddAImm8
-    (0b11001110, _, _, _) -> imm8 AdcAImm8
-    (0b11010110, _, _, _) -> imm8 SubAImm8
-    (0b11011110, _, _, _) -> imm8 SbcAImm8
-    (0b11100110, _, _, _) -> imm8 AndAImm8
-    (0b11101110, _, _, _) -> imm8 XorAImm8
-    (0b11110110, _, _, _) -> imm8 OrAImm8
-    (0b11111110, _, _, _) -> imm8 CpAImm8
+    (0b11000110, _, _, _) -> {-# SCC "DecodeAddAImm8" #-} imm8 AddAImm8
+    (0b11001110, _, _, _) -> {-# SCC "DecodeAdcAImm8" #-} imm8 AdcAImm8
+    (0b11010110, _, _, _) -> {-# SCC "DecodeSubAImm8" #-} imm8 SubAImm8
+    (0b11011110, _, _, _) -> {-# SCC "DecodeSbcAImm8" #-} imm8 SbcAImm8
+    (0b11100110, _, _, _) -> {-# SCC "DecodeAndAImm8" #-} imm8 AndAImm8
+    (0b11101110, _, _, _) -> {-# SCC "DecodeXorAImm8" #-} imm8 XorAImm8
+    (0b11110110, _, _, _) -> {-# SCC "DecodeOrAImm8" #-} imm8 OrAImm8
+    (0b11111110, _, _, _) -> {-# SCC "DecodeCpAImm8" #-} imm8 CpAImm8
 
-    (0b11001001, _, _, _) -> no Ret
-    (0b11011001, _, _, _) -> no Reti
-    (0b11000011, _, _, _) -> imm16 JpImm16
-    (0b11101001, _, _, _) -> no JpHl
-    (0b11001101, _, _, _) -> imm16 CallImm16
+    (0b11001001, _, _, _) -> {-# SCC "DecodeRet" #-} no Ret
+    (0b11011001, _, _, _) -> {-# SCC "DecodeReti" #-} no Reti
+    (0b11000011, _, _, _) -> {-# SCC "DecodeJpImm16" #-} imm16 JpImm16
+    (0b11101001, _, _, _) -> {-# SCC "DecodeJpHl" #-} no JpHl
+    (0b11001101, _, _, _) -> {-# SCC "DecodeCallImm16" #-} imm16 CallImm16
 
-    (0b11100010, _, _, _) -> no LdhCA
-    (0b11100000, _, _, _) -> imm8 LdhImm8A
-    (0b11101010, _, _, _) -> imm16 LdImm16A
-    (0b11110010, _, _, _) -> no LdhAC
-    (0b11110000, _, _, _) -> imm8 LdhAImm8
-    (0b11111010, _, _, _) -> imm16 LdAImm16
+    (0b11100010, _, _, _) -> {-# SCC "DecodeLdhCA" #-} no LdhCA
+    (0b11100000, _, _, _) -> {-# SCC "DecodeLdhImm8A" #-} imm8 LdhImm8A
+    (0b11101010, _, _, _) -> {-# SCC "DecodeLdImm16A" #-} imm16 LdImm16A
+    (0b11110010, _, _, _) -> {-# SCC "DecodeLdhAC" #-} no LdhAC
+    (0b11110000, _, _, _) -> {-# SCC "DecodeLdhAImm8" #-} imm8 LdhAImm8
+    (0b11111010, _, _, _) -> {-# SCC "DecodeLdAImm16" #-} imm16 LdAImm16
 
-    (0b11101000, _, _, _) -> imm8 AddSpImm8
-    (0b11111000, _, _, _) -> imm8 LdHlSpPlusImm8
-    (0b11111001, _, _, _) -> no LdSpHl
+    (0b11101000, _, _, _) -> {-# SCC "DecodeAddSpImm8" #-} imm8 AddSpImm8
+    (0b11111000, _, _, _) -> {-# SCC "DecodeLdHlSpPlusImm8" #-} imm8 LdHlSpPlusImm8
+    (0b11111001, _, _, _) -> {-# SCC "DecodeLdSpHl" #-} no LdSpHl
 
-    (0b11110011, _, _, _) -> no Di
-    (0b11111011, _, _, _) -> no Ei
+    (0b11110011, _, _, _) -> {-# SCC "DecodeDi" #-} no Di
+    (0b11111011, _, _, _) -> {-# SCC "DecodeEi" #-} no Ei
 
-    (0b11001011, _, _, _) -> do
+    (0b11001011, _, _, _) -> {-# SCC "DecodeCBPrefix" #-} do
       -- 0xcb prefix
       op2 <- Bus.read b (a + 1) >>= \case
         Just o -> pure o
@@ -317,26 +316,26 @@ readInstruction b a = do
       case w8bits2 7 op2 of
 
         0b00 -> case w8bits3 5 op2 of
-          0b000 -> pure (CbRlcR8 $ ext $ w8bits3 2 op2, a + 2)
-          0b001 -> pure (CbRrcR8 $ ext $ w8bits3 2 op2, a + 2)
-          0b010 -> pure (CbRlR8 $ ext $ w8bits3 2 op2, a + 2)
-          0b011 -> pure (CbRrR8 $ ext $ w8bits3 2 op2, a + 2)
-          0b100 -> pure (CbSlaR8 $ ext $ w8bits3 2 op2, a + 2)
-          0b101 -> pure (CbSraR8 $ ext $ w8bits3 2 op2, a + 2)
-          0b110 -> pure (CbSwapR8 $ ext $ w8bits3 2 op2, a + 2)
-          0b111 -> pure (CbSrlR8 $ ext $ w8bits3 2 op2, a + 2)
+          0b000 -> {-# SCC "DecodeCbRlcR8" #-} pure (CbRlcR8 $ ext $ w8bits3 2 op2, a + 2)
+          0b001 -> {-# SCC "DecodeCbRrcR8" #-} pure (CbRrcR8 $ ext $ w8bits3 2 op2, a + 2)
+          0b010 -> {-# SCC "DecodeCbRlR8" #-} pure (CbRlR8 $ ext $ w8bits3 2 op2, a + 2)
+          0b011 -> {-# SCC "DecodeCbRrR8" #-} pure (CbRrR8 $ ext $ w8bits3 2 op2, a + 2)
+          0b100 -> {-# SCC "DecodeCbSlaR8" #-} pure (CbSlaR8 $ ext $ w8bits3 2 op2, a + 2)
+          0b101 -> {-# SCC "DecodeCbSraR8" #-} pure (CbSraR8 $ ext $ w8bits3 2 op2, a + 2)
+          0b110 -> {-# SCC "DecodeCbSwapR8" #-} pure (CbSwapR8 $ ext $ w8bits3 2 op2, a + 2)
+          0b111 -> {-# SCC "DecodeCbSrlR8" #-} pure (CbSrlR8 $ ext $ w8bits3 2 op2, a + 2)
           _ -> error "unreachable"
-        0b01 -> pure (CbBitB3R8 (ext $ w8bits3 5 op2) $ ext $ w8bits3 2 op2, a + 2)
-        0b10 -> pure (CbResB3R8 (ext $ w8bits3 5 op2) $ ext $ w8bits3 2 op2, a + 2)
-        0b11 -> pure (CbSetB3R8 (ext $ w8bits3 5 op2) $ ext $ w8bits3 2 op2, a + 2)
+        0b01 -> {-# SCC "DecodeCbBitB3R8" #-} pure (CbBitB3R8 (ext $ w8bits3 5 op2) $ ext $ w8bits3 2 op2, a + 2)
+        0b10 -> {-# SCC "DecodeCbResB3R8" #-} pure (CbResB3R8 (ext $ w8bits3 5 op2) $ ext $ w8bits3 2 op2, a + 2)
+        0b11 -> {-# SCC "DecodeCbSetB3R8" #-} pure (CbSetB3R8 (ext $ w8bits3 5 op2) $ ext $ w8bits3 2 op2, a + 2)
         _ -> error "unreachable"
 
-    (_, 0b11, _, 0b000) -> no $ RetCond (ext $ w8bits2 4 op)
-    (_, 0b11, _, 0b010) -> imm16 $ JpCondImm16 (ext $ w8bits2 4 op)
-    (_, 0b11, _, 0b100) -> imm16 $ CallCondImm16 (ext $ w8bits2 4 op)
-    (_, 0b11, _, 0b111) -> no $ RstTgt3 (ext $ w8bits3 5 op)
-    (_, 0b11, 0b0001, _) -> no $ PopR16Stk (ext $ w8bits2 5 op)
-    (_, 0b11, 0b0101, _) -> no $ PushR16Stk (ext $ w8bits2 5 op)
+    (_, 0b11, _, 0b000) -> {-# SCC "DecodeRetCond" #-} no $ RetCond (ext $ w8bits2 4 op)
+    (_, 0b11, _, 0b010) -> {-# SCC "DecodeJpCondImm16" #-} imm16 $ JpCondImm16 (ext $ w8bits2 4 op)
+    (_, 0b11, _, 0b100) -> {-# SCC "DecodeCallCondImm16" #-} imm16 $ CallCondImm16 (ext $ w8bits2 4 op)
+    (_, 0b11, _, 0b111) -> {-# SCC "DecodeRstTgt3" #-} no $ RstTgt3 (ext $ w8bits3 5 op)
+    (_, 0b11, 0b0001, _) -> {-# SCC "DecodePopR16Stk" #-} no $ PopR16Stk (ext $ w8bits2 5 op)
+    (_, 0b11, 0b0101, _) -> {-# SCC "DecodePushR16Stk" #-} no $ PushR16Stk (ext $ w8bits2 5 op)
 
     _unknown -> do
       log $ "unknown opcode: " <> tshow op

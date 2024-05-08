@@ -36,7 +36,7 @@ newtype Framebuffer = Framebuffer
   { fbSurface :: SDL.Surface
   }
 
-initializeFramebuffer :: MonadIO m => m Framebuffer
+initializeFramebuffer :: IO Framebuffer
 initializeFramebuffer = do
   s <- liftIO $ SDL.createRGBSurface
     (SDL.V2 (fromIntegral screenWidth) $ fromIntegral screenHeight)
@@ -45,7 +45,7 @@ initializeFramebuffer = do
     { fbSurface = s
     }
 
-logTilemap :: MonadIO m => V.Vector Word8 -> m ()
+logTilemap :: V.Vector Word8 -> IO ()
 logTilemap v = do
   let base = 0x9800 - 0x8000
   bytes <- forM ([0..(32 * 32)] :: [Int]) \i -> do
@@ -54,7 +54,7 @@ logTilemap v = do
       Just a -> pure a
   log $ "tilemap:" <> tshow bytes
 
-blitPixel :: MonadIO m => Word32 -> (Word8, Word8) -> Framebuffer -> m ()
+blitPixel :: Word32 -> (Word8, Word8) -> Framebuffer -> IO ()
 blitPixel c (x, y) fb = do
   SDL.lockSurface $ fbSurface fb
   (base :: Ptr.Ptr Word32) <- Ptr.castPtr <$> SDL.surfacePixels (fbSurface fb)
@@ -64,7 +64,7 @@ blitPixel c (x, y) fb = do
   liftIO $ St.poke p c
   SDL.unlockSurface $ fbSurface fb
 
-blitTile :: (MonadIO m, MonadThrow m) => V.Vector Word8 -> Addr -> (Word8, Word8) -> Framebuffer -> m ()
+blitTile :: V.Vector Word8 -> Addr -> (Word8, Word8) -> Framebuffer -> IO ()
 blitTile v (Addr a) (bx, by) fb = do
   (ps :: [(Word8, Word8, Word8)]) <- mconcat <$> forM [0..7] \y -> do
     mconcat <$> forM [0..1] \xb -> do
@@ -120,7 +120,7 @@ data VideoState = VideoState
   , vstTick :: Word16
   }
 
-compVideo :: (MonadIO m, MonadThrow m) => Framebuffer -> Component m
+compVideo :: Framebuffer -> Component
 compVideo framebuffer = Component
   { compState = VideoState
     { vstFb = framebuffer

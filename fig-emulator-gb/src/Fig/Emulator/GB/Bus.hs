@@ -19,22 +19,22 @@ newtype Addr = Addr { unAddr :: Word16 }
 instance Pretty Addr where
   pretty (Addr w) = "$" <> pack (showHex w "")
 
-data Component m = forall (s :: Type). Component
+data Component = forall (s :: Type). Component
   { compState :: s
   , compMatches :: Addr -> Bool
-  , compUpdate :: s -> Int -> m s
-  , compWrite :: s -> Addr -> Word8 -> m s
-  , compRead :: s -> Addr -> m Word8
+  , compUpdate :: s -> Int -> IO s
+  , compWrite :: s -> Addr -> Word8 -> IO s
+  , compRead :: s -> Addr -> IO Word8
   }
 
-newtype Bus m = Bus { busComponents :: [Component m] }
+newtype Bus = Bus { busComponents :: [Component] }
 
-update :: forall m. MonadIO m => Int -> Bus m -> m (Bus m)
+update :: Int -> Bus -> IO Bus
 update t b = Bus <$> forM (busComponents b) \Component{..} -> do
   s <- compUpdate compState t
   pure Component { compState = s, ..}
 
-write :: forall m. MonadIO m => Bus m -> Addr -> Word8 -> m (Bus m)
+write :: Bus -> Addr -> Word8 -> IO Bus
 write b a v = Bus <$> forM (busComponents b) \c@Component{..} ->
   if compMatches a
   then do
@@ -42,7 +42,7 @@ write b a v = Bus <$> forM (busComponents b) \c@Component{..} ->
     pure Component { compState = s, ..}
   else pure c
 
-read :: forall m. (MonadIO m, MonadThrow m) => Bus m -> Addr -> m (Maybe Word8)
+read :: Bus -> Addr -> IO (Maybe Word8)
 read b a = case List.find (`compMatches` a) $ busComponents b of
   Nothing -> pure Nothing
   Just Component{..} -> Just <$> compRead compState a

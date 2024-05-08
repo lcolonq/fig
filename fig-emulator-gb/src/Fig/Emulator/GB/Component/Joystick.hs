@@ -13,7 +13,7 @@ instance Pretty JoystickError where
     , b
     ]
 
-compJoystick :: (MonadIO m, MonadThrow m) => Component m
+compJoystick :: Component
 compJoystick = Component
   { compState = ()
   , compMatches = (== 0xff00)

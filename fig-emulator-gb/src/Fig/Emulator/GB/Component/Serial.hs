@@ -18,7 +18,7 @@ instance Pretty SerialError where
     , b
     ]
 
-compSerial :: (MonadIO m, MonadThrow m) => Maybe Handle -> Component m
+compSerial :: Maybe Handle -> Component
 compSerial mh = Component
   { compState = ()
   , compMatches = (== 0xff01)

@@ -7,6 +7,7 @@ import Control.Lens ((^.))
 import Control.Monad.State.Strict (StateT(..))
 
 import Data.Word (Word8, Word16)
+import qualified Data.Vector as V
 import qualified Data.Aeson as Aeson
 
 import qualified Text.Printf as Pr
@@ -71,12 +72,12 @@ instance Aeson.FromJSON Testcase where
     _testcaseFinal <- v Aeson..: "final"
     pure Testcase {..}
 
-readTestcases :: (MonadIO m, MonadThrow m) => FilePath -> m [Testcase]
+readTestcases :: FilePath -> IO [Testcase]
 readTestcases p = liftIO (Aeson.decodeFileStrict p) >>= \case
   Just ts -> pure ts
   Nothing -> throwM . InstrTestError $ "failed to read testcases at " <> pack p
 
-cpuInstrTest :: (MonadIO m, MonadThrow m) => TestVals -> m (CPU m)
+cpuInstrTest :: TestVals -> IO CPU
 cpuInstrTest vs = do
   let
     (z, n, h, c) = w8flags $ vs ^. testvalsF
@@ -104,7 +105,7 @@ cpuInstrTest vs = do
     , _bus = finalBus
     }
 
-checkCPU :: forall m. (MonadIO m, MonadThrow m) => Text -> TestVals -> CPU m -> CPU m -> m ()
+checkCPU :: Text -> TestVals -> CPU -> CPU -> IO ()
 checkCPU tnm vs initial c = do
   let
     flag f = if f then "1" else "0"
@@ -131,7 +132,7 @@ checkCPU tnm vs initial c = do
       , ", H: ", flag $ r ^. regFlagH
       , ", C: ", flag $ r ^. regFlagC
       ]
-    check :: (Eq a) => (a -> Text) -> Text -> a -> a -> m ()
+    check :: (Eq a) => (a -> Text) -> Text -> a -> a -> IO ()
     check pr nm eval aval = if eval == aval
       then pure ()
       else throwM . InstrTestError $ mconcat
@@ -162,14 +163,14 @@ checkCPU tnm vs initial c = do
       Nothing -> throwM . InstrTestError $ "failed to read expected address: " <> pretty addr
       Just aval -> check rreg8 ("memory address " <> pretty addr) eval aval
 
-runTestcase :: (MonadIO m, MonadThrow m) => Testcase -> m ()
+runTestcase :: Testcase -> IO ()
 runTestcase tc = liftIO do
   initial <- cpuInstrTest $ tc ^. testcaseInitial
   let
-    body :: forall m'. Emulating m' => m' Instruction
+    body :: Emulating Instruction
     body = do
       ins <- decode
       step ins
       pure ins
-  (ins, final) <- runStateT body initial
+  (ins, final) <- runStateT (runEmulating body) initial
   checkCPU (tc ^. testcaseName <> " (" <> tshow ins <> ")") (tc ^. testcaseFinal) initial final

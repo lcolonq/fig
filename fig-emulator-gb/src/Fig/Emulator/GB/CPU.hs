@@ -2,7 +2,7 @@
 module Fig.Emulator.GB.CPU
   ( CPU(..)
   , Registers(..), initialRegs
-  , Emulating
+  , Emulating, runEmulating
   , running, regs, bus, regPC, regSP
   , regA, regB, regC, regD, regE, regH, regL
   , regFlagZ, regFlagN, regFlagH, regFlagC
@@ -17,6 +17,7 @@ import Fig.Prelude
 
 import Control.Lens ((.=), use, (^.))
 import Control.Monad (when)
+import Control.Monad.State.Strict (StateT(..))
 
 import Data.Word (Word8, Word16, Word32)
 import Data.Int (Int8)
@@ -62,17 +63,17 @@ initialRegs = Registers
   , _regFlagIME = False
   }
 
-data CPU m = CPU
+data CPU = CPU
   { _lastPC :: Word16
   , _lastIns :: Instruction
   , _running :: Bool
   , _regs :: Registers
-  , _bus :: Bus m
+  , _bus :: Bus
   }
 makeLenses 'CPU
 
-type EmulatingT f m = (MonadIO m, MonadThrow m, MonadState (CPU f) m)
-type Emulating m = EmulatingT IO m
+newtype Emulating a = Emulating { runEmulating :: StateT CPU IO a }
+  deriving (Functor, Applicative, Monad, MonadIO, MonadState CPU, MonadThrow)
 
 -- logCPUState :: Emulating m => m ()
 -- logCPUState = do
@@ -100,30 +101,30 @@ type Emulating m = EmulatingT IO m
 --     rreg8 = pack . Pr.printf "%02X"
 --     rreg16 = pack . Pr.printf "%04X"
 
-updateComps :: Emulating m => Int -> m ()
+updateComps :: Int -> Emulating ()
 updateComps t = do
   b <- use bus
   b' <- liftIO $ Bus.update t b
   bus .= b'
 
-decode :: Emulating m => m Instruction
+decode :: Emulating Instruction
 decode = do
   -- updateComps 4
   b <- use bus
   pc <- use $ regs . regPC
   lastPC .= pc
   (ins, Addr a) <- liftIO $ readInstruction b $ Addr pc
-  lastIns .= ins
+  -- lastIns .= ins
   regs . regPC .= a
   pure ins
 
-cond :: Emulating m => Cond -> m Bool
+cond :: Cond -> Emulating Bool
 cond CondNz = not <$> use (regs . regFlagZ)
 cond CondZ = use (regs . regFlagZ)
 cond CondNc = not <$> use (regs . regFlagC)
 cond CondC = use (regs . regFlagC)
 
-read8 :: Emulating m => Addr -> m Word8
+read8 :: Addr -> Emulating Word8
 read8 a = do
   -- updateComps 4
   b <- use bus
@@ -141,25 +142,25 @@ read8 a = do
       , ")"
       ]
 
-read16 :: Emulating m => Addr -> m Word16
+read16 :: Addr -> Emulating Word16
 read16 a = do
   lo <- read8 a
   hi <- read8 $ a + 1
   pure $ w8w8 hi lo
 
-write8 :: Emulating m => Addr -> Word8 -> m ()
+write8 :: Addr -> Word8 -> Emulating ()
 write8 a v = do
   -- updateComps 4
   b <- use bus
   b' <- liftIO $ Bus.write b a v
   bus .= b'
 
-write16 :: Emulating m => Addr -> Word16 -> m ()
+write16 :: Addr -> Word16 -> Emulating ()
 write16 a v = do
   write8 a $ w16lo v
   write8 (a + 1) $ w16hi v
 
-r8 :: Emulating m => R8 -> m Word8
+r8 :: R8 -> Emulating Word8
 r8 R8B = use $ regs . regB
 r8 R8C = use $ regs . regC
 r8 R8D = use $ regs . regD
@@ -171,7 +172,7 @@ r8 R8MemHL = do
   read8 $ Addr hl
 r8 R8A = use $ regs . regA
 
-setR8 :: Emulating m => R8 -> Word8 -> m ()
+setR8 :: R8 -> Word8 -> Emulating ()
 setR8 R8B v = regs . regB .= v
 setR8 R8C v = regs . regC .= v
 setR8 R8D v = regs . regD .= v
@@ -183,13 +184,13 @@ setR8 R8MemHL v = do
   write8 (Addr hl) v
 setR8 R8A v = regs . regA .= v
 
-r16 :: Emulating m => R16 -> m Word16
+r16 :: R16 -> Emulating Word16
 r16 R16BC = w8w8 <$> r8 R8B <*> r8 R8C
 r16 R16DE = w8w8 <$> r8 R8D <*> r8 R8E
 r16 R16HL = w8w8 <$> r8 R8H <*> r8 R8L
 r16 R16SP = use $ regs . regSP
 
-setR16 :: Emulating m => R16 -> Word16 -> m ()
+setR16 :: R16 -> Word16 -> Emulating ()
 setR16 R16BC v = do
   regs . regB .= w16hi v
   regs . regC .= w16lo v
@@ -201,7 +202,7 @@ setR16 R16HL v = do
   regs . regL .= w16lo v
 setR16 R16SP v = regs . regSP .= v
 
-r16Stk :: Emulating m => R16Stk -> m Word16
+r16Stk :: R16Stk -> Emulating Word16
 r16Stk R16StkBC = r16 R16BC
 r16Stk R16StkDE = r16 R16DE
 r16Stk R16StkHL = r16 R16HL
@@ -213,7 +214,7 @@ r16Stk R16StkAF = do
   c <- use $ regs . regFlagC
   pure . w8w8 hi $ flagsw8 z n h c
 
-setR16Stk :: Emulating m => R16Stk -> Word16 -> m ()
+setR16Stk :: R16Stk -> Word16 -> Emulating ()
 setR16Stk R16StkBC v = setR16 R16BC v
 setR16Stk R16StkDE v = setR16 R16DE v
 setR16Stk R16StkHL v = setR16 R16HL v
@@ -225,7 +226,7 @@ setR16Stk R16StkAF v = do
   regs . regFlagH .= w8bit 5 lo
   regs . regFlagC .= w8bit 4 lo
 
-r16Mem :: Emulating m => R16Mem -> m Word16
+r16Mem :: R16Mem -> Emulating Word16
 r16Mem R16MemBC = r16 R16BC
 r16Mem R16MemDE = r16 R16DE
 r16Mem R16MemHLPlus = do
@@ -237,10 +238,10 @@ r16Mem R16MemHLMinus = do
   setR16 R16HL $ hl - 1
   pure hl
 
-step :: forall m. Emulating m => Instruction -> m ()
+step :: Instruction -> Emulating ()
 step ins = do
   let
-    sub8 :: (Word16 -> Word16 -> Word16) -> Word8 -> Word8 -> m Word8
+    sub8 :: (Word16 -> Word16 -> Word16) -> Word8 -> Word8 -> Emulating Word8
     sub8 op x y = do
       let res = op (sext x) (sext y)
       regs . regFlagH .= (w8bits4 3 y > w8bits4 3 x)
@@ -248,7 +249,7 @@ step ins = do
       regs . regFlagZ .= (res .&. 0xff == 0)
       regs . regFlagN .= True
       pure $ trunc res
-    bitwise8 :: (Word8 -> Word8 -> Word8) -> Word8 -> Word8 -> m Word8
+    bitwise8 :: (Word8 -> Word8 -> Word8) -> Word8 -> Word8 -> Emulating Word8
     bitwise8 op x y = do
       let res = op x y
       regs . regFlagH .= False
@@ -679,7 +680,7 @@ step ins = do
       v <- r8 r
       setR8 r $ v .|. shiftL 0b1 idx
   where
-    unimplemented :: m ()
+    unimplemented :: Emulating ()
     unimplemented = do
       a <- use lastPC
       throwM . CPUError $ mconcat

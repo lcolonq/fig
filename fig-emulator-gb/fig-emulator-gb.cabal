@@ -46,6 +46,7 @@ library
     Fig.Emulator.GB.CPU
     Fig.Emulator.GB.CPU.Instruction
     Fig.Emulator.GB.Bus
+    -- Fig.Emulator.GB.FastBus
     Fig.Emulator.GB.Component.ROM
     Fig.Emulator.GB.Component.RAM
     Fig.Emulator.GB.Component.Video

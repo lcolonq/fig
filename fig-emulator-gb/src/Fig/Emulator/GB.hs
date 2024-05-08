@@ -1,5 +1,6 @@
 module Fig.Emulator.GB where
 
+import Prelude (error)
 import Fig.Prelude
 
 import System.IO (withFile, IOMode (WriteMode))
@@ -7,6 +8,9 @@ import System.IO (withFile, IOMode (WriteMode))
 import Control.Lens ((.=), use)
 import Control.Monad (when)
 import Control.Monad.State.Strict (StateT(..))
+
+import qualified Data.Vector as V
+import qualified Data.ByteString as BS
 
 import qualified SDL
 
@@ -20,7 +24,7 @@ import Fig.Emulator.GB.Component.Joystick
 import Fig.Emulator.GB.Component.Serial
 import Fig.Emulator.GB.Component.Interrupt (compInterrupt)
 
-cpuDMG :: (MonadIO m, MonadThrow m) => Maybe Handle -> ByteString -> Framebuffer -> CPU m
+cpuDMG :: Maybe Handle -> ByteString -> Framebuffer -> CPU
 cpuDMG serial rom fb = CPU
   { _lastPC = 0x0
   , _lastIns = Nop
@@ -37,7 +41,7 @@ cpuDMG serial rom fb = CPU
     ]
   }
 
-testRun :: forall m. (MonadIO m, MonadThrow m) => Maybe FilePath -> ByteString -> m ()
+testRun :: Maybe FilePath -> ByteString -> IO ()
 testRun serialOut rom = do
   SDL.initializeAll
   window <- SDL.createWindow "taking" SDL.defaultWindow
@@ -48,7 +52,7 @@ testRun serialOut rom = do
   liftIO $ withSerial \hserial -> do
     let cpu = cpuDMG hserial rom fb
     let
-      loop :: forall m'. Emulating m' => Int -> m' ()
+      loop :: Int -> Emulating ()
       loop cycle = do
         -- events <- SDL.pollEvents
         -- forM_ events \ev ->
@@ -81,5 +85,5 @@ testRun serialOut rom = do
         --   SDL.updateWindowSurface window
         r <- use running
         when r . loop $ cycle + 1
-    void $ flip runStateT cpu do
+    void $ flip (runStateT . runEmulating) cpu do
       loop 0

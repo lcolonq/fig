@@ -14,7 +14,7 @@ instance Pretty InterruptError where
     , b
     ]
 
-compInterrupt :: (MonadIO m, MonadThrow m) => Component m
+compInterrupt :: Component
 compInterrupt = Component
   { compState = ()
   , compMatches = \a -> a == 0xff0f || a == 0xffff
