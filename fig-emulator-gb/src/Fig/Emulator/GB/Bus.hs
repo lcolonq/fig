@@ -22,14 +22,14 @@ instance Pretty Addr where
 data Component = forall (s :: Type). Component
   { compState :: s
   , compMatches :: Addr -> Bool
-  , compUpdate :: s -> Int -> IO s
+  , compUpdate :: s -> Word16 -> IO s
   , compWrite :: s -> Addr -> Word8 -> IO s
   , compRead :: s -> Addr -> IO Word8
   }
 
 newtype Bus = Bus { busComponents :: [Component] }
 
-update :: Int -> Bus -> IO Bus
+update :: Word16 -> Bus -> IO Bus
 update t b = Bus <$> forM (busComponents b) \Component{..} -> do
   s <- compUpdate compState t
   pure Component { compState = s, ..}

@@ -133,52 +133,118 @@ compVideo framebuffer = Component
     , vstTick = 0
     }
   , compMatches = isJust  . videoAddrRange
-  , compUpdate = \olds t -> {-# SCC "ComponentVideoUpdate" #-} do
-      let tick = vstTick olds + fromIntegral t
-      let s = olds { vstTick = tick }
+  , compUpdate = \s t -> {-# SCC "ComponentVideoUpdate" #-} do
+      let tick = vstTick s + t
+      -- let ly = vstLy s + 1
+      let ly = 0
       case vstRenderState s of
         RenderOAMSearch
           | tick == 40 -> pure s
-            { vstRenderState = RenderPixelTransfer
+            { vstTick = tick
+            , vstRenderState = RenderPixelTransfer
             }
           | otherwise -> pure s
+            { vstTick = tick
+            }
         RenderPixelTransfer
           | tick == 200 -> pure s
-            { vstRenderState = RenderHBlank
+            { vstTick = tick
+            , vstRenderState = RenderHBlank
             }
           | otherwise -> pure s
+            { vstTick = tick
+            }
         RenderHBlank
           | tick == 456 -> do
-              let ly = vstLy olds + 1
-              if ly == 144
-                then
-                pure s { vstTick = 0, vstLy = ly, vstRenderState = RenderVBlank }
-                else
-                pure s { vstTick = 0, vstLy = ly, vstRenderState = RenderOAMSearch }
-          | otherwise -> pure s
-        RenderVBlank
-          | tick == 456 -> do
-              let ly = vstLy olds + 1
-              if ly == 153
-                then do
-                -- log "vblank"
-                -- logTilemap $ vstVRAM s
-                -- forM_ (zip [0..] [48,52,45,111,112,32,114,44,105,109,109] :: [(Int, Int)]) \(idx, b) -> do
-                --   blitTile (vstVRAM s)
-                --     (fromIntegral $ b * 16)
-                --     (fromIntegral $ idx * 8, 0)
-                --     $ vstFb s
-                -- forM_ ([0..10] :: [Int]) \x -> do
-                --   forM_ ([0..10] :: [Int]) \y -> do
-                --     let i = y * 10 + x
-                --     blitTile (vstVRAM s)
-                --       (0x200 + fromIntegral i * 16)
-                --       (fromIntegral $ x * 8, fromIntegral $ y * 8)
-                --       $ vstFb s
-                pure s { vstTick = 0, vstLy = 0, vstRenderState = RenderOAMSearch }
-                else
-                pure s { vstTick = 0, vstLy = ly }
-          | otherwise -> pure s
+              pure s
+                { vstTick = 0
+                , vstLy = ly
+                , vstRenderState = RenderOAMSearch
+                }
+              -- let ly = vstLy s + 1
+              -- if ly == 144
+              --   then
+              --   pure s
+              --   { vstTick = 0
+              --   , vstLy = ly
+              --   -- , vstRenderState = RenderVBlank
+              --   , vstRenderState = RenderOAMSearch
+              --   }
+              --   else
+              --   pure s
+              --   { vstTick = 0
+              --   , vstLy = ly
+              --   , vstRenderState = RenderOAMSearch
+              --   }
+        _ -> pure s { vstTick = tick }
+      -- case vstRenderState s of
+      --   RenderOAMSearch
+      --     | tick == 40 -> pure $! s
+      --       { vstTick = tick
+      --       , vstRenderState = RenderPixelTransfer
+      --       }
+      --     | otherwise -> pure $! s
+      --       { vstTick = tick
+      --       }
+      --   RenderPixelTransfer
+      --     | tick == 200 -> pure $! s
+      --       { vstTick = tick
+      --       , vstRenderState = RenderHBlank
+      --       }
+      --     | otherwise -> pure $! s
+      --       { vstTick = tick
+      --       }
+      --   RenderHBlank
+      --     | tick == 456 -> do
+      --         let ly = vstLy s + 1
+      --         if ly == 144
+      --           then
+      --           pure $! s
+      --           { vstTick = 0
+      --           , vstLy = ly
+      --           , vstRenderState = RenderVBlank
+      --           }
+      --           else
+      --           pure $! s
+      --           { vstTick = 0
+      --           , vstLy = ly
+      --           , vstRenderState = RenderOAMSearch
+      --           }
+      --     | otherwise -> pure $! s
+      --       { vstTick = tick
+      --       }
+      --   RenderVBlank
+      --     | tick == 456 -> do
+      --         let ly = vstLy s + 1
+      --         if ly == 153
+      --           then do
+      --           -- log "vblank"
+      --           -- logTilemap $ vstVRAM s
+      --           -- forM_ (zip [0..] [48,52,45,111,112,32,114,44,105,109,109] :: [(Int, Int)]) \(idx, b) -> do
+      --           --   blitTile (vstVRAM s)
+      --           --     (fromIntegral $ b * 16)
+      --           --     (fromIntegral $ idx * 8, 0)
+      --           --     $ vstFb s
+      --           -- forM_ ([0..10] :: [Int]) \x -> do
+      --           --   forM_ ([0..10] :: [Int]) \y -> do
+      --           --     let i = y * 10 + x
+      --           --     blitTile (vstVRAM s)
+      --           --       (0x200 + fromIntegral i * 16)
+      --           --       (fromIntegral $ x * 8, fromIntegral $ y * 8)
+      --           --       $ vstFb s
+      --           pure $! s
+      --             { vstTick = 0
+      --             , vstLy = 0
+      --             , vstRenderState = RenderOAMSearch
+      --             }
+      --           else
+      --           pure $! s
+      --           { vstTick = 0
+      --           , vstLy = ly
+      --           }
+      --     | otherwise -> pure $! s
+      --       { vstTick = tick
+      --       }
   , compWrite = \s a v -> {-# SCC "ComponentVideoWrite" #-} case videoAddrRange a of
       Nothing -> throwM $ VideoError $ mconcat
         [ "write address out of bounds for video system: "

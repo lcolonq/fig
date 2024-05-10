@@ -101,7 +101,8 @@ newtype Emulating a = Emulating { runEmulating :: StateT CPU IO a }
 --     rreg8 = pack . Pr.printf "%02X"
 --     rreg16 = pack . Pr.printf "%04X"
 
-updateComps :: Int -> Emulating ()
+-- | Inform all components that the given number of t-cycles have passed
+updateComps :: Word16 -> Emulating ()
 updateComps t = do
   b <- use bus
   b' <- liftIO $ Bus.update t b
@@ -109,12 +110,11 @@ updateComps t = do
 
 decode :: Emulating Instruction
 decode = do
-  -- updateComps 4
   b <- use bus
   pc <- use $ regs . regPC
   lastPC .= pc
   (ins, Addr a) <- liftIO $ readInstruction b $ Addr pc
-  -- lastIns .= ins
+  lastIns .= ins
   regs . regPC .= a
   pure ins
 
@@ -126,7 +126,6 @@ cond CondC = use (regs . regFlagC)
 
 read8 :: Addr -> Emulating Word8
 read8 a = do
-  -- updateComps 4
   b <- use bus
   pc <- use lastPC
   ins <- use lastIns
@@ -150,7 +149,6 @@ read16 a = do
 
 write8 :: Addr -> Word8 -> Emulating ()
 write8 a v = do
-  -- updateComps 4
   b <- use bus
   b' <- liftIO $ Bus.write b a v
   bus .= b'
@@ -679,6 +677,7 @@ step ins = do
     CbSetB3R8 (B3 idx) r -> {-# SCC "CbSetB3R8" #-} do
       v <- r8 r
       setR8 r $ v .|. shiftL 0b1 idx
+  updateComps 4
   where
     unimplemented :: Emulating ()
     unimplemented = do
