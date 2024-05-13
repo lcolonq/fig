@@ -110,6 +110,7 @@ updateComps t = do
 
 decode :: Emulating Instruction
 decode = do
+  updateComps 4
   b <- use bus
   pc <- use $ regs . regPC
   lastPC .= pc
@@ -126,6 +127,7 @@ cond CondC = use (regs . regFlagC)
 
 read8 :: Addr -> Emulating Word8
 read8 a = do
+  updateComps 4
   b <- use bus
   pc <- use lastPC
   ins <- use lastIns
@@ -149,6 +151,7 @@ read16 a = do
 
 write8 :: Addr -> Word8 -> Emulating ()
 write8 a v = do
+  updateComps 4
   b <- use bus
   b' <- liftIO $ Bus.write b a v
   bus .= b'
@@ -677,7 +680,6 @@ step ins = do
     CbSetB3R8 (B3 idx) r -> {-# SCC "CbSetB3R8" #-} do
       v <- r8 r
       setR8 r $ v .|. shiftL 0b1 idx
-  updateComps 4
   where
     unimplemented :: Emulating ()
     unimplemented = do

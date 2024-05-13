@@ -22,7 +22,8 @@ import Fig.Emulator.GB.Component.ROM
 import Fig.Emulator.GB.Component.Video
 import Fig.Emulator.GB.Component.Joystick
 import Fig.Emulator.GB.Component.Serial
-import Fig.Emulator.GB.Component.Interrupt (compInterrupt)
+import Fig.Emulator.GB.Component.Misc
+import Fig.Emulator.GB.Component.Interrupt
 
 cpuDMG :: Maybe Handle -> ByteString -> Framebuffer -> CPU
 cpuDMG serial rom fb = CPU
@@ -37,6 +38,7 @@ cpuDMG serial rom fb = CPU
     , compJoystick
     , compSerial serial
     , compInterrupt
+    , compMisc
     , compWRAM 0xff80 0x7e -- HRAM
     ]
   }
@@ -54,11 +56,11 @@ testRun serialOut rom = do
     let
       loop :: Int -> Emulating ()
       loop cycle = do
-        -- events <- SDL.pollEvents
-        -- forM_ events \ev ->
-        --   case SDL.eventPayload ev of
-        --     SDL.QuitEvent -> running .= False
-        --     _else -> pure ()
+        events <- SDL.pollEvents
+        forM_ events \ev ->
+          case SDL.eventPayload ev of
+            SDL.QuitEvent -> running .= False
+            _else -> pure ()
         pc <- use $ regs . regPC
         ins <- decode
         when (pc == 0x2817) do
@@ -69,20 +71,20 @@ testRun serialOut rom = do
         step ins
         when (rem cycle 1000000 == 0) do
           log "1 million"
-        -- when (rem cycle 70224 == 0) do
-        --   ws <- SDL.getWindowSurface window
-        --   SDL.surfaceFillRect ws Nothing $ SDL.V4 0x00 0x00 0x00 0xff
-        --   void $
-        --     SDL.surfaceBlitScaled
-        --     (fbSurface fb)
-        --     Nothing
-        --     ws
-        --     (Just $ SDL.Rectangle
-        --      (SDL.P $ SDL.V2 0 0)
-        --      (SDL.V2
-        --       (fromIntegral screenWidth * 8)
-        --       (fromIntegral screenHeight * 8)))
-        --   SDL.updateWindowSurface window
+        when (rem cycle 300000 == 0) do
+          ws <- SDL.getWindowSurface window
+          SDL.surfaceFillRect ws Nothing $ SDL.V4 0x00 0x00 0x00 0xff
+          void $
+            SDL.surfaceBlitScaled
+            (fbSurface fb)
+            Nothing
+            ws
+            (Just $ SDL.Rectangle
+             (SDL.P $ SDL.V2 0 0)
+             (SDL.V2
+              (fromIntegral screenWidth * 4)
+              (fromIntegral screenHeight * 4)))
+          SDL.updateWindowSurface window
         r <- use running
         when r . loop $ cycle + 1
     void $ flip (runStateT . runEmulating) cpu do

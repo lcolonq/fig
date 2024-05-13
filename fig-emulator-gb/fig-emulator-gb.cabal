@@ -3,7 +3,7 @@ name: fig-emulator-gb
 version: 0.1.0.0
 
 common defaults
-  ghc-options: -Wall
+  ghc-options: -Wall -rtsopts
   default-language: GHC2021
   default-extensions: NoImplicitPrelude PackageImports LambdaCase MultiWayIf OverloadedStrings OverloadedLists RecordWildCards BlockArguments ViewPatterns TypeFamilies DataKinds GADTs Strict StrictData
 
@@ -17,6 +17,7 @@ common deps
     , bytestring
     , containers
     , data-default-class
+    , deepseq
     , discord-haskell
     , directory
     , filepath
@@ -53,6 +54,7 @@ library
     Fig.Emulator.GB.Component.Joystick
     Fig.Emulator.GB.Component.Serial
     Fig.Emulator.GB.Component.Interrupt
+    Fig.Emulator.GB.Component.Misc
     Fig.Emulator.GB.Test.Instr
 
 executable fig-emulator-gb

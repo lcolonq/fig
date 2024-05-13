@@ -20,11 +20,11 @@ instance Pretty Addr where
   pretty (Addr w) = "$" <> pack (showHex w "")
 
 data Component = forall (s :: Type). Component
-  { compState :: s
-  , compMatches :: Addr -> Bool
-  , compUpdate :: s -> Word16 -> IO s
-  , compWrite :: s -> Addr -> Word8 -> IO s
-  , compRead :: s -> Addr -> IO Word8
+  { compState :: !s
+  , compMatches :: !(Addr -> Bool)
+  , compUpdate :: !(s -> Word16 -> IO s)
+  , compWrite :: !(s -> Addr -> Word8 -> IO s)
+  , compRead :: !(s -> Addr -> IO Word8)
   }
 
 newtype Bus = Bus { busComponents :: [Component] }

@@ -14,7 +14,7 @@ newtype SerialError = SerialError Text
 instance Exception SerialError
 instance Pretty SerialError where
   pretty (SerialError b) = mconcat
-    [ "joystick error: "
+    [ "serial error: "
     , b
     ]
 
@@ -24,9 +24,9 @@ compSerial mh = Component
   , compMatches = (== 0xff01)
   , compUpdate = \s _ -> pure s
   , compWrite = \s _ v -> do
-      -- log $ mconcat
-      --   [ "wrote serial byte: ", tshow $ chr $ fromIntegral v
-      --   ]
+      log $ mconcat
+        [ "wrote serial byte: ", tshow $ chr $ fromIntegral v
+        ]
       case mh of
         Nothing -> pure ()
         Just h -> liftIO . hPutChar h . chr $ fromIntegral v
