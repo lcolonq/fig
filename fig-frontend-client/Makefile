@@ -1,4 +1,4 @@
-.PHONY: all deploy extension
+.PHONY: all deploy extension clean
 
 all: dist/test/index.html dist/test/assets dist/test/main.js dist/test/main.css
 
@@ -33,3 +33,7 @@ dist/extension/manifest.json: extension/manifest.dhall
 
 dist/extension/%: extension/%
 	cp $< $@
+
+clean:
+	rm main.js
+	rm -r dist/

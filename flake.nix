@@ -3,17 +3,16 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    # commented pending https://github.com/purs-nix/purs-nix/issues/55
-    # ps-tools.follows = "purs-nix/ps-tools";
-    # purs-nix.url = "github:purs-nix/purs-nix/ps-0.15";
+    ps-tools.follows = "purs-nix/ps-tools";
+    purs-nix.url = "github:purs-nix/purs-nix/ps-0.15";
   };
 
   outputs = { self, nixpkgs, ... }@inputs:
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
-      # ps-tools = inputs.ps-tools.legacyPackages.${system};
-      # purs-nix = inputs.purs-nix { inherit system; };
+      ps-tools = inputs.ps-tools.legacyPackages.${system};
+      purs-nix = inputs.purs-nix { inherit system; };
 
       haskellOverrides = self: super: {
         scotty = self.callHackageDirect {
@@ -39,25 +38,25 @@
         overrides = haskellOverrides;
       };
 
-      # purescript = purs-nix.purs {
-      #   dependencies = [
-      #     "console"
-      #     "effect"
-      #     "prelude"
-      #     "random"
-      #     "refs"
-      #     "web-html"
-      #     "web-dom"
-      #     "web-uievents"
-      #     "canvas"
-      #     "argonaut"
-      #     "fetch"
-      #     "fetch-argonaut"
-      #   ];
-      #   dir = ./fig-frontend-client;
-      #   srcs = [ "src" ];
-      # };
-      # fig-frontend-client = purescript.bundle {};
+      purescript = purs-nix.purs {
+        dependencies = [
+          "console"
+          "effect"
+          "prelude"
+          "random"
+          "refs"
+          "web-html"
+          "web-dom"
+          "web-uievents"
+          "canvas"
+          "argonaut"
+          "fetch"
+          "fetch-argonaut"
+        ];
+        dir = ./fig-frontend-client;
+        srcs = [ "src" ];
+      };
+      fig-frontend-client = purescript.bundle {};
 
       figBusModule = { config, lib, ... }:
         let
@@ -296,10 +295,10 @@
         buildInputs = [
           haskellPackages.haskell-language-server
           pkgs.nodejs
-          # (purescript.command {})
-          # ps-tools.for-0_15.purescript-language-server
-          # purs-nix.esbuild
-          # purs-nix.purescript
+          (purescript.command {})
+          ps-tools.for-0_15.purescript-language-server
+          purs-nix.esbuild
+          purs-nix.purescript
           pkgs.m4
           pkgs.dhall
           pkgs.dhall-json
