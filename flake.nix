@@ -369,6 +369,7 @@
       };
       nixosModules = {
         figBus = figBusModule;
+        figMonitorTwitchLiveWatcher = figMonitorTwitchLiveWatcherModule;
         figMonitorDiscord = figMonitorDiscordModule;
         figMonitorIRC = figMonitorIRCModule;
         figBridgeIRCDiscord = figBridgeIRCDiscordModule;
