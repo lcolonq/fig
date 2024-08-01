@@ -5,6 +5,7 @@
 module Fig.Monitor.Twitch
   ( twitchEventClient
   , twitchChatClient
+  , twitchChannelLiveMonitor
   , twitchEndpointTest
   , userTokenRedirectServer
   ) where
@@ -12,6 +13,7 @@ module Fig.Monitor.Twitch
 import Fig.Prelude
 
 import Control.Monad (unless)
+import Control.Concurrent (threadDelay)
 
 import qualified Data.Maybe as Maybe
 import qualified Data.Text as Text
@@ -56,6 +58,35 @@ loginToUserId login = do
           Aeson.Array ((V.!? 0) -> Just (Aeson.Object d)) -> d .: "id"
           _ -> mempty
   maybe (throwM $ FigMonitorTwitchException "Failed to extract user ID") pure mid
+
+usersAreLive :: [Text] -> Authed (Map.Map Text Bool)
+usersAreLive users = do
+  log $ "Checking liveness for: " <> Text.intercalate " " users
+  res <- authedRequestJSON
+    "GET"
+    ( mconcat
+      [ "https://api.twitch.tv/helix/streams?type=live"
+      , mconcat $ ("&user_login="<>) <$> users
+      ]
+    )
+    ()
+  let mos = flip Aeson.parseMaybe res \obj -> do
+        obj .: "data" >>= \case
+          Aeson.Array os -> catMaybes . toList <$> forM os \case
+            Aeson.Object o -> Just <$> o .: "user_login"
+            _ -> pure Nothing
+          _ -> mempty
+  case mos of
+    Nothing -> throwM $ FigMonitorTwitchException "Failed to check liveness"
+    Just os -> Map.fromList <$> forM users \u -> do
+      let l = u `elem` os
+      log $ mconcat
+        [ u
+        , " is "
+        , if l then "" else "not "
+        , "live"
+        ]
+      pure (u, l)
 
 subscribe :: Text -> Text -> Text -> Authed ()
 subscribe sessionId event user = do
@@ -446,6 +477,37 @@ twitchEventClient cfg busAddr = do
       )
       (pure ())
 
+twitchChannelLiveMonitor :: Config -> (Text, Text) -> IO ()
+twitchChannelLiveMonitor cfg busAddr = do
+  busClient busAddr
+    (\cmds -> do
+        let
+          updateLive :: IO (Map.Map Text Bool)
+          updateLive = runAuthed cfg $ usersAreLive cfg.monitor
+          -- updateLive = fmap Map.fromList . runAuthed cfg $ forM cfg.monitor \user -> do
+          --   liftIO . threadDelay $ 5 * 1000000
+          --   (user,) <$> userIsLive user
+          loop :: Map.Map Text Bool -> IO ()
+          loop old = do
+            log "Updating liveness..."
+            new <- updateLive
+            log "Update complete!"
+            forM_ cfg.monitor \user ->
+              case (Map.lookup user old, Map.lookup user new) of
+                (Just False, Just True) -> do
+                  log $ "Newly online: " <> user
+                  cmds.publish [sexp|(monitor twitch stream online)|] [SExprString user]
+                (Just True, Just False) -> do
+                  log $ "Newly offline: " <> user
+                  cmds.publish [sexp|(monitor twitch stream offline)|] [SExprString user]
+                _ -> pure ()
+            threadDelay $ 5 * 60 * 1000000
+            loop new
+        loop Map.empty
+    )
+    (\_cmds _d -> pure ())
+    (pure ())
+
 data IRCMessage = IRCMessage
   { tags :: Map.Map Text Text
   , prefix :: Maybe Text
@@ -481,58 +543,60 @@ parseIRCMessage (Text.strip -> fullrest) =
 twitchChatClient :: Config -> (Text, Text) -> IO ()
 twitchChatClient cfg busAddr = do
   log "Starting chatbot"
-  WS.runSecureClient "irc-ws.chat.twitch.tv" 443 "/" \conn -> do
-    WS.sendTextData conn $ "PASS oauth:" <> cfg.userToken
-    WS.sendTextData conn ("NICK lcolonq" :: Text)
-    WS.sendTextData conn ("CAP REQ :twitch.tv/commands twitch.tv/tags" :: Text)
-    WS.sendTextData conn $ "JOIN #" <> cfg.monitorChat
-    -- WS.sendTextData conn ("PRIVMSG #lcolonq :test the other direction" :: Text)
-    busClient busAddr
-      (\cmds -> do
-          cmds.subscribe [sexp|(monitor twitch chat outgoing)|]
-          forever do
-            resp <- WS.receiveData conn
-            forM (Text.lines resp) $ \line -> do
-              let msg = parseIRCMessage line
-              case msg.command of
-                "PING" -> do
-                  log "Received PING, sending PONG"
-                  WS.sendTextData conn $ "PONG :" <> mconcat msg.params
-                "CLEARCHAT" -> do
-                  log "Received CLEARCHAT"
-                  cmds.publish [sexp|(monitor twitch chat clear-chat)|] $ SExprString <$> msg.params
-                "NOTICE" -> do
-                  log "Received NOTICE"
-                  cmds.publish [sexp|(monitor twitch chat notice)|] $ SExprString <$> msg.params
-                "USERNOTICE" -> do
-                  log "Received USERNOTICE"
-                  cmds.publish [sexp|(monitor twitch chat user-notice)|] $ SExprString <$> msg.params
-                "PRIVMSG"
-                  | Just displaynm <- Map.lookup "display-name" msg.tags
-                  , Nothing <- Map.lookup "custom-reward-id" msg.tags -> do
-                    cmds.publish [sexp|(monitor twitch chat incoming)|]
-                      [ SExprString . BS.Base64.encodeBase64 $ encodeUtf8 displaynm
-                      , SExprList $ (\(key, v) -> SExprList [SExprString key, SExprString v]) <$> Map.toList msg.tags
-                      , SExprString . BS.Base64.encodeBase64 . encodeUtf8 . Text.unwords $ drop 1 msg.params
-                      ]
-                _ -> pure ()
-      )
-      (\_cmds d -> do
-          case d of
-            SExprList [ev, SExprString msg] | ev == [sexp|(monitor twitch chat outgoing)|] -> do
-              log $ "Sending: " <> msg
-              WS.sendTextData conn $ mconcat
-                [ "PRIVMSG #"
-                , cfg.monitorChat
-                , " :"
-                , msg
-                ]
-            _ -> log $ "Invalid outgoing message: " <> tshow d
-      )
-      (pure ())
+  case headMay cfg.monitor of
+    Nothing -> pure ()
+    Just chan -> WS.runSecureClient "irc-ws.chat.twitch.tv" 443 "/" \conn -> do
+      WS.sendTextData conn $ "PASS oauth:" <> cfg.userToken
+      WS.sendTextData conn ("NICK lcolonq" :: Text)
+      WS.sendTextData conn ("CAP REQ :twitch.tv/commands twitch.tv/tags" :: Text)
+      WS.sendTextData conn $ "JOIN #" <> chan
+      -- WS.sendTextData conn ("PRIVMSG #lcolonq :test the other direction" :: Text)
+      busClient busAddr
+        (\cmds -> do
+            cmds.subscribe [sexp|(monitor twitch chat outgoing)|]
+            forever do
+              resp <- WS.receiveData conn
+              forM (Text.lines resp) $ \line -> do
+                let msg = parseIRCMessage line
+                case msg.command of
+                  "PING" -> do
+                    log "Received PING, sending PONG"
+                    WS.sendTextData conn $ "PONG :" <> mconcat msg.params
+                  "CLEARCHAT" -> do
+                    log "Received CLEARCHAT"
+                    cmds.publish [sexp|(monitor twitch chat clear-chat)|] $ SExprString <$> msg.params
+                  "NOTICE" -> do
+                    log "Received NOTICE"
+                    cmds.publish [sexp|(monitor twitch chat notice)|] $ SExprString <$> msg.params
+                  "USERNOTICE" -> do
+                    log "Received USERNOTICE"
+                    cmds.publish [sexp|(monitor twitch chat user-notice)|] $ SExprString <$> msg.params
+                  "PRIVMSG"
+                    | Just displaynm <- Map.lookup "display-name" msg.tags
+                    , Nothing <- Map.lookup "custom-reward-id" msg.tags -> do
+                      cmds.publish [sexp|(monitor twitch chat incoming)|]
+                        [ SExprString . BS.Base64.encodeBase64 $ encodeUtf8 displaynm
+                        , SExprList $ (\(key, v) -> SExprList [SExprString key, SExprString v]) <$> Map.toList msg.tags
+                        , SExprString . BS.Base64.encodeBase64 . encodeUtf8 . Text.unwords $ drop 1 msg.params
+                        ]
+                  _ -> pure ()
+        )
+        (\_cmds d -> do
+            case d of
+              SExprList [ev, SExprString msg] | ev == [sexp|(monitor twitch chat outgoing)|] -> do
+                log $ "Sending: " <> msg
+                WS.sendTextData conn $ mconcat
+                  [ "PRIVMSG #"
+                  , chan
+                  , " :"
+                  , msg
+                  ]
+              _ -> log $ "Invalid outgoing message: " <> tshow d
+        )
+        (pure ())
 
-userTokenRedirectServer :: Config -> IO ()
-userTokenRedirectServer cfg = do
+userTokenRedirectServer :: Config -> Bool -> IO ()
+userTokenRedirectServer cfg rw = do
   log "Starting token redirect server on port 4444"
   Scotty.scottyOpts opts do
     Scotty.get "/" do
@@ -548,7 +612,8 @@ userTokenRedirectServer cfg = do
       { Scotty.verbose = 0
       , Scotty.settings = setPort 4444 (Scotty.settings def)
       }
-    scopes =
+    scopes = if rw then scopesReadWrite else scopesReadOnly
+    scopesReadWrite =
       [ "channel:manage:polls"
       , "channel:manage:predictions"
       , "channel:manage:redemptions"
@@ -565,4 +630,7 @@ userTokenRedirectServer cfg = do
       , "chat:edit"
       , "chat:read"
       , "bits:read"
+      ]
+    scopesReadOnly =
+      [
       ]

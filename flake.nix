@@ -93,6 +93,51 @@
             };
           };
         };
+      figMonitorTwitchLiveWatcherModule = { config, lib, ... }:
+        let
+          cfg = config.colonq.services.fig-monitor-twitch-live-watcher;
+        in {
+          options.colonq.services.fig-monitor-twitch-live-watcher = {
+            enable = lib.mkEnableOption "Enable the fig Twitch live watcher";
+            busHost = lib.mkOption {
+              type = lib.types.str;
+              default = "127.0.0.1";
+              description = "Message bus port";
+            };
+            busPort = lib.mkOption {
+              type = lib.types.port;
+              default = 32050;
+              description = "Address of message bus";
+            };
+            configFile = lib.mkOption {
+              type = lib.types.path;
+              description = "Path to config file";
+              default = pkgs.writeText "fig-monitor-twitch.toml" ''
+                client_id = ""
+                user_token = ""
+                user_login = ""
+                monitor = []
+              '';
+            };
+          };
+          config = lib.mkIf cfg.enable {
+            systemd.services."colonq.fig-monitor-twitch-live-watcher" = {
+              wantedBy = ["multi-user.target"];
+              after = ["colonq.fig-bus.service"];
+              serviceConfig = {
+                Restart = "on-failure";
+                ExecStart = "${haskellPackages.fig-monitor-twitch-live-watcher}/bin/fig-monitor-twitch live-checker --bus-host ${cfg.busHost} --bus-port ${toString cfg.busPort} --config ${cfg.configFile}";
+                DynamicUser = "yes";
+                RuntimeDirectory = "colonq.fig-monitor-twitch-live-watcher";
+                RuntimeDirectoryMode = "0755";
+                StateDirectory = "colonq.fig-monitor-twitch-live-watcher";
+                StateDirectoryMode = "0700";
+                CacheDirectory = "colonq.fig-monitor-twitch-live-watcher";
+                CacheDirectoryMode = "0750";
+              };
+            };
+          };
+        };
       figMonitorDiscordModule = { config, lib, ... }:
         let
           cfg = config.colonq.services.fig-monitor-discord;
@@ -293,6 +338,7 @@
         ];
         withHoogle = true;
         buildInputs = [
+          haskellPackages.cabal-install
           haskellPackages.haskell-language-server
           pkgs.nodejs
           (purescript.command {})

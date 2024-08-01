@@ -10,14 +10,17 @@ import Fig.Monitor.Twitch.Utils
 data Command
   = Monitor
   | Chatbot
-  | RedirectServer
+  | LiveChecker
+  | RedirectServer Bool
   | Validate
 
 parseCommand :: Parser Command
 parseCommand = subparser $ mconcat
   [ command "monitor" $ info (pure Monitor) (progDesc "Launch the Twitch monitor")
   , command "chatbot" $ info (pure Chatbot) (progDesc "Launch the Twitch chatbot")
-  , command "user-token-server" $ info (pure RedirectServer) (progDesc "Launch a web server to handle authentication redirects")
+  , command "live-checker" $ info (pure LiveChecker) (progDesc "Launch the Twitch live status checker")
+  , command "user-token-server" $ info (pure $ RedirectServer True) (progDesc "Launch a web server to handle authentication redirects")
+  , command "user-token-server-read-only" $ info (pure $ RedirectServer False) (progDesc "Launch a web server to handle authentication redirects")
   , command "validate-endpoint" $ info (pure Validate) (progDesc "Test Twitch authentication")
   ]
 data Opts = Opts
@@ -44,5 +47,6 @@ main = do
   case opts.command of
     Monitor -> twitchEventClient cfg (opts.busHost, opts.busPort)
     Chatbot -> twitchChatClient cfg (opts.busHost, opts.busPort)
-    RedirectServer -> userTokenRedirectServer cfg
+    LiveChecker -> twitchChannelLiveMonitor cfg (opts.busHost, opts.busPort)
+    RedirectServer rw -> userTokenRedirectServer cfg rw
     Validate -> twitchEndpointTest cfg

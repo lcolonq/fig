@@ -10,13 +10,16 @@ module Fig.Monitor.Twitch.Utils
   , authedRequestJSON
   , Authed
   , runAuthed
+  , userIsLiveScrape
   ) where
 
 import Fig.Prelude
 
 import Control.Monad.Reader (ReaderT, runReaderT)
 
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BS.Lazy
+import qualified Data.Map.Strict as Map
 
 import qualified Toml
 
@@ -33,7 +36,7 @@ data Config = Config
   { clientId :: Text
   , userToken :: Text
   , userLogin :: Text
-  , monitorChat :: Text
+  , monitor :: [Text]
   } deriving (Show, Eq, Ord)
 
 configCodec :: Toml.TomlCodec Config
@@ -42,7 +45,7 @@ configCodec = do
   userToken <- Toml.text "user_token" Toml..= (\a -> a.userToken)
   -- userIds <- Toml.arrayOf Toml._Text "user_ids" Toml..= (\a -> a.userIds)
   userLogin <- Toml.text "user_login" Toml..= (\a -> a.userLogin)
-  monitorChat <- Toml.text "monitor_chat" Toml..= (\a -> a.monitorChat)
+  monitor <- Toml.arrayOf Toml._Text "monitor" Toml..= (\a -> a.monitor)
   pure $ Config{..}
 
 loadConfig :: FilePath -> IO Config
@@ -86,3 +89,20 @@ runAuthed :: Config -> Authed a -> IO a
 runAuthed config body = do
   manager <- HTTP.newManager HTTP.tlsManagerSettings
   runReaderT body.unAuthed RequestConfig{..}
+
+userIsLiveScrape :: Text -> Authed Bool
+userIsLiveScrape user = do
+  rc <- ask
+  request <- liftIO . HTTP.parseRequest $ mconcat
+    [ "https://twitch.tv/"
+    , unpack user
+    ]
+  response <- liftIO $ HTTP.httpLbs request rc.manager
+  let res = BS.isInfixOf "\"isLiveBroadcast\":true" . BS.Lazy.toStrict $ HTTP.responseBody response
+  log $ mconcat
+    [ user
+    , " is "
+    , if res then "" else "not "
+    , "live"
+    ]
+  pure res
