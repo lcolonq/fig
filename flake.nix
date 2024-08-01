@@ -126,7 +126,7 @@
               after = ["colonq.fig-bus.service"];
               serviceConfig = {
                 Restart = "on-failure";
-                ExecStart = "${haskellPackages.fig-monitor-twitch-live-watcher}/bin/fig-monitor-twitch live-checker --bus-host ${cfg.busHost} --bus-port ${toString cfg.busPort} --config ${cfg.configFile}";
+                ExecStart = "${haskellPackages.fig-monitor-twitch}/bin/fig-monitor-twitch live-checker --bus-host ${cfg.busHost} --bus-port ${toString cfg.busPort} --config ${cfg.configFile}";
                 DynamicUser = "yes";
                 RuntimeDirectory = "colonq.fig-monitor-twitch-live-watcher";
                 RuntimeDirectoryMode = "0755";
