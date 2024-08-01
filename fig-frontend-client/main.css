@@ -16,7 +16,7 @@ html, body {
     width: 100%;
 }
 
-body {
+body.lcolonq-index {
     font-family: "Iosevka Comfy";
     font-weight: bold;
     color: black;
@@ -27,6 +27,10 @@ body {
     background-image:
         linear-gradient(to right, grey 1px, transparent 1px),
         linear-gradient(to bottom, grey 1px, transparent 1px);
+}
+
+body.lcolonq-obs {
+    background-color: rbga(0,0,0,0);
 }
 
 #lcolonq-title {

@@ -118,9 +118,9 @@ var $$void = function(dictFunctor) {
   return map(dictFunctor)($$const(unit));
 };
 var voidRight = function(dictFunctor) {
-  var map12 = map(dictFunctor);
+  var map13 = map(dictFunctor);
   return function(x) {
-    return map12($$const(x));
+    return map13($$const(x));
   };
 };
 var functorArray = {
@@ -223,12 +223,32 @@ var EQ = /* @__PURE__ */ function() {
   return EQ2;
 }();
 
+// output/Data.Semigroup/foreign.js
+var concatArray = function(xs) {
+  return function(ys) {
+    if (xs.length === 0)
+      return ys;
+    if (ys.length === 0)
+      return xs;
+    return xs.concat(ys);
+  };
+};
+
 // output/Data.Semigroup/index.js
+var semigroupArray = {
+  append: concatArray
+};
 var append = function(dict) {
   return dict.append;
 };
 
 // output/Data.Monoid/index.js
+var monoidArray = {
+  mempty: [],
+  Semigroup0: function() {
+    return semigroupArray;
+  }
+};
 var mempty = function(dict) {
   return dict.mempty;
 };
@@ -296,15 +316,16 @@ var liftEffect = function(dict) {
 
 // output/Audio/index.js
 var playVoice = function(dictMonadEffect) {
-  var liftEffect5 = liftEffect(dictMonadEffect);
+  var liftEffect6 = liftEffect(dictMonadEffect);
   return function(b) {
     return function(i) {
-      return liftEffect5(_playVoice(b)(i));
+      return liftEffect6(_playVoice(b)(i));
     };
   };
 };
 
 // output/Config/foreign.js
+var mode = globalThis.mode;
 var apiServer = globalThis.apiServer;
 
 // output/Data.Array/foreign.js
@@ -335,6 +356,9 @@ var replicatePolyfill = function(count, value12) {
   return result;
 };
 var replicateImpl = typeof Array.prototype.fill === "function" ? replicateFill : replicatePolyfill;
+var indexImpl = function(just, nothing, xs, i) {
+  return i < 0 || i >= xs.length ? nothing : just(xs[i]);
+};
 
 // output/Control.Alt/index.js
 var alt = function(dict) {
@@ -635,6 +659,7 @@ var unwrap = function() {
 };
 
 // output/Data.Foldable/index.js
+var identity5 = /* @__PURE__ */ identity(categoryFn);
 var foldr = function(dict) {
   return dict.foldr;
 };
@@ -680,6 +705,15 @@ var foldableArray = {
     return foldMapDefaultR(foldableArray)(dictMonoid);
   }
 };
+var foldMap = function(dict) {
+  return dict.foldMap;
+};
+var fold = function(dictFoldable) {
+  var foldMap2 = foldMap(dictFoldable);
+  return function(dictMonoid) {
+    return foldMap2(dictMonoid)(identity5);
+  };
+};
 
 // output/Data.Function.Uncurried/foreign.js
 var runFn2 = function(fn) {
@@ -698,9 +732,26 @@ var runFn3 = function(fn) {
     };
   };
 };
+var runFn4 = function(fn) {
+  return function(a) {
+    return function(b) {
+      return function(c) {
+        return function(d) {
+          return fn(a, b, c, d);
+        };
+      };
+    };
+  };
+};
 
 // output/Data.Array/index.js
 var range2 = /* @__PURE__ */ runFn2(rangeImpl);
+var index = /* @__PURE__ */ function() {
+  return runFn4(indexImpl)(Just.create)(Nothing.value);
+}();
+var head = function(xs) {
+  return index(xs)(0);
+};
 
 // output/Effect.Aff/foreign.js
 var Aff = function() {
@@ -1215,7 +1266,7 @@ var Aff = function() {
     var root = EMPTY;
     function kill(error3, par2, cb2) {
       var step2 = par2;
-      var head = null;
+      var head2 = null;
       var tail = null;
       var count = 0;
       var kills2 = {};
@@ -1236,14 +1287,14 @@ var Aff = function() {
                   };
                 });
               }
-              if (head === null) {
+              if (head2 === null) {
                 break loop;
               }
-              step2 = head._2;
+              step2 = head2._2;
               if (tail === null) {
-                head = null;
+                head2 = null;
               } else {
-                head = tail._1;
+                head2 = tail._1;
                 tail = tail._2;
               }
               break;
@@ -1252,10 +1303,10 @@ var Aff = function() {
               break;
             case APPLY:
             case ALT:
-              if (head) {
-                tail = new Aff2(CONS, head, tail);
+              if (head2) {
+                tail = new Aff2(CONS, head2, tail);
               }
-              head = step2;
+              head2 = step2;
               step2 = step2._1;
               break;
           }
@@ -1271,7 +1322,7 @@ var Aff = function() {
       }
       return kills2;
     }
-    function join2(result, head, tail) {
+    function join2(result, head2, tail) {
       var fail2, step2, lhs, rhs, tmp, kid;
       if (util.isLeft(result)) {
         fail2 = result;
@@ -1289,30 +1340,30 @@ var Aff = function() {
           if (interrupt !== null) {
             return;
           }
-          if (head === null) {
+          if (head2 === null) {
             cb(fail2 || step2)();
             return;
           }
-          if (head._3 !== EMPTY) {
+          if (head2._3 !== EMPTY) {
             return;
           }
-          switch (head.tag) {
+          switch (head2.tag) {
             case MAP:
               if (fail2 === null) {
-                head._3 = util.right(head._1(util.fromRight(step2)));
-                step2 = head._3;
+                head2._3 = util.right(head2._1(util.fromRight(step2)));
+                step2 = head2._3;
               } else {
-                head._3 = fail2;
+                head2._3 = fail2;
               }
               break;
             case APPLY:
-              lhs = head._1._3;
-              rhs = head._2._3;
+              lhs = head2._1._3;
+              rhs = head2._2._3;
               if (fail2) {
-                head._3 = fail2;
+                head2._3 = fail2;
                 tmp = true;
                 kid = killId++;
-                kills[kid] = kill(early, fail2 === lhs ? head._2 : head._1, function() {
+                kills[kid] = kill(early, fail2 === lhs ? head2._2 : head2._1, function() {
                   return function() {
                     delete kills[kid];
                     if (tmp) {
@@ -1332,24 +1383,24 @@ var Aff = function() {
                 return;
               } else {
                 step2 = util.right(util.fromRight(lhs)(util.fromRight(rhs)));
-                head._3 = step2;
+                head2._3 = step2;
               }
               break;
             case ALT:
-              lhs = head._1._3;
-              rhs = head._2._3;
+              lhs = head2._1._3;
+              rhs = head2._2._3;
               if (lhs === EMPTY && util.isLeft(rhs) || rhs === EMPTY && util.isLeft(lhs)) {
                 return;
               }
               if (lhs !== EMPTY && util.isLeft(lhs) && rhs !== EMPTY && util.isLeft(rhs)) {
                 fail2 = step2 === lhs ? rhs : lhs;
                 step2 = null;
-                head._3 = fail2;
+                head2._3 = fail2;
               } else {
-                head._3 = step2;
+                head2._3 = step2;
                 tmp = true;
                 kid = killId++;
-                kills[kid] = kill(early, step2 === lhs ? head._2 : head._1, function() {
+                kills[kid] = kill(early, step2 === lhs ? head2._2 : head2._1, function() {
                   return function() {
                     delete kills[kid];
                     if (tmp) {
@@ -1369,9 +1420,9 @@ var Aff = function() {
               break;
           }
           if (tail === null) {
-            head = null;
+            head2 = null;
           } else {
-            head = tail._1;
+            head2 = tail._1;
             tail = tail._2;
           }
         }
@@ -1388,7 +1439,7 @@ var Aff = function() {
     function run3() {
       var status2 = CONTINUE;
       var step2 = par;
-      var head = null;
+      var head2 = null;
       var tail = null;
       var tmp, fid;
       loop:
@@ -1399,31 +1450,31 @@ var Aff = function() {
             case CONTINUE:
               switch (step2.tag) {
                 case MAP:
-                  if (head) {
-                    tail = new Aff2(CONS, head, tail);
+                  if (head2) {
+                    tail = new Aff2(CONS, head2, tail);
                   }
-                  head = new Aff2(MAP, step2._1, EMPTY, EMPTY);
+                  head2 = new Aff2(MAP, step2._1, EMPTY, EMPTY);
                   step2 = step2._2;
                   break;
                 case APPLY:
-                  if (head) {
-                    tail = new Aff2(CONS, head, tail);
+                  if (head2) {
+                    tail = new Aff2(CONS, head2, tail);
                   }
-                  head = new Aff2(APPLY, EMPTY, step2._2, EMPTY);
+                  head2 = new Aff2(APPLY, EMPTY, step2._2, EMPTY);
                   step2 = step2._1;
                   break;
                 case ALT:
-                  if (head) {
-                    tail = new Aff2(CONS, head, tail);
+                  if (head2) {
+                    tail = new Aff2(CONS, head2, tail);
                   }
-                  head = new Aff2(ALT, EMPTY, step2._2, EMPTY);
+                  head2 = new Aff2(ALT, EMPTY, step2._2, EMPTY);
                   step2 = step2._1;
                   break;
                 default:
                   fid = fiberId++;
                   status2 = RETURN;
                   tmp = step2;
-                  step2 = new Aff2(FORKED, fid, new Aff2(CONS, head, tail), EMPTY);
+                  step2 = new Aff2(FORKED, fid, new Aff2(CONS, head2, tail), EMPTY);
                   tmp = Fiber(util, supervisor, tmp);
                   tmp.onComplete({
                     rethrow: false,
@@ -1436,21 +1487,21 @@ var Aff = function() {
               }
               break;
             case RETURN:
-              if (head === null) {
+              if (head2 === null) {
                 break loop;
               }
-              if (head._1 === EMPTY) {
-                head._1 = step2;
+              if (head2._1 === EMPTY) {
+                head2._1 = step2;
                 status2 = CONTINUE;
-                step2 = head._2;
-                head._2 = EMPTY;
+                step2 = head2._2;
+                head2._2 = EMPTY;
               } else {
-                head._2 = step2;
-                step2 = head;
+                head2._2 = step2;
+                step2 = head2;
                 if (tail === null) {
-                  head = null;
+                  head2 = null;
                 } else {
-                  head = tail._1;
+                  head2 = tail._1;
                   tail = tail._2;
                 }
               }
@@ -1595,10 +1646,10 @@ var mapExceptT = function(f) {
   };
 };
 var functorExceptT = function(dictFunctor) {
-  var map12 = map(dictFunctor);
+  var map13 = map(dictFunctor);
   return {
     map: function(f) {
-      return mapExceptT(map12(map2(f)));
+      return mapExceptT(map13(map2(f)));
     }
   };
 };
@@ -1677,7 +1728,7 @@ var parallel = function(dict) {
 };
 
 // output/Control.Parallel/index.js
-var identity5 = /* @__PURE__ */ identity(categoryFn);
+var identity6 = /* @__PURE__ */ identity(categoryFn);
 var parTraverse_ = function(dictParallel) {
   var sequential2 = sequential(dictParallel);
   var parallel3 = parallel(dictParallel);
@@ -1701,7 +1752,7 @@ var parSequence_ = function(dictParallel) {
   return function(dictApplicative) {
     var parTraverse_2 = parTraverse_1(dictApplicative);
     return function(dictFoldable) {
-      return parTraverse_2(dictFoldable)(identity5);
+      return parTraverse_2(dictFoldable)(identity6);
     };
   };
 };
@@ -2681,11 +2732,8 @@ var fetch2 = function() {
 
 // output/Model/foreign.js
 var canvas = document.getElementById("lcolonq-canvas");
-var socket = new WebSocket("wss://colonq.computer/bullfrog/api/channel/listen/model");
+var socket = null;
 var currentFrame = null;
-socket.addEventListener("open", (ev) => {
-  console.log("connected");
-});
 async function decompress(blob3) {
   let ds = new DecompressionStream("gzip");
   let stream = blob3.stream();
@@ -2743,7 +2791,7 @@ function readPacket(dv) {
   }
 }
 function renderCellCanvas(ctx2, x, y, c) {
-  if (c) {
+  if (c && c.type === "fg") {
     let msg = c.g1 ? String.fromCodePoint(c.g0, c.g1) : String.fromCodePoint(c.g0);
     if (msg.trim().length) {
       ctx2.fillStyle = "black";
@@ -2772,6 +2820,10 @@ function renderCanvas() {
   }
 }
 var _startModel = () => {
+  socket = new WebSocket("wss://colonq.computer/bullfrog/api/channel/listen/model");
+  socket.addEventListener("open", (ev) => {
+    console.log("connected");
+  });
   socket.addEventListener("message", async (ev) => {
     let arr = await decompress(ev.data);
     let view = new DataView(arr);
@@ -2783,6 +2835,38 @@ var _startModel = () => {
 // output/Model/index.js
 var startModel = function(dictMonadEffect) {
   return liftEffect(dictMonadEffect)(_startModel);
+};
+
+// output/UI/foreign.js
+var _setInterval = (delay) => (f) => () => setInterval(f, delay);
+
+// output/UI/index.js
+var setInterval2 = function(dictMonadEffect) {
+  var liftEffect6 = liftEffect(dictMonadEffect);
+  return function(d) {
+    return function(f) {
+      return liftEffect6(_setInterval(d)(f));
+    };
+  };
+};
+
+// output/Web.DOM.DOMTokenList/foreign.js
+function add2(list) {
+  return function(token) {
+    return function() {
+      return list.add(token);
+    };
+  };
+}
+
+// output/Data.Nullable/foreign.js
+function nullable(a, r, f) {
+  return a == null ? r : f(a);
+}
+
+// output/Data.Nullable/index.js
+var toMaybe = function(n) {
+  return nullable(n, Nothing.value, Just.create);
 };
 
 // output/Web.DOM.Document/foreign.js
@@ -2800,18 +2884,52 @@ var compatMode = getEffProp("compatMode");
 var characterSet = getEffProp("characterSet");
 var contentType = getEffProp("contentType");
 var _documentElement = getEffProp("documentElement");
-
-// output/Data.Nullable/foreign.js
-function nullable(a, r, f) {
-  return a == null ? r : f(a);
+function createElement(localName2) {
+  return function(doc) {
+    return function() {
+      return doc.createElement(localName2);
+    };
+  };
+}
+function createTextNode(data) {
+  return function(doc) {
+    return function() {
+      return doc.createTextNode(data);
+    };
+  };
 }
 
-// output/Data.Nullable/index.js
-var toMaybe = function(n) {
-  return nullable(n, Nothing.value, Just.create);
+// output/Web.Internal.FFI/foreign.js
+function _unsafeReadProtoTagged(nothing, just, name15, value12) {
+  if (typeof window !== "undefined") {
+    var ty = window[name15];
+    if (ty != null && value12 instanceof ty) {
+      return just(value12);
+    }
+  }
+  var obj = value12;
+  while (obj != null) {
+    var proto = Object.getPrototypeOf(obj);
+    var constructorName = proto.constructor.name;
+    if (constructorName === name15) {
+      return just(value12);
+    } else if (constructorName === "Object") {
+      return nothing;
+    }
+    obj = proto;
+  }
+  return nothing;
+}
+
+// output/Web.Internal.FFI/index.js
+var unsafeReadProtoTagged = function(name15) {
+  return function(value12) {
+    return _unsafeReadProtoTagged(Nothing.value, Just.create, name15, value12);
+  };
 };
 
 // output/Web.DOM.Document/index.js
+var toParentNode = unsafeCoerce2;
 var toNonElementParentNode = unsafeCoerce2;
 
 // output/Web.DOM.Element/foreign.js
@@ -2824,6 +2942,11 @@ var _namespaceURI = getProp("namespaceURI");
 var _prefix = getProp("prefix");
 var localName = getProp("localName");
 var tagName = getProp("tagName");
+function classList(element) {
+  return function() {
+    return element.classList;
+  };
+}
 
 // output/Web.DOM.ParentNode/foreign.js
 var getEffProp2 = function(name15) {
@@ -2837,10 +2960,18 @@ var children = getEffProp2("children");
 var _firstElementChild = getEffProp2("firstElementChild");
 var _lastElementChild = getEffProp2("lastElementChild");
 var childElementCount = getEffProp2("childElementCount");
+function querySelectorAll(selector) {
+  return function(node) {
+    return function() {
+      return node.querySelectorAll(selector);
+    };
+  };
+}
 
 // output/Web.DOM.Element/index.js
 var toNode = unsafeCoerce2;
 var toEventTarget = unsafeCoerce2;
+var fromNode = /* @__PURE__ */ unsafeReadProtoTagged("Element");
 
 // output/Web.DOM.Node/foreign.js
 var getEffProp3 = function(name15) {
@@ -2868,6 +2999,20 @@ function setTextContent(value12) {
     };
   };
 }
+function appendChild(node) {
+  return function(parent2) {
+    return function() {
+      parent2.appendChild(node);
+    };
+  };
+}
+
+// output/Web.DOM.NodeList/foreign.js
+function toArray2(list) {
+  return function() {
+    return [].slice.call(list);
+  };
+}
 
 // output/Web.DOM.NonElementParentNode/foreign.js
 function _getElementById(id2) {
@@ -2887,6 +3032,9 @@ var getElementById = function(eid) {
     return $2($3($4));
   };
 };
+
+// output/Web.DOM.Text/index.js
+var toNode2 = unsafeCoerce2;
 
 // output/Web.Event.EventTarget/foreign.js
 function eventListener(fn) {
@@ -2925,30 +3073,89 @@ function document2(window2) {
 
 // output/Main/index.js
 var map6 = /* @__PURE__ */ map(functorEffect);
+var fold2 = /* @__PURE__ */ fold(foldableArray)(monoidArray);
+var map12 = /* @__PURE__ */ map(functorArray);
+var startModel2 = /* @__PURE__ */ startModel(monadEffectAff);
 var bind4 = /* @__PURE__ */ bind(bindAff);
 var fetch3 = /* @__PURE__ */ fetch2()()(/* @__PURE__ */ toCoreRequestOptionsRowRo()()(toCoreRequestOptionsHelpe));
-var discard2 = /* @__PURE__ */ discard(discardUnit)(bindAff);
-var startModel2 = /* @__PURE__ */ startModel(monadEffectAff);
+var discard2 = /* @__PURE__ */ discard(discardUnit);
+var discard1 = /* @__PURE__ */ discard2(bindAff);
+var liftEffect5 = /* @__PURE__ */ liftEffect(monadEffectAff);
 var for_2 = /* @__PURE__ */ for_(applicativeAff)(foldableArray);
 var show2 = /* @__PURE__ */ show(showInt);
 var playVoice2 = /* @__PURE__ */ playVoice(monadEffectEffect);
+var setInterval3 = /* @__PURE__ */ setInterval2(monadEffectAff);
 var setText5 = function(dictMonadEffect) {
-  var liftEffect5 = liftEffect(dictMonadEffect);
+  var liftEffect1 = liftEffect(dictMonadEffect);
   return function(e) {
     return function(s) {
-      return liftEffect5(setTextContent(s)(toNode(e)));
+      return liftEffect1(setTextContent(s)(toNode(e)));
     };
   };
 };
 var setText1 = /* @__PURE__ */ setText5(monadEffectAff);
+var maybeToArray = function(v) {
+  if (v instanceof Just) {
+    return [v.value0];
+  }
+  ;
+  if (v instanceof Nothing) {
+    return [];
+  }
+  ;
+  throw new Error("Failed pattern match at Main (line 35, column 1 - line 35, column 45): " + [v.constructor.name]);
+};
+var queryAll = function(dictMonadEffect) {
+  var Monad0 = dictMonadEffect.Monad0();
+  var bind22 = bind(Monad0.Bind1());
+  var liftEffect1 = liftEffect(dictMonadEffect);
+  var pure3 = pure(Monad0.Applicative0());
+  return function(q) {
+    return bind22(liftEffect1(windowImpl))(function(w) {
+      return bind22(liftEffect1(map6(toDocument)(document2(w))))(function(d) {
+        return bind22(liftEffect1(querySelectorAll(q)(toParentNode(d))))(function(nl) {
+          return bind22(liftEffect1(toArray2(nl)))(function(ns) {
+            return pure3(fold2(map12(function($95) {
+              return maybeToArray(fromNode($95));
+            })(ns)));
+          });
+        });
+      });
+    });
+  };
+};
+var query = function(dictMonadEffect) {
+  var Monad0 = dictMonadEffect.Monad0();
+  var bind22 = bind(Monad0.Bind1());
+  var queryAll1 = queryAll(dictMonadEffect);
+  var liftEffect1 = liftEffect(dictMonadEffect);
+  var pure3 = pure(Monad0.Applicative0());
+  return function(q) {
+    return bind22(queryAll1(q))(function($96) {
+      return function(v) {
+        if (v instanceof Nothing) {
+          return liftEffect1($$throw("could not find element matching query: " + q));
+        }
+        ;
+        if (v instanceof Just) {
+          return pure3(v.value0);
+        }
+        ;
+        throw new Error("Failed pattern match at Main (line 57, column 27 - line 59, column 21): " + [v.constructor.name]);
+      }(head($96));
+    });
+  };
+};
+var query1 = /* @__PURE__ */ query(monadEffectEffect);
+var mainObs = /* @__PURE__ */ launchAff_(startModel2);
 var listen2 = function(dictMonadEffect) {
-  var bind1 = bind(dictMonadEffect.Monad0().Bind1());
-  var liftEffect5 = liftEffect(dictMonadEffect);
+  var bind22 = bind(dictMonadEffect.Monad0().Bind1());
+  var liftEffect1 = liftEffect(dictMonadEffect);
   return function(e) {
     return function(ev) {
       return function(f) {
-        return bind1(liftEffect5(eventListener(f)))(function(l) {
-          return liftEffect5(addEventListener(ev)(l)(false)(toEventTarget(e)));
+        return bind22(liftEffect1(eventListener(f)))(function(l) {
+          return liftEffect1(addEventListener(ev)(l)(false)(toEventTarget(e)));
         });
       };
     };
@@ -2957,22 +3164,22 @@ var listen2 = function(dictMonadEffect) {
 var listen1 = /* @__PURE__ */ listen2(monadEffectAff);
 var byId = function(dictMonadEffect) {
   var Monad0 = dictMonadEffect.Monad0();
-  var bind1 = bind(Monad0.Bind1());
-  var liftEffect5 = liftEffect(dictMonadEffect);
+  var bind22 = bind(Monad0.Bind1());
+  var liftEffect1 = liftEffect(dictMonadEffect);
   var pure3 = pure(Monad0.Applicative0());
   return function(i) {
-    return bind1(liftEffect5(windowImpl))(function(w) {
-      return bind1(liftEffect5(map6(toDocument)(document2(w))))(function(d) {
-        return bind1(liftEffect5(getElementById(i)(toNonElementParentNode(d))))(function(v) {
+    return bind22(liftEffect1(windowImpl))(function(w) {
+      return bind22(liftEffect1(map6(toDocument)(document2(w))))(function(d) {
+        return bind22(liftEffect1(getElementById(i)(toNonElementParentNode(d))))(function(v) {
           if (v instanceof Nothing) {
-            return liftEffect5($$throw("could not find element with id: " + i));
+            return liftEffect1($$throw("could not find element with id: " + i));
           }
           ;
           if (v instanceof Just) {
             return pure3(v.value0);
           }
           ;
-          throw new Error("Failed pattern match at Main (line 32, column 80 - line 34, column 21): " + [v.constructor.name]);
+          throw new Error("Failed pattern match at Main (line 43, column 80 - line 45, column 21): " + [v.constructor.name]);
         });
       });
     });
@@ -2984,19 +3191,19 @@ var updateSubtitle = /* @__PURE__ */ bind4(/* @__PURE__ */ byId1("lcolonq-subtit
     return bind4(v.text)(setText1(subtitle));
   });
 });
-var main = /* @__PURE__ */ launchAff_(/* @__PURE__ */ discard2(/* @__PURE__ */ liftEffect(monadEffectAff)(/* @__PURE__ */ log("hi")))(function() {
-  return discard2(startModel2)(function() {
+var mainHomepage = /* @__PURE__ */ launchAff_(/* @__PURE__ */ discard1(/* @__PURE__ */ liftEffect5(/* @__PURE__ */ log("hi")))(function() {
+  return discard1(startModel2)(function() {
     return bind4(byId1("lcolonq-marquee"))(function(marq) {
       return bind4(fetch3(apiServer + "/motd")({}))(function(v) {
-        return discard2(bind4(v.text)(setText1(marq)))(function() {
-          return discard2(updateSubtitle)(function() {
+        return discard1(bind4(v.text)(setText1(marq)))(function() {
+          return discard1(updateSubtitle)(function() {
             return bind4(byId1("lcolonq-subtitle"))(function(subtitle) {
-              return discard2(listen1(subtitle)("click")(function(_ev) {
+              return discard1(listen1(subtitle)("click")(function(_ev) {
                 return launchAff_(updateSubtitle);
               }))(function() {
                 return for_2(range2(0)(6))(function(i) {
                   return bind4(byId1("lcolonq-letter-" + show2(i)))(function(letter) {
-                    return discard2(listen1(letter)("click")(function(_ev) {
+                    return discard1(listen1(letter)("click")(function(_ev) {
                       return playVoice2(true)(i);
                     }))(function() {
                       return listen1(letter)("mouseover")(function(_ev) {
@@ -3013,6 +3220,89 @@ var main = /* @__PURE__ */ launchAff_(/* @__PURE__ */ discard2(/* @__PURE__ */ l
     });
   });
 }));
+var appendText = function(dictMonadEffect) {
+  var bind22 = bind(dictMonadEffect.Monad0().Bind1());
+  var liftEffect1 = liftEffect(dictMonadEffect);
+  return function(parent2) {
+    return function(s) {
+      return bind22(liftEffect1(windowImpl))(function(w) {
+        return bind22(liftEffect1(map6(toDocument)(document2(w))))(function(d) {
+          return bind22(liftEffect1(createTextNode(s)(d)))(function(n) {
+            return liftEffect1(appendChild(toNode2(n))(toNode(parent2)));
+          });
+        });
+      });
+    };
+  };
+};
+var appendText1 = /* @__PURE__ */ appendText(monadEffectEffect);
+var appendElement = function(dictMonadEffect) {
+  var liftEffect1 = liftEffect(dictMonadEffect);
+  return function(parent2) {
+    return function(child) {
+      return liftEffect1(appendChild(toNode(child))(toNode(parent2)));
+    };
+  };
+};
+var appendElement1 = /* @__PURE__ */ appendElement(monadEffectEffect);
+var create3 = function(dictMonadEffect) {
+  var Monad0 = dictMonadEffect.Monad0();
+  var Bind1 = Monad0.Bind1();
+  var bind22 = bind(Bind1);
+  var liftEffect1 = liftEffect(dictMonadEffect);
+  var discard3 = discard2(Bind1);
+  var Applicative0 = Monad0.Applicative0();
+  var for_1 = for_(Applicative0)(foldableArray);
+  var appendElement2 = appendElement(dictMonadEffect);
+  var pure3 = pure(Applicative0);
+  return function(tag) {
+    return function(classes) {
+      return function(children2) {
+        return bind22(liftEffect1(windowImpl))(function(w) {
+          return bind22(liftEffect1(map6(toDocument)(document2(w))))(function(d) {
+            return bind22(liftEffect1(createElement(tag)(d)))(function(el) {
+              return bind22(liftEffect1(classList(el)))(function(cl) {
+                return discard3(for_1(classes)(function(c) {
+                  return liftEffect1(add2(cl)(c));
+                }))(function() {
+                  return discard3(for_1(children2)(function(c) {
+                    return appendElement2(el)(c);
+                  }))(function() {
+                    return pure3(el);
+                  });
+                });
+              });
+            });
+          });
+        });
+      };
+    };
+  };
+};
+var create1 = /* @__PURE__ */ create3(monadEffectEffect);
+var mainExtension = /* @__PURE__ */ launchAff_(/* @__PURE__ */ discard1(/* @__PURE__ */ liftEffect5(/* @__PURE__ */ log("hello from extension")))(function() {
+  return setInterval3(1e3)(function __do() {
+    var e = query1(".chat-scrollable-area__message-container")();
+    var $$new5 = create1("div")([".chat-line__message"])([])();
+    appendText1($$new5)("test")();
+    return appendElement1(e)($$new5)();
+  });
+}));
+var main = /* @__PURE__ */ function() {
+  if (mode === 0) {
+    return mainHomepage;
+  }
+  ;
+  if (mode === 1) {
+    return mainExtension;
+  }
+  ;
+  if (mode === 2) {
+    return mainObs;
+  }
+  ;
+  return $$throw("unknown mode");
+}();
 
 // <stdin>
 main();

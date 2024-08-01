@@ -5,6 +5,7 @@
 module Fig.Monitor.Twitch
   ( twitchEventClient
   , twitchChatClient
+  , twitchEndpointTest
   , userTokenRedirectServer
   ) where
 
@@ -233,6 +234,11 @@ shoutout souser user = do
   unless (HTTP.statusIsSuccessful $ HTTP.responseStatus response) $ do
     log $ "Failed to shoutout: error " <> tshow (HTTP.statusCode $ HTTP.responseStatus response)
 
+twitchEndpointTest :: Config -> IO ()
+twitchEndpointTest cfg = runAuthed cfg do
+  user <- loginToUserId "lcolonq"
+  log user
+
 twitchEventClient :: Config -> (Text, Text) -> IO ()
 twitchEventClient cfg busAddr = do
   WS.runSecureClient "eventsub.wss.twitch.tv" 443 "/ws" \conn -> do
@@ -248,6 +254,7 @@ twitchEventClient cfg busAddr = do
     log $ "Connected to Twitch API, session ID is: " <> sessionId
     runAuthed cfg do
       user <- loginToUserId cfg.userLogin
+      log "got user id"
       subscribe sessionId "channel.channel_points_custom_reward_redemption.add" user
       subscribe sessionId "channel.prediction.begin" user
       subscribe sessionId "channel.prediction.end" user
@@ -255,6 +262,7 @@ twitchEventClient cfg busAddr = do
       subscribe sessionId "channel.poll.end" user
       subscribe sessionId "channel.subscribe" user
       subscribe sessionId "channel.subscription.gift" user
+      log "finished subscribing"
       subscribeFollows sessionId user
       subscribeRaids sessionId user
     busClient busAddr
@@ -275,7 +283,7 @@ twitchEventClient cfg busAddr = do
                     let parseEvent o = do
                           payload <- o .: "payload"
                           event <- payload .: "event"
-                          nm <- event .: "user_name"
+                          nm <- event .: "user_login"
                           reward <- event .: "reward"
                           title <- reward .: "title"
                           minput <- event .:? "user_input"
@@ -312,7 +320,7 @@ twitchEventClient cfg busAddr = do
                     let parseEvent o = do
                           payload <- o .: "payload"
                           event <- payload .: "event"
-                          event .: "from_broadcaster_user_name"
+                          event .: "from_broadcaster_user_login"
                     case Aeson.parseMaybe parseEvent res of
                       Just nm -> do
                         log $ "Incoming raid from: " <> nm
@@ -322,7 +330,7 @@ twitchEventClient cfg busAddr = do
                     let parseEvent o = do
                           payload <- o .: "payload"
                           event <- payload .: "event"
-                          event .: "user_name"
+                          event .: "user_login"
                     case Aeson.parseMaybe parseEvent res of
                       Just nm -> do
                         log $ "New follower: " <> nm
@@ -332,7 +340,7 @@ twitchEventClient cfg busAddr = do
                     let parseEvent o = do
                           payload <- o .: "payload"
                           event <- payload .: "event"
-                          event .: "user_name"
+                          event .: "user_login"
                     case Aeson.parseMaybe parseEvent res of
                       Just nm -> do
                         log $ "New subscriber: " <> nm
@@ -342,7 +350,7 @@ twitchEventClient cfg busAddr = do
                     let parseEvent o = do
                           payload <- o .: "payload"
                           event <- payload .: "event"
-                          nm <- event .: "user_name"
+                          nm <- event .: "user_login"
                           bits <- event .: "bits"
                           pure (nm, bits)
                     case Aeson.parseMaybe parseEvent res of
@@ -354,7 +362,7 @@ twitchEventClient cfg busAddr = do
                     let parseEvent o = do
                           payload <- o .: "payload"
                           event <- payload .: "event"
-                          nm <- event .: "user_name"
+                          nm <- event .: "user_login"
                           num <- event .: "total"
                           pure (nm, num)
                     case Aeson.parseMaybe parseEvent res of

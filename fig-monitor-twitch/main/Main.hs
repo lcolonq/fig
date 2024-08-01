@@ -11,12 +11,14 @@ data Command
   = Monitor
   | Chatbot
   | RedirectServer
+  | Validate
 
 parseCommand :: Parser Command
 parseCommand = subparser $ mconcat
   [ command "monitor" $ info (pure Monitor) (progDesc "Launch the Twitch monitor")
   , command "chatbot" $ info (pure Chatbot) (progDesc "Launch the Twitch chatbot")
   , command "user-token-server" $ info (pure RedirectServer) (progDesc "Launch a web server to handle authentication redirects")
+  , command "validate-endpoint" $ info (pure Validate) (progDesc "Test Twitch authentication")
   ]
 data Opts = Opts
   { busHost :: Text
@@ -43,3 +45,4 @@ main = do
     Monitor -> twitchEventClient cfg (opts.busHost, opts.busPort)
     Chatbot -> twitchChatClient cfg (opts.busHost, opts.busPort)
     RedirectServer -> userTokenRedirectServer cfg
+    Validate -> twitchEndpointTest cfg

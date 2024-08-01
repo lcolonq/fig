@@ -1,4 +1,2 @@
-define(`CONFIG_SUBST', `
-globalThis.mode = 0;
+globalThis.mode = 1;
 globalThis.apiServer = "https://api.colonq.computer/api";
-')

@@ -22,7 +22,7 @@
   }
 , content_scripts =
   [ { matches = ["*://*.twitch.tv/*"]
-    , js = ["main.js"]
+    , js = ["config.js", "main.js"]
     , css = ["main.css"]
     , run_at = "document_end"
     }

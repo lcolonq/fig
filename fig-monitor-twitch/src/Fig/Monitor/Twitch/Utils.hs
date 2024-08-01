@@ -78,7 +78,8 @@ authedRequestJSON :: (Aeson.ToJSON a, Aeson.FromJSON b) => Text -> Text -> a -> 
 authedRequestJSON method url val = do
   resp <- authedRequest method url $ Aeson.encode val
   case Aeson.eitherDecode resp of
-    Left err -> throwM . FigMonitorTwitchException $ tshow err
+    Left err -> do
+      throwM . FigMonitorTwitchException $ tshow err
     Right res -> pure res
 
 runAuthed :: Config -> Authed a -> IO a

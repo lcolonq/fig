@@ -1,10 +1,6 @@
 let canvas = document.getElementById("lcolonq-canvas");
-let socket = new WebSocket("wss://colonq.computer/bullfrog/api/channel/listen/model");
+let socket = null;
 let currentFrame = null;
-
-socket.addEventListener("open", (ev) => {
-  console.log("connected");
-});
 
 async function decompress(blob) {
   let ds = new DecompressionStream("gzip");
@@ -68,7 +64,7 @@ function readPacket(dv) {
 }
 
 function renderCellCanvas(ctx, x, y, c) {
-  if (c) {
+  if (c && c.type === "fg") {
     let msg = c.g1 ? String.fromCodePoint(c.g0, c.g1) : String.fromCodePoint(c.g0);
     if (msg.trim().length) {
       ctx.fillStyle = "black";
@@ -99,6 +95,10 @@ function renderCanvas() {
 }
 
 export const _startModel = () => {
+  socket = new WebSocket("wss://colonq.computer/bullfrog/api/channel/listen/model");
+  socket.addEventListener("open", (ev) => {
+    console.log("connected");
+  });
   socket.addEventListener("message", async (ev) => {
     let arr = await decompress(ev.data);
     let view = new DataView(arr);
