@@ -6,10 +6,12 @@ import Fig.Prelude
 
 import System.Random (randomRIO)
 
+import Control.Monad (unless)
 import Control.Lens (use, (^?), Ixed (..))
 import qualified Control.Concurrent.Chan as Chan
 import qualified Control.Concurrent.MVar as MVar
 
+import Data.Maybe (mapMaybe)
 import qualified Data.Text as Text
 import qualified Data.Text.Lazy as Text.L
 import qualified Data.ByteString.Base64 as BS.Base64
@@ -30,8 +32,8 @@ import Fig.Frontend.State
 import qualified Fig.Frontend.DB as DB
 
 data LiveEvent
-  = LiveEventOnline Text
-  | LiveEventOffline Text
+  = LiveEventOnline (Set.Set Text)
+  | LiveEventOffline (Set.Set Text)
   deriving (Show, Eq, Ord)
 
 server :: Config -> (Text, Text) -> IO ()
@@ -43,20 +45,20 @@ server cfg busAddr = do
     (\cmds -> do
         log "Connected to bus!"
         cmds.subscribe [sexp|(monitor twitch stream online)|]
-        cmds.subscribe [sexp|(monitor twitch stream offline)|]
         Warp.run cfg.port =<< app cfg cmds liveEvents currentlyLive
     )
     (\_cmds d -> do
         case d of
-          SExprList [ev, SExprString user]
+          SExprList (ev:rest)
             | ev == [sexp|(monitor twitch stream online)|] -> do
-              log $ "Stream online: " <> user
-              MVar.modifyMVar_ currentlyLive (pure . Set.insert user)
-              Chan.writeChan liveEvents $ LiveEventOnline user
-            | ev == [sexp|(monitor twitch stream offline)|] -> do
-              log $ "Stream offline: " <> user
-              MVar.modifyMVar_ currentlyLive (pure . Set.delete user)
-              Chan.writeChan liveEvents $ LiveEventOffline user
+                let live = mapMaybe (\case SExprString s -> Just s; _ -> Nothing) rest
+                let new = Set.fromList live 
+                log $ "Streams online: " <> tshow live
+                old <- MVar.swapMVar currentlyLive new
+                let online = Set.difference new old
+                let offline = Set.difference old new
+                unless (Set.null online) . Chan.writeChan liveEvents $ LiveEventOnline online
+                unless (Set.null offline) . Chan.writeChan liveEvents $ LiveEventOnline offline
           _ -> log $ "Invalid event: " <> tshow d
     )
     (pure ())
@@ -150,13 +152,21 @@ app cfg cmds liveEvents currentlyLive = do
           Sc.text "partial"
     Sc.get "/api/circle" do
       live <- liftIO $ MVar.readMVar currentlyLive
-      Sc.text . Text.L.fromStrict . pretty . SExprList @Void $ sexprStr <$> Set.toList live
+      Sc.text . Text.L.fromStrict . pretty . SExprList @Void $ SExprString <$> Set.toList live
     websocket "/api/circle/events" \conn -> do
       c <- Chan.dupChan liveEvents
       forever do
         ev <- liftIO $ Chan.readChan c
         WS.sendTextData conn $ case ev of
-          LiveEventOnline u -> "online " <> u
-          LiveEventOffline u -> "offline " <> u
+          LiveEventOnline online ->
+            pretty $ SExprList @Void
+            [ SExprString "online"
+            , SExprList $ SExprString <$> Set.toList online
+            ]
+          LiveEventOffline offline ->
+            pretty $ SExprList @Void
+            [ SExprString "offline"
+            , SExprList $ SExprString <$> Set.toList offline
+            ]
     Sc.notFound do
       Sc.text "not found"

@@ -21,6 +21,7 @@ import qualified Data.Text.Lazy as Text.Lazy
 import qualified Data.ByteString.Base64 as BS.Base64
 import qualified Data.Vector as V
 import qualified Data.Map.Strict as Map
+import qualified Data.Set as Set
 
 import Data.Default.Class (def)
 
@@ -59,7 +60,7 @@ loginToUserId login = do
           _ -> mempty
   maybe (throwM $ FigMonitorTwitchException "Failed to extract user ID") pure mid
 
-usersAreLive :: [Text] -> Authed (Map.Map Text Bool)
+usersAreLive :: [Text] -> Authed (Set.Set Text)
 usersAreLive users = do
   log $ "Checking liveness for: " <> Text.intercalate " " users
   res <- authedRequestJSON
@@ -78,15 +79,7 @@ usersAreLive users = do
           _ -> mempty
   case mos of
     Nothing -> throwM $ FigMonitorTwitchException "Failed to check liveness"
-    Just os -> Map.fromList <$> forM users \u -> do
-      let l = u `elem` os
-      log $ mconcat
-        [ u
-        , " is "
-        , if l then "" else "not "
-        , "live"
-        ]
-      pure (u, l)
+    Just os -> pure . Set.fromList $ filter (`elem` os) users
 
 subscribe :: Text -> Text -> Text -> Authed ()
 subscribe sessionId event user = do
@@ -482,23 +475,12 @@ twitchChannelLiveMonitor cfg busAddr = do
   busClient busAddr
     (\cmds -> do
         let
-          updateLive :: IO (Map.Map Text Bool)
-          updateLive = runAuthed cfg $ usersAreLive cfg.monitor
-          -- updateLive = fmap Map.fromList . runAuthed cfg $ forM cfg.monitor \user -> do
-          --   liftIO . threadDelay $ 5 * 1000000
-          --   (user,) <$> userIsLive user
           loop :: IO ()
           loop = do
             log "Updating liveness..."
-            live <- updateLive
+            live <- runAuthed cfg $ usersAreLive cfg.monitor
             log "Update complete!"
-            forM_ cfg.monitor \user ->
-              case Map.lookup user live of
-                Just True -> do
-                  cmds.publish [sexp|(monitor twitch stream online)|] [SExprString user]
-                Just False -> do
-                  cmds.publish [sexp|(monitor twitch stream offline)|] [SExprString user]
-                _ -> pure ()
+            cmds.publish [sexp|(monitor twitch stream online)|] $ SExprString <$> Set.toList live
             threadDelay $ 5 * 60 * 1000000
             loop
         loop
