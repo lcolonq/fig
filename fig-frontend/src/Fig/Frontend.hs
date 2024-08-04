@@ -7,14 +7,18 @@ import Fig.Prelude
 import System.Random (randomRIO)
 
 import Control.Lens (use, (^?), Ixed (..))
+import qualified Control.Concurrent.Chan as Chan
+import qualified Control.Concurrent.MVar as MVar
 
 import qualified Data.Text as Text
 import qualified Data.Text.Lazy as Text.L
 import qualified Data.ByteString.Base64 as BS.Base64
+import qualified Data.Set as Set
 
 import qualified Network.Wai as Wai
 import qualified Network.Wai.Middleware.Static as Wai.Static
 import qualified Network.Wai.Handler.Warp as Warp
+import qualified Network.WebSockets as WS
 
 import qualified Web.Scotty as Sc
 
@@ -25,22 +29,43 @@ import Fig.Frontend.Auth
 import Fig.Frontend.State
 import qualified Fig.Frontend.DB as DB
 
+data LiveEvent
+  = LiveEventOnline Text
+  | LiveEventOffline Text
+  deriving (Show, Eq, Ord)
+
 server :: Config -> (Text, Text) -> IO ()
 server cfg busAddr = do
   log $ "Frontend server running on port " <> tshow cfg.port
+  liveEvents <- Chan.newChan @LiveEvent
+  currentlyLive <- MVar.newMVar Set.empty
   busClient busAddr
     (\cmds -> do
         log "Connected to bus!"
-        Warp.run cfg.port =<< app cfg cmds
+        cmds.subscribe [sexp|(monitor twitch stream online)|]
+        cmds.subscribe [sexp|(monitor twitch stream offline)|]
+        Warp.run cfg.port =<< app cfg cmds liveEvents currentlyLive
     )
-    (\_ _ -> pure ())
+    (\_cmds d -> do
+        case d of
+          SExprList [ev, SExprString user]
+            | ev == [sexp|(monitor twitch stream online)|] -> do
+              log $ "Stream online: " <> user
+              MVar.modifyMVar_ currentlyLive (pure . Set.insert user)
+              Chan.writeChan liveEvents $ LiveEventOnline user
+            | ev == [sexp|(monitor twitch stream offline)|] -> do
+              log $ "Stream offline: " <> user
+              MVar.modifyMVar_ currentlyLive (pure . Set.delete user)
+              Chan.writeChan liveEvents $ LiveEventOffline user
+          _ -> log $ "Invalid event: " <> tshow d
+    )
     (pure ())
 
 sexprStr :: Text -> SExpr
 sexprStr = SExprString . BS.Base64.encodeBase64 . encodeUtf8
 
-app :: Config -> Commands IO -> IO Wai.Application
-app cfg cmds = do
+app :: Config -> Commands IO -> Chan.Chan LiveEvent -> MVar.MVar (Set.Set Text) -> IO Wai.Application
+app cfg cmds liveEvents currentlyLive = do
   log "Connecting to database..."
   db <- DB.connect cfg
   log "Connected! Server active."
@@ -52,10 +77,6 @@ app cfg cmds = do
     Sc.put "/api/buffer" do
       buf <- withState st $ use buffer 
       Sc.text $ Text.L.fromStrict buf
-    Sc.get "/api/motd" do
-      DB.get db "motd" >>= \case
-        Nothing -> Sc.text ""
-        Just val -> Sc.text . Text.L.fromStrict $ decodeUtf8 val
     Sc.get "/api/motd" do
       DB.get db "motd" >>= \case
         Nothing -> Sc.text ""
@@ -127,5 +148,15 @@ app cfg cmds = do
           log . tshow $ "partial handshake from " <> me <> " to " <> target
           DB.sadd db ("pokeinbox:" <> target) [me]
           Sc.text "partial"
+    Sc.get "/api/circle" do
+      live <- liftIO $ MVar.readMVar currentlyLive
+      Sc.text . Text.L.fromStrict . pretty . SExprList @Void $ sexprStr <$> Set.toList live
+    websocket "/api/circle/events" \conn -> do
+      c <- Chan.dupChan liveEvents
+      forever do
+        ev <- liftIO $ Chan.readChan c
+        WS.sendTextData conn $ case ev of
+          LiveEventOnline u -> "online " <> u
+          LiveEventOffline u -> "offline " <> u
     Sc.notFound do
       Sc.text "not found"

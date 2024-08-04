@@ -5,12 +5,17 @@ module Fig.Frontend.Utils
   ( FigFrontendException(..)
   , loadConfig
   , Config(..)
+  , websocket
   , module Network.HTTP.Types.Status
   ) where
 
 import Fig.Prelude
 
 import Network.HTTP.Types.Status
+import qualified Network.Wai.Handler.WebSockets as Wai.WS
+import qualified Network.WebSockets as WS
+
+import qualified Web.Scotty as Sc
 
 import qualified Toml
 
@@ -39,3 +44,10 @@ loadConfig :: FilePath -> IO Config
 loadConfig path = Toml.decodeFileEither configCodec path >>= \case
   Left err -> throwM . FigFrontendException $ tshow err
   Right config -> pure config
+
+websocket :: ByteString -> (WS.Connection -> IO ()) -> Sc.ScottyM ()
+websocket pat h = Sc.middleware $ Wai.WS.websocketsOr WS.defaultConnectionOptions handler
+  where
+    handler pending = if WS.requestPath (WS.pendingRequest pending) == pat
+      then WS.acceptRequest pending >>= h
+      else WS.rejectRequest pending ""

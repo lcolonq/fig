@@ -487,23 +487,21 @@ twitchChannelLiveMonitor cfg busAddr = do
           -- updateLive = fmap Map.fromList . runAuthed cfg $ forM cfg.monitor \user -> do
           --   liftIO . threadDelay $ 5 * 1000000
           --   (user,) <$> userIsLive user
-          loop :: Map.Map Text Bool -> IO ()
-          loop old = do
+          loop :: IO ()
+          loop = do
             log "Updating liveness..."
-            new <- updateLive
+            live <- updateLive
             log "Update complete!"
             forM_ cfg.monitor \user ->
-              case (Map.lookup user old, Map.lookup user new) of
-                (Just False, Just True) -> do
-                  log $ "Newly online: " <> user
+              case Map.lookup user live of
+                Just True -> do
                   cmds.publish [sexp|(monitor twitch stream online)|] [SExprString user]
-                (Just True, Just False) -> do
-                  log $ "Newly offline: " <> user
+                Just False -> do
                   cmds.publish [sexp|(monitor twitch stream offline)|] [SExprString user]
                 _ -> pure ()
             threadDelay $ 5 * 60 * 1000000
-            loop new
-        loop Map.empty
+            loop
+        loop
     )
     (\_cmds _d -> pure ())
     (pure ())
