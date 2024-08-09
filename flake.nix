@@ -352,6 +352,7 @@
       };
       packages.x86_64-linux = {
         default = haskellPackages.fig-bus;
+        figUtils = haskellPackages.fig-utils;
         figBus = haskellPackages.fig-bus;
         figMonitorTwitch = haskellPackages.fig-monitor-twitch;
         figMonitorDiscord = haskellPackages.fig-monitor-discord;
