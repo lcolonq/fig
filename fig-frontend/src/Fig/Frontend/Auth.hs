@@ -71,7 +71,7 @@ checkAuth cfg =
           log $ tshow token
           log $ tshow nonce
           validateToken (encodeUtf8 token) >>= \case
-            Just tc 
+            Just tc
               | tc.aud == cfg.clientId
               , tc.nonce == nonce
                 -> do
