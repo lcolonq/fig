@@ -53,7 +53,6 @@ server cfg busAddr = do
             | ev == [sexp|(monitor twitch stream online)|] -> do
                 let live = mapMaybe (\case SExprString s -> Just s; _ -> Nothing) rest
                 let new = Set.fromList live 
-                log $ "Streams online: " <> tshow live
                 old <- MVar.swapMVar currentlyLive new
                 let online = Set.difference new old
                 let offline = Set.difference old new
@@ -74,6 +73,7 @@ app cfg cmds liveEvents currentlyLive = do
   st <- stateRef
   Sc.scottyApp do
     Sc.middleware $ Wai.Static.staticPolicy $ Wai.Static.addBase cfg.assetPath
+    Sc.get "/" $ Sc.redirect "/index.html"
     Sc.get "/api/check" $ authed cfg \auth -> do
       Sc.json @[Text] [auth.id, auth.name]
     Sc.put "/api/buffer" do

@@ -175,15 +175,52 @@ var discardUnit = {
 // output/Control.Monad/index.js
 var ap = function(dictMonad) {
   var bind5 = bind(dictMonad.Bind1());
-  var pure3 = pure(dictMonad.Applicative0());
+  var pure4 = pure(dictMonad.Applicative0());
   return function(f) {
     return function(a) {
       return bind5(f)(function(f$prime) {
         return bind5(a)(function(a$prime) {
-          return pure3(f$prime(a$prime));
+          return pure4(f$prime(a$prime));
         });
       });
     };
+  };
+};
+
+// output/Data.Symbol/index.js
+var reflectSymbol = function(dict) {
+  return dict.reflectSymbol;
+};
+
+// output/Record.Unsafe/foreign.js
+var unsafeGet = function(label4) {
+  return function(rec) {
+    return rec[label4];
+  };
+};
+var unsafeSet = function(label4) {
+  return function(value12) {
+    return function(rec) {
+      var copy = {};
+      for (var key in rec) {
+        if ({}.hasOwnProperty.call(rec, key)) {
+          copy[key] = rec[key];
+        }
+      }
+      copy[label4] = value12;
+      return copy;
+    };
+  };
+};
+var unsafeDelete = function(label4) {
+  return function(rec) {
+    var copy = {};
+    for (var key in rec) {
+      if (key !== label4 && {}.hasOwnProperty.call(rec, key)) {
+        copy[key] = rec[key];
+      }
+    }
+    return copy;
   };
 };
 
@@ -224,6 +261,11 @@ var EQ = /* @__PURE__ */ function() {
 }();
 
 // output/Data.Semigroup/foreign.js
+var concatString = function(s1) {
+  return function(s2) {
+    return s1 + s2;
+  };
+};
 var concatArray = function(xs) {
   return function(ys) {
     if (xs.length === 0)
@@ -235,6 +277,9 @@ var concatArray = function(xs) {
 };
 
 // output/Data.Semigroup/index.js
+var semigroupString = {
+  append: concatString
+};
 var semigroupArray = {
   append: concatArray
 };
@@ -243,6 +288,12 @@ var append = function(dict) {
 };
 
 // output/Data.Monoid/index.js
+var monoidString = {
+  mempty: "",
+  Semigroup0: function() {
+    return semigroupString;
+  }
+};
 var monoidArray = {
   mempty: [],
   Semigroup0: function() {
@@ -324,9 +375,51 @@ var playVoice = function(dictMonadEffect) {
   };
 };
 
+// output/Auth/foreign.js
+function generateNonce() {
+  var arr = new Uint8Array(20);
+  window.crypto.getRandomValues(arr);
+  return Array.from(arr, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+var _startTwitchAuth = (clientID2) => (redirectURL) => () => {
+  const nonce = generateNonce();
+  document.cookie = `authnonce=${nonce}; path=/; max-age=3000`;
+  window.location.href = `https://id.twitch.tv/oauth2/authorize?response_type=id_token&client_id=${clientID2}&redirect_uri=${redirectURL}&scope=openid&nonce=${nonce}&claims=${JSON.stringify({ id_token: { preferred_username: null } })}`;
+};
+function getFragmentQuery() {
+  let query2 = /* @__PURE__ */ new Map();
+  const hashQuery = document.location.hash.slice(1).split("&");
+  for (let equals of hashQuery) {
+    const pair = equals.split("=");
+    query2.set(decodeURIComponent(pair[0]), decodeURIComponent(pair[1]));
+  }
+  return query2;
+}
+var _getToken = (Just2) => (Nothing2) => (pair) => () => {
+  const frag = getFragmentQuery();
+  const token = frag.get("id_token");
+  if (token) {
+    document.cookie = `id_token=${token}; path=/; SameSite=Strict`;
+  }
+  let id_token = null;
+  let authnonce = null;
+  for (let c of document.cookie.split("; ")) {
+    const [k, v] = c.split("=");
+    if (k === "id_token")
+      id_token = v;
+    else if (k === "authnonce")
+      authnonce = v;
+  }
+  if (id_token && authnonce)
+    return Just2(pair(id_token)(authnonce));
+  return Nothing2;
+};
+
 // output/Config/foreign.js
 var mode = globalThis.mode;
 var apiServer = globalThis.apiServer;
+var clientID = globalThis.clientID;
+var authRedirectURL = globalThis.authRedirectURL;
 
 // output/Data.Array/foreign.js
 var rangeImpl = function(start2, end) {
@@ -665,13 +758,13 @@ var foldr = function(dict) {
 };
 var traverse_ = function(dictApplicative) {
   var applySecond2 = applySecond(dictApplicative.Apply0());
-  var pure3 = pure(dictApplicative);
+  var pure4 = pure(dictApplicative);
   return function(dictFoldable) {
     var foldr22 = foldr(dictFoldable);
     return function(f) {
       return foldr22(function($454) {
         return applySecond2(f($454));
-      })(pure3(unit));
+      })(pure4(unit));
     };
   };
 };
@@ -745,12 +838,28 @@ var runFn4 = function(fn) {
 };
 
 // output/Data.Array/index.js
+var fold1 = /* @__PURE__ */ fold(foldableArray);
 var range2 = /* @__PURE__ */ runFn2(rangeImpl);
 var index = /* @__PURE__ */ function() {
   return runFn4(indexImpl)(Just.create)(Nothing.value);
 }();
 var head = function(xs) {
   return index(xs)(0);
+};
+var fold2 = function(dictMonoid) {
+  return fold1(dictMonoid);
+};
+
+// output/Auth/index.js
+var fold3 = /* @__PURE__ */ fold2(monoidString);
+var startTwitchAuth = function(dictMonadEffect) {
+  return liftEffect(dictMonadEffect)(_startTwitchAuth(clientID)(authRedirectURL));
+};
+var getToken = function(dictMonadEffect) {
+  return liftEffect(dictMonadEffect)(_getToken(Just.create)(Nothing.value)(Tuple.create));
+};
+var authHeader = function(v) {
+  return fold3(['FIG-TWITCH token="', v.value0, '", nonce="', v.value1, '"']);
 };
 
 // output/Effect.Aff/foreign.js
@@ -1665,12 +1774,12 @@ var monadExceptT = function(dictMonad) {
 };
 var bindExceptT = function(dictMonad) {
   var bind5 = bind(dictMonad.Bind1());
-  var pure3 = pure(dictMonad.Applicative0());
+  var pure4 = pure(dictMonad.Applicative0());
   return {
     bind: function(v) {
       return function(k) {
         return bind5(v)(either(function($187) {
-          return pure3(Left.create($187));
+          return pure4(Left.create($187));
         })(function(a) {
           var v1 = k(a);
           return v1;
@@ -2373,6 +2482,9 @@ var ordCaseInsensitiveString = {
 };
 
 // output/JS.Fetch.Headers/foreign.js
+function unsafeFromRecord(r) {
+  return new Headers(r);
+}
 function _toArray(tuple, headers2) {
   return Array.from(headers2.entries(), function(pair) {
     return tuple(pair[0])(pair[1]);
@@ -2383,6 +2495,9 @@ function _toArray(tuple, headers2) {
 var toArray = /* @__PURE__ */ function() {
   return runFn2(_toArray)(Tuple.create);
 }();
+var fromRecord = function() {
+  return unsafeFromRecord;
+};
 
 // output/Fetch.Internal.Headers/index.js
 var toHeaders = /* @__PURE__ */ function() {
@@ -2419,13 +2534,59 @@ var runEffectFn2 = function runEffectFn22(fn) {
   };
 };
 
+// output/Record/index.js
+var insert2 = function(dictIsSymbol) {
+  var reflectSymbol2 = reflectSymbol(dictIsSymbol);
+  return function() {
+    return function() {
+      return function(l) {
+        return function(a) {
+          return function(r) {
+            return unsafeSet(reflectSymbol2(l))(a)(r);
+          };
+        };
+      };
+    };
+  };
+};
+var get = function(dictIsSymbol) {
+  var reflectSymbol2 = reflectSymbol(dictIsSymbol);
+  return function() {
+    return function(l) {
+      return function(r) {
+        return unsafeGet(reflectSymbol2(l))(r);
+      };
+    };
+  };
+};
+var $$delete = function(dictIsSymbol) {
+  var reflectSymbol2 = reflectSymbol(dictIsSymbol);
+  return function() {
+    return function() {
+      return function(l) {
+        return function(r) {
+          return unsafeDelete(reflectSymbol2(l))(r);
+        };
+      };
+    };
+  };
+};
+
 // output/Fetch.Internal.Request/index.js
+var fromRecord2 = /* @__PURE__ */ fromRecord();
 var toCoreRequestOptionsHelpe = {
   convertHelper: function(v) {
     return function(v1) {
       return {};
     };
   }
+};
+var toCoreRequestOptionsConve8 = function() {
+  return {
+    convertImpl: function(v) {
+      return fromRecord2;
+    }
+  };
 };
 var $$new2 = function() {
   return function(url3) {
@@ -2436,8 +2597,41 @@ var $$new2 = function() {
     };
   };
 };
+var convertImpl = function(dict) {
+  return dict.convertImpl;
+};
 var convertHelper = function(dict) {
   return dict.convertHelper;
+};
+var toCoreRequestOptionsHelpe1 = function(dictToCoreRequestOptionsConverter) {
+  var convertImpl1 = convertImpl(dictToCoreRequestOptionsConverter);
+  return function() {
+    return function() {
+      return function() {
+        return function(dictIsSymbol) {
+          var $$delete2 = $$delete(dictIsSymbol)()();
+          var get2 = get(dictIsSymbol)();
+          var insert3 = insert2(dictIsSymbol)()();
+          return function(dictToCoreRequestOptionsHelper) {
+            var convertHelper1 = convertHelper(dictToCoreRequestOptionsHelper);
+            return function() {
+              return function() {
+                return {
+                  convertHelper: function(v) {
+                    return function(r) {
+                      var tail = convertHelper1($$Proxy.value)($$delete2($$Proxy.value)(r));
+                      var head2 = convertImpl1($$Proxy.value)(get2($$Proxy.value)(r));
+                      return insert3($$Proxy.value)(head2)(tail);
+                    };
+                  }
+                };
+              };
+            };
+          };
+        };
+      };
+    };
+  };
 };
 var toCoreRequestOptionsRowRo = function() {
   return function() {
@@ -3073,14 +3267,24 @@ function document2(window2) {
 
 // output/Main/index.js
 var map6 = /* @__PURE__ */ map(functorEffect);
-var fold2 = /* @__PURE__ */ fold(foldableArray)(monoidArray);
+var fold4 = /* @__PURE__ */ fold(foldableArray)(monoidArray);
 var map12 = /* @__PURE__ */ map(functorArray);
 var startModel2 = /* @__PURE__ */ startModel(monadEffectAff);
 var bind4 = /* @__PURE__ */ bind(bindAff);
-var fetch3 = /* @__PURE__ */ fetch2()()(/* @__PURE__ */ toCoreRequestOptionsRowRo()()(toCoreRequestOptionsHelpe));
+var fetch3 = /* @__PURE__ */ fetch2()();
+var toCoreRequestOptionsRowRo2 = /* @__PURE__ */ toCoreRequestOptionsRowRo()();
+var fetch1 = /* @__PURE__ */ fetch3(/* @__PURE__ */ toCoreRequestOptionsRowRo2(/* @__PURE__ */ toCoreRequestOptionsHelpe1(/* @__PURE__ */ toCoreRequestOptionsConve8())()()()({
+  reflectSymbol: function() {
+    return "headers";
+  }
+})(toCoreRequestOptionsHelpe)()()));
+var fetch22 = /* @__PURE__ */ fetch3(/* @__PURE__ */ toCoreRequestOptionsRowRo2(toCoreRequestOptionsHelpe));
 var discard2 = /* @__PURE__ */ discard(discardUnit);
 var discard1 = /* @__PURE__ */ discard2(bindAff);
 var liftEffect5 = /* @__PURE__ */ liftEffect(monadEffectAff);
+var getToken2 = /* @__PURE__ */ getToken(monadEffectAff);
+var pure3 = /* @__PURE__ */ pure(applicativeAff);
+var startTwitchAuth2 = /* @__PURE__ */ startTwitchAuth(monadEffectEffect);
 var for_2 = /* @__PURE__ */ for_(applicativeAff)(foldableArray);
 var show2 = /* @__PURE__ */ show(showInt);
 var playVoice2 = /* @__PURE__ */ playVoice(monadEffectEffect);
@@ -3103,20 +3307,20 @@ var maybeToArray = function(v) {
     return [];
   }
   ;
-  throw new Error("Failed pattern match at Main (line 35, column 1 - line 35, column 45): " + [v.constructor.name]);
+  throw new Error("Failed pattern match at Main (line 38, column 1 - line 38, column 45): " + [v.constructor.name]);
 };
 var queryAll = function(dictMonadEffect) {
   var Monad0 = dictMonadEffect.Monad0();
   var bind22 = bind(Monad0.Bind1());
   var liftEffect1 = liftEffect(dictMonadEffect);
-  var pure3 = pure(Monad0.Applicative0());
+  var pure12 = pure(Monad0.Applicative0());
   return function(q) {
     return bind22(liftEffect1(windowImpl))(function(w) {
       return bind22(liftEffect1(map6(toDocument)(document2(w))))(function(d) {
         return bind22(liftEffect1(querySelectorAll(q)(toParentNode(d))))(function(nl) {
           return bind22(liftEffect1(toArray2(nl)))(function(ns) {
-            return pure3(fold2(map12(function($95) {
-              return maybeToArray(fromNode($95));
+            return pure12(fold4(map12(function($118) {
+              return maybeToArray(fromNode($118));
             })(ns)));
           });
         });
@@ -3129,20 +3333,20 @@ var query = function(dictMonadEffect) {
   var bind22 = bind(Monad0.Bind1());
   var queryAll1 = queryAll(dictMonadEffect);
   var liftEffect1 = liftEffect(dictMonadEffect);
-  var pure3 = pure(Monad0.Applicative0());
+  var pure12 = pure(Monad0.Applicative0());
   return function(q) {
-    return bind22(queryAll1(q))(function($96) {
+    return bind22(queryAll1(q))(function($119) {
       return function(v) {
         if (v instanceof Nothing) {
           return liftEffect1($$throw("could not find element matching query: " + q));
         }
         ;
         if (v instanceof Just) {
-          return pure3(v.value0);
+          return pure12(v.value0);
         }
         ;
-        throw new Error("Failed pattern match at Main (line 57, column 27 - line 59, column 21): " + [v.constructor.name]);
-      }(head($96));
+        throw new Error("Failed pattern match at Main (line 60, column 27 - line 62, column 21): " + [v.constructor.name]);
+      }(head($119));
     });
   };
 };
@@ -3162,11 +3366,20 @@ var listen2 = function(dictMonadEffect) {
   };
 };
 var listen1 = /* @__PURE__ */ listen2(monadEffectAff);
+var checkAuth = function(auth) {
+  return bind4(fetch1(apiServer + "/check")({
+    headers: {
+      Authorization: authHeader(auth)
+    }
+  }))(function(v) {
+    return v.text;
+  });
+};
 var byId = function(dictMonadEffect) {
   var Monad0 = dictMonadEffect.Monad0();
   var bind22 = bind(Monad0.Bind1());
   var liftEffect1 = liftEffect(dictMonadEffect);
-  var pure3 = pure(Monad0.Applicative0());
+  var pure12 = pure(Monad0.Applicative0());
   return function(i) {
     return bind22(liftEffect1(windowImpl))(function(w) {
       return bind22(liftEffect1(map6(toDocument)(document2(w))))(function(d) {
@@ -3176,10 +3389,10 @@ var byId = function(dictMonadEffect) {
           }
           ;
           if (v instanceof Just) {
-            return pure3(v.value0);
+            return pure12(v.value0);
           }
           ;
-          throw new Error("Failed pattern match at Main (line 43, column 80 - line 45, column 21): " + [v.constructor.name]);
+          throw new Error("Failed pattern match at Main (line 46, column 80 - line 48, column 21): " + [v.constructor.name]);
         });
       });
     });
@@ -3187,27 +3400,44 @@ var byId = function(dictMonadEffect) {
 };
 var byId1 = /* @__PURE__ */ byId(monadEffectAff);
 var updateSubtitle = /* @__PURE__ */ bind4(/* @__PURE__ */ byId1("lcolonq-subtitle"))(function(subtitle) {
-  return bind4(fetch3(apiServer + "/catchphrase")({}))(function(v) {
+  return bind4(fetch22(apiServer + "/catchphrase")({}))(function(v) {
     return bind4(v.text)(setText1(subtitle));
   });
 });
 var mainHomepage = /* @__PURE__ */ launchAff_(/* @__PURE__ */ discard1(/* @__PURE__ */ liftEffect5(/* @__PURE__ */ log("hi")))(function() {
   return discard1(startModel2)(function() {
     return bind4(byId1("lcolonq-marquee"))(function(marq) {
-      return bind4(fetch3(apiServer + "/motd")({}))(function(v) {
+      return bind4(fetch22(apiServer + "/motd")({}))(function(v) {
         return discard1(bind4(v.text)(setText1(marq)))(function() {
-          return discard1(updateSubtitle)(function() {
-            return bind4(byId1("lcolonq-subtitle"))(function(subtitle) {
-              return discard1(listen1(subtitle)("click")(function(_ev) {
-                return launchAff_(updateSubtitle);
-              }))(function() {
-                return for_2(range2(0)(6))(function(i) {
-                  return bind4(byId1("lcolonq-letter-" + show2(i)))(function(letter) {
-                    return discard1(listen1(letter)("click")(function(_ev) {
-                      return playVoice2(true)(i);
-                    }))(function() {
-                      return listen1(letter)("mouseover")(function(_ev) {
-                        return playVoice2(false)(i);
+          return discard1(bind4(getToken2)(function(v1) {
+            if (v1 instanceof Just) {
+              return discard1(liftEffect5(log(v1.value0.value0)))(function() {
+                return discard1(liftEffect5(log(v1.value0.value1)))(function() {
+                  return bind4(checkAuth(v1.value0))(function($120) {
+                    return liftEffect5(log($120));
+                  });
+                });
+              });
+            }
+            ;
+            return pure3(unit);
+          }))(function() {
+            return discard1(updateSubtitle)(function() {
+              return bind4(byId1("lcolonq-subtitle"))(function(subtitle) {
+                return discard1(listen1(subtitle)("click")(function(_ev) {
+                  return function __do() {
+                    startTwitchAuth2();
+                    return launchAff_(updateSubtitle)();
+                  };
+                }))(function() {
+                  return for_2(range2(0)(6))(function(i) {
+                    return bind4(byId1("lcolonq-letter-" + show2(i)))(function(letter) {
+                      return discard1(listen1(letter)("click")(function(_ev) {
+                        return playVoice2(true)(i);
+                      }))(function() {
+                        return listen1(letter)("mouseover")(function(_ev) {
+                          return playVoice2(false)(i);
+                        });
                       });
                     });
                   });
@@ -3254,7 +3484,7 @@ var create3 = function(dictMonadEffect) {
   var Applicative0 = Monad0.Applicative0();
   var for_1 = for_(Applicative0)(foldableArray);
   var appendElement2 = appendElement(dictMonadEffect);
-  var pure3 = pure(Applicative0);
+  var pure12 = pure(Applicative0);
   return function(tag) {
     return function(classes) {
       return function(children2) {
@@ -3268,7 +3498,7 @@ var create3 = function(dictMonadEffect) {
                   return discard3(for_1(children2)(function(c) {
                     return appendElement2(el)(c);
                   }))(function() {
-                    return pure3(el);
+                    return pure12(el);
                   });
                 });
               });

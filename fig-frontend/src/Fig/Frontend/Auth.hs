@@ -4,6 +4,10 @@ import Fig.Prelude
 
 import qualified Network.HTTP.Req as R
 
+import Data.Maybe (mapMaybe)
+import qualified Data.Text as Text
+import qualified Data.Text.Lazy as Text.Lazy
+import qualified Data.Map.Strict as Map
 import qualified Data.Aeson as Aeson
 import qualified Data.Aeson.Types as Aeson
 
@@ -21,7 +25,7 @@ data TokenContents = TokenContents
   , iat :: !Int
   , iss :: !Text
   , sub :: !Text
-  , azp :: !Text
+  , azp :: !(Maybe Text)
   , nonce :: !Text
   , preferred_username :: !Text
   } deriving (Show, Eq, Generic)
@@ -53,21 +57,31 @@ validateToken encodedToken = fetchJwk >>= \case
 
 data Auth = Auth { id :: !Text, name :: !Text } deriving Show
 checkAuth :: Config -> Sc.ActionM (Maybe Auth)
-checkAuth cfg = (,)
-  <$> Sc.C.getCookie "id_token"
-  <*> Sc.C.getCookie "authnonce"
+checkAuth cfg =
+  Sc.header "Authorization"
   >>= \case
-    (Just token, Just nonce) -> do
-      validateToken (encodeUtf8 token) >>= \case
-        Just tc 
-          | tc.aud == cfg.clientId
-          , tc.nonce == nonce
-            -> do
-              log $ tshow tc
-              pure . Just $ Auth
-                { name = tc.preferred_username
-                , id = tc.sub
-                }
+    Just authstrLazy -> do
+      let authstr = drop 1 $ Text.splitOn " " $ Text.Lazy.toStrict authstrLazy
+      let pairs = Map.fromList $ flip mapMaybe authstr \s ->
+            case Text.splitOn "=" s of
+              [k, v] -> Just (k, Text.takeWhile (/='"') $ Text.drop 1 v)
+              _ -> Nothing
+      case (Map.lookup "token" pairs, Map.lookup "nonce" pairs) of
+        (Just token, Just nonce) -> do
+          log $ tshow token
+          log $ tshow nonce
+          validateToken (encodeUtf8 token) >>= \case
+            Just tc 
+              | tc.aud == cfg.clientId
+              , tc.nonce == nonce
+                -> do
+                  log $ tshow tc
+                  pure . Just $ Auth
+                    { name = tc.preferred_username
+                    , id = tc.sub
+                    }
+            _else -> do
+              pure Nothing
         _else -> pure Nothing
     _else -> pure Nothing
 

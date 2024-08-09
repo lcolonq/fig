@@ -3,12 +3,14 @@ module Main where
 import Prelude
 
 import Audio as Audio
+import Auth (AuthInfo, authHeader, getToken, startTwitchAuth)
 import Config as Config
 import Data.Array (head)
 import Data.Array as Array
 import Data.Foldable (fold)
 import Data.Maybe (Maybe(..))
 import Data.Traversable (for, for_)
+import Data.Tuple (Tuple(..))
 import Effect (Effect)
 import Effect.Aff (Aff, launchAff_)
 import Effect.Class (class MonadEffect, liftEffect)
@@ -19,13 +21,14 @@ import Model (startModel)
 import UI as UI
 import Web.DOM as DOM
 import Web.DOM.DOMTokenList as DOM.DTL
+import Web.DOM.Document (doctype)
 import Web.DOM.Document as DOM.Doc
 import Web.DOM.Element as DOM.El
 import Web.DOM.Node as DOM.Node
 import Web.DOM.NodeList as DOM.NL
 import Web.DOM.NonElementParentNode as DOM.NEP
-import Web.DOM.Text as DOM.Text
 import Web.DOM.ParentNode as DOM.P
+import Web.DOM.Text as DOM.Text
 import Web.Event.Event as Ev
 import Web.Event.EventTarget as Ev.Tar
 import Web.HTML as HTML
@@ -94,6 +97,16 @@ updateSubtitle = do
   { text: catchphrase } <- fetch (Config.apiServer <> "/catchphrase") {}
   catchphrase >>= setText subtitle
 
+checkAuth :: AuthInfo -> Aff String
+checkAuth auth = do
+  { text: resp } <-
+    fetch (Config.apiServer <> "/check")
+    { headers:
+      { "Authorization": authHeader auth
+      }
+    }
+  resp
+
 mainHomepage :: Effect Unit
 mainHomepage = launchAff_ do
   liftEffect $ log "hi"
@@ -102,9 +115,17 @@ mainHomepage = launchAff_ do
   { text: motd } <- fetch (Config.apiServer <> "/motd") {}
   motd >>= setText marq
 
+  getToken >>= case _ of
+    Just a@(Tuple t n) -> do
+      liftEffect $ log t
+      liftEffect $ log n
+      checkAuth a >>= log >>> liftEffect
+    _ -> pure unit
+
   updateSubtitle
   subtitle <- byId "lcolonq-subtitle"
   listen subtitle "click" \_ev -> do
+    startTwitchAuth
     launchAff_ updateSubtitle
   
   for_ (Array.range 0 6) \i -> do
