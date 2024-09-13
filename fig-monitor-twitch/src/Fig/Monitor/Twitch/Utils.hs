@@ -77,9 +77,9 @@ authedRequest method url body = do
   response <- liftIO $ HTTP.httpLbs request rc.manager
   pure $ HTTP.responseBody response
 
-authedRequestJSON :: (Aeson.ToJSON a, Aeson.FromJSON b) => Text -> Text -> a -> Authed b
+authedRequestJSON :: (Aeson.ToJSON a, Aeson.FromJSON b) => Text -> Text -> Maybe a -> Authed b
 authedRequestJSON method url val = do
-  resp <- authedRequest method url $ Aeson.encode val
+  resp <- authedRequest method url $ maybe "" Aeson.encode val
   case Aeson.eitherDecode resp of
     Left err -> do
       throwM . FigMonitorTwitchException $ tshow err

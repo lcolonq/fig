@@ -44,7 +44,7 @@ import Fig.Monitor.Twitch.Utils
 
 loginToMaybeUserId :: Text -> Authed (Maybe Text)
 loginToMaybeUserId login = do
-  res <- authedRequestJSON "GET" ("https://api.twitch.tv/helix/users?login=" <> login) ()
+  res <- authedRequestJSON @() "GET" ("https://api.twitch.tv/helix/users?login=" <> login) Nothing
   let mid = flip Aeson.parseMaybe res \obj -> do
         obj .: "data" >>= \case
           Aeson.Array ((V.!? 0) -> Just (Aeson.Object d)) -> d .: "id"
@@ -53,7 +53,7 @@ loginToMaybeUserId login = do
 
 loginToUserId :: Text -> Authed Text
 loginToUserId login = do
-  res <- authedRequestJSON "GET" ("https://api.twitch.tv/helix/users?login=" <> login) ()
+  res <- authedRequestJSON @() "GET" ("https://api.twitch.tv/helix/users?login=" <> login) Nothing
   let mid = flip Aeson.parseMaybe res \obj -> do
         obj .: "data" >>= \case
           Aeson.Array ((V.!? 0) -> Just (Aeson.Object d)) -> d .: "id"
@@ -63,14 +63,14 @@ loginToUserId login = do
 usersAreLive :: [Text] -> Authed (Set.Set Text)
 usersAreLive users = do
   log $ "Checking liveness for: " <> Text.intercalate " " users
-  res <- authedRequestJSON
+  res <- authedRequestJSON @()
     "GET"
     ( mconcat
       [ "https://api.twitch.tv/helix/streams?type=live"
       , mconcat $ ("&user_login="<>) <$> users
       ]
     )
-    ()
+    Nothing
   let mos = flip Aeson.parseMaybe res \obj -> do
         obj .: "data" >>= \case
           Aeson.Array os -> catMaybes . toList <$> forM os \case
@@ -84,7 +84,7 @@ usersAreLive users = do
 subscribe :: Text -> Text -> Text -> Authed ()
 subscribe sessionId event user = do
   log $ "Subscribing to " <> event <> " events for user ID: " <> user
-  res <- authedRequestJSON "POST" "https://api.twitch.tv/helix/eventsub/subscriptions" $ Aeson.object
+  res <- authedRequestJSON "POST" "https://api.twitch.tv/helix/eventsub/subscriptions" . Just $ Aeson.object
     [ "type" .= event
     , "version" .= ("1" :: Text)
     , "condition" .= Aeson.object
@@ -102,7 +102,7 @@ subscribe sessionId event user = do
 subscribeFollows :: Text -> Text -> Authed ()
 subscribeFollows sessionId user = do
   log $ "Subscribing to channel.follow events for user ID: " <> user
-  res <- authedRequestJSON "POST" "https://api.twitch.tv/helix/eventsub/subscriptions" $ Aeson.object
+  res <- authedRequestJSON "POST" "https://api.twitch.tv/helix/eventsub/subscriptions" . Just $ Aeson.object
     [ "type" .= ("channel.follow" :: Text)
     , "version" .= ("2" :: Text)
     , "condition" .= Aeson.object
@@ -121,7 +121,7 @@ subscribeFollows sessionId user = do
 subscribeRaids :: Text -> Text -> Authed ()
 subscribeRaids sessionId user = do
   log $ "Subscribing to channel.raid events for user ID: " <> user
-  res <- authedRequestJSON "POST" "https://api.twitch.tv/helix/eventsub/subscriptions" $ Aeson.object
+  res <- authedRequestJSON "POST" "https://api.twitch.tv/helix/eventsub/subscriptions" . Just $ Aeson.object
     [ "type" .= ("channel.raid" :: Text)
     , "version" .= ("1" :: Text)
     , "condition" .= Aeson.object
@@ -139,7 +139,7 @@ subscribeRaids sessionId user = do
 poll :: Text -> [Text] -> Text -> Authed ()
 poll title choices user = do
   log $ "Starting a new poll: \"" <> title <> "\""
-  res <- authedRequestJSON "POST" "https://api.twitch.tv/helix/polls" $ Aeson.object
+  res <- authedRequestJSON "POST" "https://api.twitch.tv/helix/polls" . Just $ Aeson.object
     [ "broadcaster_id" .= user
     , "title" .= title
     , "choices" .= ((\c -> Aeson.object ["title" .= c]) <$> choices)
@@ -160,7 +160,7 @@ poll title choices user = do
 createPrediction :: Text -> [Text] -> Text -> Authed ()
 createPrediction title choices user = do
   log $ "Starting a new prediction: \"" <> title <> "\""
-  res <- authedRequestJSON "POST" "https://api.twitch.tv/helix/predictions" $ Aeson.object
+  res <- authedRequestJSON "POST" "https://api.twitch.tv/helix/predictions" . Just $ Aeson.object
     [ "broadcaster_id" .= user
     , "title" .= title
     , "outcomes" .= ((\c -> Aeson.object ["title" .= c]) <$> choices)
@@ -177,7 +177,7 @@ createPrediction title choices user = do
 finishPrediction :: Text -> Text -> Text -> Authed ()
 finishPrediction pid oid user = do
   log $ "Ending prediction: \"" <> pid <> "\""
-  res <- authedRequestJSON "PATCH" "https://api.twitch.tv/helix/predictions" $ Aeson.object
+  res <- authedRequestJSON "PATCH" "https://api.twitch.tv/helix/predictions" . Just $ Aeson.object
     [ "broadcaster_id" .= user
     , "id" .= pid
     , "status" .= ("RESOLVED" :: Text)
