@@ -364,11 +364,14 @@ twitchEventClient cfg busAddr = do
                     let parseEvent o = do
                           payload <- o .: "payload"
                           event <- payload .: "event"
-                          event .: "user_login"
+                          login <- event .: "user_login"
+                          gift <- event .: "is_gift"
+                          pure (login, gift)
                     case Aeson.parseMaybe parseEvent res of
-                      Just nm -> do
+                      Just (nm, False) -> do
                         log $ "New subscriber: " <> nm
                         cmds.publish [sexp|(monitor twitch subscribe)|] [SExprString nm]
+                      Just _ -> log "Skipping gifted subscription"
                       _ -> log "Failed to extract user from subscribe event"
                   Just ("channel.cheer" :: Text) -> do
                     let parseEvent o = do
