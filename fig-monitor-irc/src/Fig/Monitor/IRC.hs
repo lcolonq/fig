@@ -4,6 +4,7 @@ module Fig.Monitor.IRC where
 
 import Fig.Prelude
 
+import Data.Functor ((<&>))
 import qualified Data.Text as Text
 import qualified Data.ByteString.Base64 as BS.Base64
 
@@ -20,9 +21,9 @@ import Fig.Bus.Client
 import Fig.Monitor.IRC.Utils
 
 data OutgoingMessage = OutgoingMessage
-  { chan :: Text
-  , user :: Text
-  , msg :: Text
+  { chan :: !Text
+  , user :: !Text
+  , msg :: !Text
   }
 
 ircBot :: Config -> (Text, Text) -> IO ()
@@ -33,11 +34,12 @@ ircBot cfg busAddr = do
     ( Conc.readMVar mircst >>= \ircst -> forever $ do
         o <- liftIO $ Chan.readChan outgoing
         log $ "Sending: " <> o.msg <> " (from " <> o.user <> ")"
-        let msg = IRC.Privmsg o.chan . Right . Text.take 400 $ mconcat
+        let lines = Text.splitOn "\n" o.msg
+        let msgs = lines <&> \msg -> IRC.Privmsg o.chan . Right . Text.take 400 $ mconcat
               [ "<", o.user, "> "
-              , Text.replace "\n" " " o.msg
+              , Text.replace "\n" " " msg
               ]
-        IRC.runIRCAction (IRC.send msg) ircst
+        IRC.runIRCAction (forM_ msgs IRC.send) ircst
     )
     do
       busClient busAddr
