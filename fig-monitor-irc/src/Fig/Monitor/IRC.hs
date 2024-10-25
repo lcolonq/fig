@@ -28,8 +28,8 @@ data OutgoingMessage = OutgoingMessage
 
 splitLineIRCLength :: Text -> [Text]
 splitLineIRCLength x
-  | Text.length x > 400 =
-    let (m, xs) = Text.splitAt 400 x
+  | Text.length x > 300 =
+    let (m, xs) = Text.splitAt 300 x
     in m : splitLineIRCLength xs
   | otherwise = [x]
 
