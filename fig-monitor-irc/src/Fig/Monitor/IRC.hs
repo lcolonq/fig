@@ -26,6 +26,13 @@ data OutgoingMessage = OutgoingMessage
   , msg :: !Text
   }
 
+splitLineIRCLength :: Text -> [Text]
+splitLineIRCLength x
+  | Text.length x > 400 =
+    let (m, xs) = Text.splitAt 400 x
+    in m : splitLineIRCLength xs
+  | otherwise = [x]
+
 ircBot :: Config -> (Text, Text) -> IO ()
 ircBot cfg busAddr = do
   outgoing <- Chan.newChan @OutgoingMessage
@@ -35,7 +42,8 @@ ircBot cfg busAddr = do
         o <- liftIO $ Chan.readChan outgoing
         log $ "Sending: " <> o.msg <> " (from " <> o.user <> ")"
         let lines = Text.splitOn "\n" o.msg
-        let msgs = lines <&> \msg -> IRC.Privmsg o.chan . Right . Text.take 400 $ mconcat
+        let linesshort = mconcat $ splitLineIRCLength <$> lines
+        let msgs = linesshort <&> \msg -> IRC.Privmsg o.chan . Right . Text.take 400 $ mconcat
               [ "<", o.user, "> "
               , Text.replace "\n" " " msg
               ]
