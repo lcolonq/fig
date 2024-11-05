@@ -17,6 +17,14 @@ get c key = liftIO $ Redis.runRedis c do
   v <- Redis.get key
   pure . join $ hush v
 
+incr :: MonadIO m => Redis.Connection -> ByteString -> m ()
+incr c key = liftIO $ Redis.runRedis c do
+  void $ Redis.incr key
+
+decr :: MonadIO m => Redis.Connection -> ByteString -> m ()
+decr c key = liftIO $ Redis.runRedis c do
+  void $ Redis.decr key
+
 hget :: MonadIO m => Redis.Connection -> ByteString -> ByteString -> m (Maybe ByteString)
 hget c key hkey = liftIO $ Redis.runRedis c do
   v <- Redis.hget key hkey

@@ -32,8 +32,8 @@ import Fig.Frontend.State
 import qualified Fig.Frontend.DB as DB
 
 data LiveEvent
-  = LiveEventOnline (Set.Set Text)
-  | LiveEventOffline (Set.Set Text)
+  = LiveEventOnline !(Set.Set Text)
+  | LiveEventOffline !(Set.Set Text)
   deriving (Show, Eq, Ord)
 
 server :: Config -> (Text, Text) -> IO ()
@@ -150,6 +150,15 @@ app cfg cmds liveEvents currentlyLive = do
           log . tshow $ "partial handshake from " <> me <> " to " <> target
           DB.sadd db ("pokeinbox:" <> target) [me]
           Sc.text "partial"
+    Sc.get "/api/sentiment" do
+      s <- DB.get db "sentiment:green" >>= \case
+        Nothing -> pure "0"
+        Just x -> pure x
+      Sc.text . Text.L.fromStrict . decodeUtf8 $ s
+    Sc.post "/api/sentiment/green" do
+      DB.incr db "sentiment"
+    Sc.post "/api/sentiment/red" do
+      DB.decr db "sentiment"
     Sc.get "/api/circle" do
       live <- liftIO $ MVar.readMVar currentlyLive
       Sc.text . Text.L.fromStrict . pretty . SExprList @Void $ SExprString <$> Set.toList live
