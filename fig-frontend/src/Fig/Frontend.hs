@@ -151,7 +151,7 @@ app cfg cmds liveEvents currentlyLive = do
           DB.sadd db ("pokeinbox:" <> target) [me]
           Sc.text "partial"
     Sc.get "/api/sentiment" do
-      s <- DB.get db "sentiment:green" >>= \case
+      s <- DB.get db "sentiment" >>= \case
         Nothing -> pure "0"
         Just x -> pure x
       Sc.text . Text.L.fromStrict . decodeUtf8 $ s
