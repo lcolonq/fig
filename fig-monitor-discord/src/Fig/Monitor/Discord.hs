@@ -109,7 +109,7 @@ discordBot cfg busAddr = do
                     )
                     else Just ru
                   msgReplacedEmotes = PCRE.gsub
-                    [PCRE.re|<:([\w_-]+):(\d+)>|]
+                    [PCRE.re|<a?:([\w_-]+):(\d+)>|]
                     (\(_ :: Text) -> \case
                       ([emotename, _num] :: [Text]) -> case emotename of
                         "mrgreen" -> "🟢"
