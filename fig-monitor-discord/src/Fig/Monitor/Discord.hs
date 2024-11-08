@@ -8,6 +8,7 @@ import Control.Monad (unless)
 import Control.Monad.Reader (runReaderT)
 import qualified Control.Concurrent.Async as Async
 import qualified Control.Concurrent.Chan as Chan
+import qualified Control.Concurrent.MVar as MVar
 
 import qualified Data.Text as Text
 import qualified Data.ByteString.Base64 as BS.Base64
@@ -43,6 +44,7 @@ stickerUrl sid ty = base <> sid <> "." <> ext
 discordBot :: Config -> (Text, Text) -> IO ()
 discordBot cfg busAddr = do
   outgoing <- Chan.newChan @OutgoingMessage
+  ourId <- MVar.newEmptyMVar
   busClient busAddr
     (\cmds -> do
         cmds.subscribe [sexp|(monitor discord chat outgoing)|]
@@ -57,6 +59,10 @@ discordBot cfg busAddr = do
                     , updateStatusOptsAFK = False
                     }
               Dis.sendCommand (Dis.UpdateStatus opts)
+              Dis.restCall Dis.GetCurrentUser >>= \case
+                Left e -> log $ "failed to retrieve discord user: " <> tshow e
+                Right u -> liftIO . MVar.putMVar ourId $ Dis.userId u
+              log "Initialized Discord bot"
               dst <- ask
               liftIO . void . Async.async . forever $ flip runReaderT dst do
                 o <- liftIO $ Chan.readChan outgoing
@@ -76,7 +82,8 @@ discordBot cfg busAddr = do
                 log $ tshow resp
               Dis.InteractionCreate cmd@Dis.InteractionApplicationCommand{}  -> do
                 void . Dis.restCall . Dis.CreateInteractionResponse (Dis.interactionId cmd) (Dis.interactionToken cmd) $ Dis.interactionResponseBasic "pong"
-              Dis.MessageCreate m ->
+              Dis.MessageCreate m -> do
+                botId <- liftIO $ MVar.readMVar ourId
                 let
                   chan = Dis.messageChannelId m
                   auth = Dis.messageAuthor m
@@ -120,7 +127,8 @@ discordBot cfg busAddr = do
                          snm -> snm
                       ) <> " (" <> stickerUrl (tshow . Dis.unId $ Dis.stickerItemId sticker) (Dis.stickerItemFormatType sticker) <> ")"
                     _ -> msgReplacedEmotes
-                in unless (Dis.userIsBot auth) do
+                -- in unless (Dis.userIsBot auth) do
+                unless (Dis.userId auth == botId) do
                   log $ "Received: " <> processedMsg <> " (from " <> name <> ")"
                   liftIO $ cmds.publish [sexp|(monitor discord chat incoming)|]
                     [ SExprInteger . fromIntegral . Dis.unSnowflake $ Dis.unId chan
