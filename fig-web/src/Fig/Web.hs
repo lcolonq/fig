@@ -84,7 +84,7 @@ app cfg cmds liveEvents currentlyLive = do
         , "    --header \"Content-Type: application/json\" \\\n"
         , "    --request POST \\\n"
         , "    --data '{\"username\":\"AzureDiamond\",\"password\":\"hunter2\"}' \\\n"
-        , "    --cookie-jar cookies.txt"
+        , "    --cookie-jar cookies.txt\n"
         , "this will write a cookie called \"authelia_session\" to cookies.txt\n"
         , "send this cookie along with your requests to use the secure endpoints\n"
         , "for example:\n"
