@@ -79,6 +79,16 @@ app cfg cmds liveEvents currentlyLive = do
       Sc.text $ mconcat
         [ "your request was rejected because that endpoint requires authentication\n"
         , "you can log in by POSTing your credentials to https://auth.colonq.computer/api/firstfactor\n"
+        , "for example:\n"
+        , "  curl https://auth.colonq.computer/api/firstfactor \\\n"
+        , "    --header \"Content-Type: application/json\" \\\n"
+        , "    --request POST \\\n"
+        , "    --data '{\"username\":\"AzureDiamond\",\"password\":\"hunter2\"}' \\\n"
+        , "    --cookie-jar cookies.txt"
+        , "this will write a cookie called \"authelia_session\" to cookies.txt\n"
+        , "send this cookie along with your requests to use the secure endpoints\n"
+        , "for example:\n"
+        , "  curl https://secure.colonq.computer --cookie cookies.txt\n"
         ]
     Sc.get "/api/check" $ authed cfg \auth -> do
       Sc.json @[Text] [auth.id, auth.name]
