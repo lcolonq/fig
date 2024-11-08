@@ -22,7 +22,7 @@ data Config = Config
 configCodec :: Toml.TomlCodec Config
 configCodec = do
   authToken <- Toml.text "auth_token" Toml..= (\a -> a.authToken)
-  guildIds <- Toml.arrayOf Toml._Integer "guild_id" Toml..= (\a -> a.guildIds)
+  guildIds <- Toml.arrayOf Toml._Integer "guild_ids" Toml..= (\a -> a.guildIds)
   pure $ Config{..}
 
 loadConfig :: FilePath -> IO Config
