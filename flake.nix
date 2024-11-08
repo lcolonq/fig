@@ -273,7 +273,6 @@
               description = "Path to config file";
               default = pkgs.writeText "fig-web.toml" ''
                 port = 8000
-                asset_path = "./fig-web-assets"
                 client_id = ""
                 auth_token = ""
                 db_host = ""
@@ -285,13 +284,57 @@
               wantedBy = ["multi-user.target"];
               serviceConfig = {
                 Restart = "on-failure";
-                ExecStart = "${haskellPackages.fig-web}/bin/fig-web --bus-host ${cfg.busHost} --bus-port ${toString cfg.busPort} --config ${cfg.configFile}";
+                ExecStart = "${haskellPackages.fig-web}/bin/fig-web public --bus-host ${cfg.busHost} --bus-port ${toString cfg.busPort} --config ${cfg.configFile}";
                 DynamicUser = "yes";
                 RuntimeDirectory = "colonq.fig-web";
                 RuntimeDirectoryMode = "0755";
                 StateDirectory = "colonq.fig-web";
                 StateDirectoryMode = "0700";
                 CacheDirectory = "colonq.fig-web";
+                CacheDirectoryMode = "0750";
+              };
+            };
+          };
+        };
+      figWebSecureModule = { config, lib, ... }:
+        let
+          cfg = config.colonq.services.fig-web-secure;
+        in {
+          options.colonq.services.fig-web-secure = {
+            enable = lib.mkEnableOption "Enable the fig web server (secure)";
+            busHost = lib.mkOption {
+              type = lib.types.str;
+              default = "127.0.0.1";
+              description = "Message bus port";
+            };
+            busPort = lib.mkOption {
+              type = lib.types.port;
+              default = 32050;
+              description = "Address of message bus";
+            };
+            configFile = lib.mkOption {
+              type = lib.types.path;
+              description = "Path to config file";
+              default = pkgs.writeText "fig-web-secure.toml" ''
+                port = 8000
+                client_id = ""
+                auth_token = ""
+                db_host = ""
+              '';
+            };
+          };
+          config = lib.mkIf cfg.enable {
+            systemd.services."colonq.fig-web-secure" = {
+              wantedBy = ["multi-user.target"];
+              serviceConfig = {
+                Restart = "on-failure";
+                ExecStart = "${haskellPackages.fig-web}/bin/fig-web secure --bus-host ${cfg.busHost} --bus-port ${toString cfg.busPort} --config ${cfg.configFile}";
+                DynamicUser = "yes";
+                RuntimeDirectory = "colonq.fig-web-secure";
+                RuntimeDirectoryMode = "0755";
+                StateDirectory = "colonq.fig-web-secure";
+                StateDirectoryMode = "0700";
+                CacheDirectory = "colonq.fig-web-secure";
                 CacheDirectoryMode = "0750";
               };
             };

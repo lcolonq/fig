@@ -26,10 +26,10 @@ cradle:
       config: { cradle: { cabal: { component: "fig-bridge-irc-discord:lib:fig-bridge-irc-discord" } } }
     - path: "./fig-bridge-irc-discord/main/"
       config: { cradle: { cabal: { component: "fig-bridge-irc-discord:exe:fig-bridge-irc-discord" } } }
-    - path: "./fig-frontend/src/"
-      config: { cradle: { cabal: { component: "fig-frontend:lib:fig-frontend" } } }
-    - path: "./fig-frontend/main/"
-      config: { cradle: { cabal: { component: "fig-frontend:exe:fig-frontend" } } }
+    - path: "./fig-web/src/"
+      config: { cradle: { cabal: { component: "fig-web:lib:fig-web" } } }
+    - path: "./fig-web/main/"
+      config: { cradle: { cabal: { component: "fig-web:exe:fig-web" } } }
     - path: "./fig-bless/src/"
       config: { cradle: { cabal: { component: "fig-bless:lib:fig-bless" } } }
     - path: "./fig-bless/main/"

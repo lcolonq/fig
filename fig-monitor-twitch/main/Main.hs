@@ -11,7 +11,7 @@ data Command
   = Monitor
   | Chatbot
   | LiveChecker
-  | RedirectServer Bool
+  | RedirectServer !Bool
   | Validate
 
 parseCommand :: Parser Command
@@ -24,10 +24,10 @@ parseCommand = subparser $ mconcat
   , command "validate-endpoint" $ info (pure Validate) (progDesc "Test Twitch authentication")
   ]
 data Opts = Opts
-  { busHost :: Text
-  , busPort :: Text
-  , config :: FilePath
-  , command :: Command
+  { busHost :: !Text
+  , busPort :: !Text
+  , config :: !FilePath
+  , command :: !Command
   }
 
 parseOpts :: Parser Opts

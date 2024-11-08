@@ -55,6 +55,7 @@ library
   hs-source-dirs: src
   exposed-modules:
     Fig.Web
+    Fig.Web.Secure
     Fig.Web.Utils
     Fig.Web.Auth
     Fig.Web.State
