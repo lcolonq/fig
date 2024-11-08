@@ -3,16 +3,12 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    ps-tools.follows = "purs-nix/ps-tools";
-    purs-nix.url = "github:purs-nix/purs-nix/ps-0.15";
   };
 
   outputs = { self, nixpkgs, ... }@inputs:
     let
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
-      ps-tools = inputs.ps-tools.legacyPackages.${system};
-      purs-nix = inputs.purs-nix { inherit system; };
 
       haskellOverrides = self: super: {
         scotty = self.callHackageDirect {
@@ -32,31 +28,11 @@
         fig-bridge-irc-discord = self.callCabal2nix "fig-bridge-irc-discord" ./fig-bridge-irc-discord {};
         fig-bless = self.callCabal2nix "fig-bless" ./fig-bless {};
         fig-emulator-gb = self.callCabal2nix "fig-emulator-gb" ./fig-emulator-gb {};
-        fig-frontend = self.callCabal2nix "fig-frontend" ./fig-frontend {};
+        fig-web = self.callCabal2nix "fig-web" ./fig-web {};
         };
       haskellPackages = pkgs.haskell.packages.ghc94.override {
         overrides = haskellOverrides;
       };
-
-      purescript = purs-nix.purs {
-        dependencies = [
-          "console"
-          "effect"
-          "prelude"
-          "random"
-          "refs"
-          "web-html"
-          "web-dom"
-          "web-uievents"
-          "canvas"
-          "argonaut"
-          "fetch"
-          "fetch-argonaut"
-        ];
-        dir = ./fig-frontend-client;
-        srcs = [ "src" ];
-      };
-      fig-frontend-client = purescript.bundle {};
 
       figBusModule = { config, lib, ... }:
         let
@@ -77,7 +53,6 @@
           };
           config = lib.mkIf cfg.enable {
             systemd.services."colonq.fig-bus" = {
-              after = ["network-online.target"];
               wantedBy = ["network-online.target"];
               serviceConfig = {
                 Restart = "on-failure";
@@ -277,12 +252,12 @@
             };
           };
         };
-      figFrontendModule = { config, lib, ... }:
+      figWebModule = { config, lib, ... }:
         let
-          cfg = config.colonq.services.fig-frontend;
+          cfg = config.colonq.services.fig-web;
         in {
-          options.colonq.services.fig-frontend = {
-            enable = lib.mkEnableOption "Enable the fig web frontend";
+          options.colonq.services.fig-web = {
+            enable = lib.mkEnableOption "Enable the fig web server";
             busHost = lib.mkOption {
               type = lib.types.str;
               default = "127.0.0.1";
@@ -296,9 +271,9 @@
             configFile = lib.mkOption {
               type = lib.types.path;
               description = "Path to config file";
-              default = pkgs.writeText "fig-frontend.toml" ''
+              default = pkgs.writeText "fig-web.toml" ''
                 port = 8000
-                asset_path = "./fig-frontend-assets"
+                asset_path = "./fig-web-assets"
                 client_id = ""
                 auth_token = ""
                 db_host = ""
@@ -306,17 +281,17 @@
             };
           };
           config = lib.mkIf cfg.enable {
-            systemd.services."colonq.fig-frontend" = {
+            systemd.services."colonq.fig-web" = {
               wantedBy = ["multi-user.target"];
               serviceConfig = {
                 Restart = "on-failure";
-                ExecStart = "${haskellPackages.fig-frontend}/bin/fig-frontend --bus-host ${cfg.busHost} --bus-port ${toString cfg.busPort} --config ${cfg.configFile}";
+                ExecStart = "${haskellPackages.fig-web}/bin/fig-web --bus-host ${cfg.busHost} --bus-port ${toString cfg.busPort} --config ${cfg.configFile}";
                 DynamicUser = "yes";
-                RuntimeDirectory = "colonq.fig-frontend";
+                RuntimeDirectory = "colonq.fig-web";
                 RuntimeDirectoryMode = "0755";
-                StateDirectory = "colonq.fig-frontend";
+                StateDirectory = "colonq.fig-web";
                 StateDirectoryMode = "0700";
-                CacheDirectory = "colonq.fig-frontend";
+                CacheDirectory = "colonq.fig-web";
                 CacheDirectoryMode = "0750";
               };
             };
@@ -333,7 +308,7 @@
           fig-monitor-bullfrog
           fig-bridge-irc-discord
           fig-bless
-          fig-frontend
+          fig-web
           fig-emulator-gb
         ];
         withHoogle = true;
@@ -341,13 +316,6 @@
           haskellPackages.cabal-install
           haskellPackages.haskell-language-server
           pkgs.nodejs
-          (purescript.command {})
-          ps-tools.for-0_15.purescript-language-server
-          purs-nix.esbuild
-          purs-nix.purescript
-          pkgs.m4
-          pkgs.dhall
-          pkgs.dhall-json
         ];
       };
       packages.x86_64-linux = {
@@ -360,9 +328,8 @@
         figMonitorBullfrog = haskellPackages.fig-monitor-bullfrog;
         figBridgeIRCDiscord = haskellPackages.fig-bridge-irc-discord;
         figBless = haskellPackages.fig-bless;
-        # figBlessStatic = haskellPackagesStatic.fig-bless;
         figEmulatorGB = haskellPackages.fig-emulator-gb;
-        figFrontend = haskellPackages.fig-frontend;
+        figWeb = haskellPackages.fig-web;
       };
       apps.x86_64-linux.default = {
         type = "app";
@@ -374,7 +341,7 @@
         figMonitorDiscord = figMonitorDiscordModule;
         figMonitorIRC = figMonitorIRCModule;
         figBridgeIRCDiscord = figBridgeIRCDiscordModule;
-        figFrontend = figFrontendModule;
+        figWeb = figWebModule;
       };
     };
 }

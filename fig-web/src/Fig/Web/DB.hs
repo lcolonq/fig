@@ -1,11 +1,11 @@
-module Fig.Frontend.DB where
+module Fig.Web.DB where
 
 import Control.Error.Util (hush)
 
 import qualified Database.Redis as Redis
 
 import Fig.Prelude
-import Fig.Frontend.Utils
+import Fig.Web.Utils
 
 connect :: MonadIO m => Config -> m Redis.Connection
 connect cfg = liftIO $ Redis.checkedConnect Redis.defaultConnectInfo

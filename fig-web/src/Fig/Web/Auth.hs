@@ -1,4 +1,4 @@
-module Fig.Frontend.Auth where
+module Fig.Web.Auth where
 
 import Fig.Prelude
 
@@ -17,7 +17,7 @@ import qualified Jose.Jwt as Jwt
 import qualified Web.Scotty as Sc
 import qualified Web.Scotty.Cookie as Sc.C
 
-import Fig.Frontend.Utils
+import Fig.Web.Utils
 
 data TokenContents = TokenContents
   { aud :: !Text

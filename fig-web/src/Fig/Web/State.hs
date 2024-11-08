@@ -1,6 +1,6 @@
 {-# Language TemplateHaskell #-}
 
-module Fig.Frontend.State where
+module Fig.Web.State where
 
 import Control.Lens.TH (makeLensesFor)
 import Control.Lens ((<>=))

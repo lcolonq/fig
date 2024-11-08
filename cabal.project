@@ -6,7 +6,7 @@ packages:
   fig-monitor-irc/
   fig-monitor-bullfrog/
   fig-bridge-irc-discord/
-  fig-frontend/
+  fig-web/
   fig-bless/
   fig-emulator-gb/
 optimization: 2

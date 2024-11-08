@@ -3,6 +3,5 @@ dist-newstyle
 node_modules
 fig-monitor-*.toml
 fig-bridge-*.toml
-fig-frontend.toml
-fig-frontend-assets
-fig-frontend-client/output/*
+fig-web.toml
+fig-web-assets

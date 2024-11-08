@@ -1,8 +1,8 @@
 {-# Language RecordWildCards #-}
 {-# Language ApplicativeDo #-}
 
-module Fig.Frontend.Utils
-  ( FigFrontendException(..)
+module Fig.Web.Utils
+  ( FigWebException(..)
   , loadConfig
   , Config(..)
   , websocket
@@ -19,13 +19,12 @@ import qualified Web.Scotty as Sc
 
 import qualified Toml
 
-newtype FigFrontendException = FigFrontendException Text
+newtype FigWebException = FigWebException Text
   deriving (Show, Eq, Ord)
-instance Exception FigFrontendException
+instance Exception FigWebException
 
 data Config = Config
   { port :: !Int
-  , assetPath :: !FilePath
   , clientId :: !Text
   , authToken :: !Text
   , dbHost :: !Text
@@ -34,7 +33,6 @@ data Config = Config
 configCodec :: Toml.TomlCodec Config
 configCodec = do
   port <- Toml.int "port" Toml..= (\a -> a.port)
-  assetPath <- Toml.string "asset_path" Toml..= (\a -> a.assetPath)
   clientId <- Toml.text "client_id" Toml..= (\a -> a.clientId)
   authToken <- Toml.text "auth_token" Toml..= (\a -> a.authToken)
   dbHost <- Toml.text "db_host" Toml..= (\a -> a.dbHost)
@@ -42,7 +40,7 @@ configCodec = do
 
 loadConfig :: FilePath -> IO Config
 loadConfig path = Toml.decodeFileEither configCodec path >>= \case
-  Left err -> throwM . FigFrontendException $ tshow err
+  Left err -> throwM . FigWebException $ tshow err
   Right config -> pure config
 
 websocket :: ByteString -> (WS.Connection -> IO ()) -> Sc.ScottyM ()

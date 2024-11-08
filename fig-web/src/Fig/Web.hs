@@ -1,6 +1,6 @@
 {-# Language QuasiQuotes #-}
 
-module Fig.Frontend where
+module Fig.Web where
 
 import Fig.Prelude
 
@@ -18,7 +18,7 @@ import qualified Data.ByteString.Base64 as BS.Base64
 import qualified Data.Set as Set
 
 import qualified Network.Wai as Wai
-import qualified Network.Wai.Middleware.Static as Wai.Static
+-- import qualified Network.Wai.Middleware.Static as Wai.Static
 import qualified Network.Wai.Handler.Warp as Warp
 import qualified Network.WebSockets as WS
 
@@ -26,10 +26,10 @@ import qualified Web.Scotty as Sc
 
 import Fig.Utils.SExpr
 import Fig.Bus.Client
-import Fig.Frontend.Utils
-import Fig.Frontend.Auth
-import Fig.Frontend.State
-import qualified Fig.Frontend.DB as DB
+import Fig.Web.Utils
+import Fig.Web.Auth
+import Fig.Web.State
+import qualified Fig.Web.DB as DB
 
 data LiveEvent
   = LiveEventOnline !(Set.Set Text)
@@ -38,7 +38,7 @@ data LiveEvent
 
 server :: Config -> (Text, Text) -> IO ()
 server cfg busAddr = do
-  log $ "Frontend server running on port " <> tshow cfg.port
+  log $ "Web server running on port " <> tshow cfg.port
   liveEvents <- Chan.newChan @LiveEvent
   currentlyLive <- MVar.newMVar Set.empty
   busClient busAddr
@@ -72,7 +72,7 @@ app cfg cmds liveEvents currentlyLive = do
   log "Connected! Server active."
   st <- stateRef
   Sc.scottyApp do
-    Sc.middleware $ Wai.Static.staticPolicy $ Wai.Static.addBase cfg.assetPath
+    -- Sc.middleware $ Wai.Static.staticPolicy $ Wai.Static.addBase cfg.assetPath
     Sc.get "/" $ Sc.redirect "/index.html"
     Sc.get "/api/check" $ authed cfg \auth -> do
       Sc.json @[Text] [auth.id, auth.name]

@@ -1,5 +1,5 @@
 cabal-version: 3.4
-name: fig-frontend
+name: fig-web
 version: 0.1.0.0
 
 common defaults
@@ -54,16 +54,16 @@ library
   import: deps
   hs-source-dirs: src
   exposed-modules:
-    Fig.Frontend
-    Fig.Frontend.Utils
-    Fig.Frontend.Auth
-    Fig.Frontend.State
-    Fig.Frontend.DB
+    Fig.Web
+    Fig.Web.Utils
+    Fig.Web.Auth
+    Fig.Web.State
+    Fig.Web.DB
 
-executable fig-frontend
+executable fig-web
   import: defaults
   import: deps
-  build-depends: fig-frontend, optparse-applicative
+  build-depends: fig-web, optparse-applicative
   hs-source-dirs:
     main
   main-is: Main.hs
