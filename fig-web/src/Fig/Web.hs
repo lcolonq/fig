@@ -74,6 +74,12 @@ app cfg cmds liveEvents currentlyLive = do
   Sc.scottyApp do
     -- Sc.middleware $ Wai.Static.staticPolicy $ Wai.Static.addBase cfg.assetPath
     Sc.get "/" $ Sc.redirect "/index.html"
+    Sc.get "/unauthorized" do
+      Sc.status status401
+      Sc.text $ mconcat
+        [ "your request was rejected because that endpoint requires authentication\n"
+        , "you can log in by POSTing your credentials to https://auth.colonq.computer/api/firstfactor\n"
+        ]
     Sc.get "/api/check" $ authed cfg \auth -> do
       Sc.json @[Text] [auth.id, auth.name]
     Sc.put "/api/buffer" do
