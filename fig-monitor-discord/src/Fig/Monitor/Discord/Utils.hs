@@ -16,13 +16,13 @@ instance Exception FigMonitorDiscordException
 
 data Config = Config
   { authToken :: !Text
-  , guildId :: !Integer
+  , guildIds :: ![Integer]
   } deriving (Show, Eq, Ord)
 
 configCodec :: Toml.TomlCodec Config
 configCodec = do
   authToken <- Toml.text "auth_token" Toml..= (\a -> a.authToken)
-  guildId <- Toml.integer "guild_id" Toml..= (\a -> a.guildId)
+  guildIds <- Toml.arrayOf Toml._Integer "guild_id" Toml..= (\a -> a.guildIds)
   pure $ Config{..}
 
 loadConfig :: FilePath -> IO Config

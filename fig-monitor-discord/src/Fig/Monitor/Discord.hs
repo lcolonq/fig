@@ -73,17 +73,18 @@ discordBot cfg busAddr = do
               userId <- Dis.restCall Dis.GetCurrentUser >>= \case
                 Left e -> throwM . FigMonitorDiscordException $ "Failed to retrieve discord user: " <> tshow e
                 Right u -> pure $ Dis.userId u
-              let gid = Dis.DiscordId $ Dis.Snowflake $ fromIntegral cfg.guildId
-              emotes <- Dis.restCall (Dis.ListGuildEmojis gid) >>= \case
-                Left e -> throwM . FigMonitorDiscordException $ "Failed to retrieve server emoji: " <> tshow e
-                Right emotes -> pure . Map.fromList
-                  $ Maybe.mapMaybe
-                  (\e -> do
-                      eid <- Dis.emojiId e
-                      animated <- Dis.emojiAnimated e
-                      pure (Dis.emojiName e, EmojiInfo { id = eid, animated })
-                  )
-                  emotes
+              emotes <- Map.unions <$> forM cfg.guildIds \guildId -> do
+                let gid = Dis.DiscordId $ Dis.Snowflake $ fromIntegral guildId
+                Dis.restCall (Dis.ListGuildEmojis gid) >>= \case
+                  Left e -> throwM . FigMonitorDiscordException $ "Failed to retrieve server emoji: " <> tshow e
+                  Right emotes -> pure . Map.fromList
+                    $ Maybe.mapMaybe
+                    (\e -> do
+                        eid <- Dis.emojiId e
+                        animated <- Dis.emojiAnimated e
+                        pure (Dis.emojiName e, EmojiInfo { id = eid, animated })
+                    )
+                    emotes
               log $ tshow emotes
               liftIO . MVar.putMVar botInfo $ BotInfo{..}
               log "Initialized Discord bot"
