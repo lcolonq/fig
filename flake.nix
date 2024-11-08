@@ -385,6 +385,7 @@
         figMonitorIRC = figMonitorIRCModule;
         figBridgeIRCDiscord = figBridgeIRCDiscordModule;
         figWeb = figWebModule;
+        figWebSecure = figWebSecureModule;
       };
     };
 }
