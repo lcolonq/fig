@@ -1,6 +1,6 @@
 {-# Language QuasiQuotes #-}
 
-module Fig.Web where
+module Fig.Web.Secure where
 
 import Fig.Prelude
 

@@ -24,7 +24,7 @@ data Opts = Opts
   { busHost :: !Text
   , busPort :: !Text
   , config :: !FilePath
-  , command :: !Command
+  , cmd :: !Command
   }
 
 parseOpts :: Parser Opts
@@ -32,7 +32,7 @@ parseOpts = do
   busHost <- strOption (long "bus-host" <> metavar "HOST" <> help "Address of message bus" <> value "localhost")
   busPort <- strOption (long "bus-port" <> metavar "PORT" <> help "Message bus port" <> showDefault <> value "32050")
   config <- strOption (long "config" <> metavar "PATH" <> help "Path to config file" <> showDefault <> value "fig-web.toml")
-  command <- parseCommand
+  cmd <- parseCommand
   pure Opts{..}
 
 main :: IO ()
@@ -42,6 +42,6 @@ main = do
     <> header "fig-web - public-facing web applications"
     )
   cfg <- loadConfig opts.config
-  case cfg.command of
+  case opts.cmd of
     Public -> Public.server cfg (opts.busHost, opts.busPort)
     Secure -> Secure.server cfg (opts.busHost, opts.busPort)
