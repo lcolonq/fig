@@ -10,6 +10,7 @@ import qualified Control.Concurrent.Async as Async
 import qualified Control.Concurrent.Chan as Chan
 import qualified Control.Concurrent.MVar as MVar
 
+import qualified Data.Maybe as Maybe
 import qualified Data.Text as Text
 import qualified Data.ByteString.Base64 as BS.Base64
 import qualified Data.Map.Strict as Map
@@ -26,9 +27,19 @@ import Fig.Bus.Client
 import Fig.Monitor.Discord.Utils
 
 data OutgoingMessage = OutgoingMessage
-  { chan :: Integer
-  , user :: Text
-  , msg :: Text
+  { chan :: !Integer
+  , user :: !Text
+  , msg :: !Text
+  }
+
+data EmojiInfo = EmojiInfo
+  { id :: !Dis.EmojiId
+  , animated :: !Bool
+  } deriving Show
+
+data BotInfo = BotInfo
+  { userId :: !Dis.UserId
+  , emotes :: !(Map.Map Text EmojiInfo)
   }
 
 stickerUrl :: Text -> Dis.StickerFormatType -> Text
@@ -44,7 +55,7 @@ stickerUrl sid ty = base <> sid <> "." <> ext
 discordBot :: Config -> (Text, Text) -> IO ()
 discordBot cfg busAddr = do
   outgoing <- Chan.newChan @OutgoingMessage
-  ourId <- MVar.newEmptyMVar
+  botInfo <- MVar.newEmptyMVar
   busClient busAddr
     (\cmds -> do
         cmds.subscribe [sexp|(monitor discord chat outgoing)|]
@@ -59,9 +70,22 @@ discordBot cfg busAddr = do
                     , updateStatusOptsAFK = False
                     }
               Dis.sendCommand (Dis.UpdateStatus opts)
-              Dis.restCall Dis.GetCurrentUser >>= \case
-                Left e -> log $ "failed to retrieve discord user: " <> tshow e
-                Right u -> liftIO . MVar.putMVar ourId $ Dis.userId u
+              userId <- Dis.restCall Dis.GetCurrentUser >>= \case
+                Left e -> throwM . FigMonitorDiscordException $ "Failed to retrieve discord user: " <> tshow e
+                Right u -> pure $ Dis.userId u
+              let gid = Dis.DiscordId $ Dis.Snowflake $ fromIntegral cfg.guildId
+              emotes <- Dis.restCall (Dis.ListGuildEmojis gid) >>= \case
+                Left e -> throwM . FigMonitorDiscordException $ "Failed to retrieve server emoji: " <> tshow e
+                Right emotes -> pure . Map.fromList
+                  $ Maybe.mapMaybe
+                  (\e -> do
+                      eid <- Dis.emojiId e
+                      animated <- Dis.emojiAnimated e
+                      pure (Dis.emojiName e, EmojiInfo { id = eid, animated })
+                  )
+                  emotes
+              log $ tshow emotes
+              liftIO . MVar.putMVar botInfo $ BotInfo{..}
               log "Initialized Discord bot"
               dst <- ask
               liftIO . void . Async.async . forever $ flip runReaderT dst do
@@ -83,7 +107,7 @@ discordBot cfg busAddr = do
               Dis.InteractionCreate cmd@Dis.InteractionApplicationCommand{}  -> do
                 void . Dis.restCall . Dis.CreateInteractionResponse (Dis.interactionId cmd) (Dis.interactionToken cmd) $ Dis.interactionResponseBasic "pong"
               Dis.MessageCreate m -> do
-                botId <- liftIO $ MVar.readMVar ourId
+                binfo <- liftIO $ MVar.readMVar botInfo
                 let
                   chan = Dis.messageChannelId m
                   auth = Dis.messageAuthor m
@@ -103,9 +127,10 @@ discordBot cfg busAddr = do
                   replyStr = replyUser >>= \ru ->
                     if ru == "The Computer"
                     then replyMsg >>= (
-                      PCRE.scan [PCRE.re|^`\<(.*)\>`|] >>> \case
-                                    ((_, [compName]):_) -> Just compName
-                                    _ -> Just ru
+                      PCRE.scan [PCRE.re|^`\<(.*)\>`|]
+                          >>> \case
+                              ((_, [compName]):_) -> Just compName
+                              _ -> Just ru
                     )
                     else Just ru
                   msgReplacedEmotes = PCRE.gsub
@@ -128,7 +153,7 @@ discordBot cfg busAddr = do
                       ) <> " (" <> stickerUrl (tshow . Dis.unId $ Dis.stickerItemId sticker) (Dis.stickerItemFormatType sticker) <> ")"
                     _ -> msgReplacedEmotes
                 -- in unless (Dis.userIsBot auth) do
-                unless (Dis.userId auth == botId) do
+                unless (Dis.userId auth == binfo.userId) do
                   log $ "Received: " <> processedMsg <> " (from " <> name <> ")"
                   liftIO $ cmds.publish [sexp|(monitor discord chat incoming)|]
                     [ SExprInteger . fromIntegral . Dis.unSnowflake $ Dis.unId chan
@@ -152,13 +177,27 @@ discordBot cfg busAddr = do
             , Right user <- decodeUtf8 <$> BS.Base64.decodeBase64 (encodeUtf8 euser)
             , Right msg <- decodeUtf8 <$> BS.Base64.decodeBase64 (encodeUtf8 emsg) -> do
                 log $ "Sending: " <> msg <> " (from " <> user <> ")"
-                let replacements :: [(Text, Text)] =
-                      [ (":mrgreen:", "<:mrgreen:1093634800792911972>")
-                      , (":mrblue:", "<:mrblue:1154526193358491719>")
-                      , (":mrred:", "<:mrred:1154524307649724449>")
-                      ]
-                let newMsg = foldr' (\(n, r) h -> Text.replace n r h) msg replacements
-                Chan.writeChan outgoing OutgoingMessage { chan, user, msg = newMsg }
+                binfo <- liftIO $ MVar.readMVar botInfo
+                let
+                  replacements :: [(Text, Text)] =
+                    [ ("🟢", ":mrgreen:")
+                    , ("🔵", ":mrblue:")
+                    , ("🔴", ":mrred:")
+                    , ("🟡", ":mryellow:")
+                    ]
+                  newMsg = foldr' (\(n, r) h -> Text.replace n r h) msg replacements
+                  msgReplacedEmotes = PCRE.gsub
+                    [PCRE.re|:([\w_-]+):|]
+                    (\(_ :: Text) -> \case
+                      ([emotename] :: [Text]) -> case Map.lookup emotename binfo.emotes of
+                        Just einfo ->
+                          "<" <> (if einfo.animated then "a" else "")
+                          <> ":" <> emotename <> ":" <> tshow einfo.id <> ">"
+                        _ -> ":" <> emotename <> ":"
+                      _ -> "<unknown emote>"
+                    )
+                    newMsg
+                Chan.writeChan outgoing OutgoingMessage { chan, user, msg = msgReplacedEmotes }
           _ -> log $ "Invalid outgoing message: " <> tshow d
     )
     (pure ())

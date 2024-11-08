@@ -15,12 +15,14 @@ newtype FigMonitorDiscordException = FigMonitorDiscordException Text
 instance Exception FigMonitorDiscordException
 
 data Config = Config
-  { authToken :: Text
+  { authToken :: !Text
+  , guildId :: !Integer
   } deriving (Show, Eq, Ord)
 
 configCodec :: Toml.TomlCodec Config
 configCodec = do
   authToken <- Toml.text "auth_token" Toml..= (\a -> a.authToken)
+  guildId <- Toml.integer "guild_id" Toml..= (\a -> a.guildId)
   pure $ Config{..}
 
 loadConfig :: FilePath -> IO Config
