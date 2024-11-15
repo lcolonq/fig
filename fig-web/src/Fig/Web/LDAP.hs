@@ -16,24 +16,28 @@ resetUserPassword :: MonadIO m => Config -> Text -> Text -> m (Maybe Text)
 resetUserPassword cfg user uid = do
   let login = Text.toLower user
   password <- UUID.toText <$> liftIO UUID.nextRandom
-  exitCode <- liftIO $ Proc.withCreateProcess
-    (Proc.proc cfg.lldapCli $ unpack <$>
-     [ "-H", cfg.lldapHost
-     , "-D", cfg.lldapUser
-     , "-w", cfg.lldapPassword
-     , "user", "add", login, login <> "@users.colonq.computer"
-     , "-p", password
-     , "-f", uid
-     ])
-    \_ _ _ h -> Proc.waitForProcess h
-  liftIO $ Proc.withCreateProcess
-    (Proc.proc cfg.lldapCli $ unpack <$>
-     [ "-H", cfg.lldapHost
-     , "-D", cfg.lldapUser
-     , "-w", cfg.lldapPassword
-     , "user", "group", "add", login, "fig_users"
-     ])
-    \_ _ _ h -> void $ Proc.waitForProcess h
+  (exitCode, out0, err0) <- liftIO . flip Proc.readCreateProcessWithExitCode ""
+    . Proc.proc cfg.lldapCli $ unpack <$>
+    [ "-H", cfg.lldapHost
+    , "-D", cfg.lldapUser
+    , "-w", cfg.lldapPassword
+    , "user", "add", login, login <> "@users.colonq.computer"
+    , "-p", password
+    , "-f", uid
+    ]
+  (_, out1, err1) <- liftIO . flip Proc.readCreateProcessWithExitCode ""
+    . Proc.proc cfg.lldapCli $ unpack <$>
+    [ "-H", cfg.lldapHost
+    , "-D", cfg.lldapUser
+    , "-w", cfg.lldapPassword
+    , "user", "group", "add", login, "fig_users"
+    ]
   case exitCode of
     ExitSuccess -> pure $ Just password
-    ExitFailure _ -> pure Nothing
+    ExitFailure _ -> do
+      log . pack $ mconcat
+        [ "LDAP CLI error:\n"
+        , out0, err0
+        , out1, err1
+        ]
+      pure Nothing
