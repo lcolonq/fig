@@ -96,9 +96,11 @@ app cfg cmds liveEvents currentlyLive = do
       let user = Text.toLower auth.name
       LDAP.resetUserPassword cfg user auth.id >>= \case
         Nothing -> do
+          log "Failed to register user"
           Sc.status status500
           Sc.text "failed to register"
         Just pass -> do
+          log "Successfully registered user, responding..."
           Sc.text . Text.L.fromStrict $ user <> " " <> pass
     Sc.get "/api/check" $ authed cfg \auth -> do
       Sc.json @[Text] [auth.id, auth.name]
