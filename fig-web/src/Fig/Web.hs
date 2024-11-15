@@ -93,6 +93,7 @@ app cfg cmds liveEvents currentlyLive = do
         , "  curl https://secure.colonq.computer --cookie cookies.txt\n"
         ]
     Sc.get "/api/register" $ authed cfg \auth -> do
+      log "Authenticated with Twitch, trying to register..."
       let user = Text.toLower auth.name
       LDAP.resetUserPassword cfg user auth.id >>= \case
         Nothing -> do

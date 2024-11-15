@@ -67,14 +67,11 @@ checkAuth cfg =
               _other -> Nothing
       case (Map.lookup "token" pairs, Map.lookup "nonce" pairs) of
         (Just token, Just nonce) -> do
-          log $ tshow token
-          log $ tshow nonce
           validateToken (encodeUtf8 token) >>= \case
             Just tc
               | tc.aud == cfg.clientId
               , tc.nonce == nonce
                 -> do
-                  log $ tshow tc
                   pure . Just $ Auth
                     { name = tc.preferred_username
                     , id = tc.sub
