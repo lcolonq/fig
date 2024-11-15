@@ -409,7 +409,7 @@
         figWeb = figWebModule;
         figWebSecure = figWebSecureModule;
       };
-      overlay = {
+      overlay = self: super: {
         fig = {
           lldap-cli = lldap-cli-wrapped;
         };
