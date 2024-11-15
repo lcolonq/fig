@@ -25,7 +25,7 @@
         '';
       };
       lldap-cli-wrapped = pkgs.writeShellScriptBin "lldap-cli" ''
-        export PATH=${pkgs.lldap}/bin:${pkgs.curl}/bin:$PATH
+        export PATH=${pkgs.lldap}/bin:${pkgs.curl}/bin:${pkgs.jq}/bin:$PATH
         ${lldap-cli}/bin/lldap-cli "$@"
       '';
 
