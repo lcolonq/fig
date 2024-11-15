@@ -15,7 +15,6 @@ import qualified Jose.Jwk as Jwk
 import qualified Jose.Jwt as Jwt
 
 import qualified Web.Scotty as Sc
-import qualified Web.Scotty.Cookie as Sc.C
 
 import Fig.Web.Utils
 
@@ -65,7 +64,7 @@ checkAuth cfg =
       let pairs = Map.fromList $ flip mapMaybe authstr \s ->
             case Text.splitOn "=" s of
               [k, v] -> Just (k, Text.takeWhile (/='"') $ Text.drop 1 v)
-              _ -> Nothing
+              _other -> Nothing
       case (Map.lookup "token" pairs, Map.lookup "nonce" pairs) of
         (Just token, Just nonce) -> do
           log $ tshow token

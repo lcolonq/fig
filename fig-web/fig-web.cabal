@@ -29,6 +29,7 @@ common deps
     , megaparsec
     , mtl
     , network
+    , process
     , random
     , req
     , safe-exceptions
@@ -38,6 +39,7 @@ common deps
     , tomland
     , transformers
     , unordered-containers
+    , uuid
     , vector
     , wai
     , wai-extra
@@ -60,6 +62,7 @@ library
     Fig.Web.Auth
     Fig.Web.State
     Fig.Web.DB
+    Fig.Web.LDAP
 
 executable fig-web
   import: defaults

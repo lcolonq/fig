@@ -10,6 +10,25 @@
       system = "x86_64-linux";
       pkgs = nixpkgs.legacyPackages.${system};
 
+      lldap-cli = pkgs.stdenv.mkDerivation {
+        name = "lldap-cli";
+        src = pkgs.fetchFromGitHub {
+          owner = "Zepmann";
+          repo = "lldap-cli";
+          rev = "2a80dc4";
+          sha256 = "uk7SOiQmUYtoJnihSnPsu/7Er4wXX4xvPboJaNSMjkM=";
+        };
+        buildPhase = "";
+        installPhase = ''
+          mkdir -p $out/bin
+          cp lldap-cli $out/bin
+        '';
+      };
+      lldap-cli-wrapped = pkgs.writeShellScriptBin "lldap-cli" ''
+        export PATH=${pkgs.lldap}/bin:$PATH
+        ${lldap-cli}/bin/lldap-cli "$@"
+      '';
+
       haskellOverrides = self: super: {
         scotty = self.callHackageDirect {
           pkg = "scotty";
@@ -273,6 +292,7 @@
               description = "Path to config file";
               default = pkgs.writeText "fig-web.toml" ''
                 port = 8000
+                asset_path = "/var/lib/fig-web-assets"
                 client_id = ""
                 auth_token = ""
                 db_host = ""
@@ -317,6 +337,7 @@
               description = "Path to config file";
               default = pkgs.writeText "fig-web-secure.toml" ''
                 port = 8000
+                asset_path = "/var/lib/fig-web-assets"
                 client_id = ""
                 auth_token = ""
                 db_host = ""
@@ -356,6 +377,7 @@
         ];
         withHoogle = true;
         buildInputs = [
+          lldap-cli-wrapped
           haskellPackages.cabal-install
           haskellPackages.haskell-language-server
           pkgs.nodejs

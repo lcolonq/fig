@@ -18,7 +18,7 @@ import qualified Data.ByteString.Base64 as BS.Base64
 import qualified Data.Set as Set
 
 import qualified Network.Wai as Wai
--- import qualified Network.Wai.Middleware.Static as Wai.Static
+import qualified Network.Wai.Middleware.Static as Wai.Static
 import qualified Network.Wai.Handler.Warp as Warp
 import qualified Network.WebSockets as WS
 
@@ -30,6 +30,7 @@ import Fig.Web.Utils
 import Fig.Web.Auth
 import Fig.Web.State
 import qualified Fig.Web.DB as DB
+import qualified Fig.Web.LDAP as LDAP
 
 data LiveEvent
   = LiveEventOnline !(Set.Set Text)
@@ -51,14 +52,14 @@ server cfg busAddr = do
         case d of
           SExprList (ev:rest)
             | ev == [sexp|(monitor twitch stream online)|] -> do
-                let live = mapMaybe (\case SExprString s -> Just s; _ -> Nothing) rest
+                let live = mapMaybe (\case SExprString s -> Just s; _other -> Nothing) rest
                 let new = Set.fromList live 
                 old <- MVar.swapMVar currentlyLive new
                 let online = Set.difference new old
                 let offline = Set.difference old new
                 unless (Set.null online) . Chan.writeChan liveEvents $ LiveEventOnline online
                 unless (Set.null offline) . Chan.writeChan liveEvents $ LiveEventOnline offline
-          _ -> log $ "Invalid event: " <> tshow d
+          _other -> log $ "Invalid event: " <> tshow d
     )
     (pure ())
 
@@ -72,8 +73,9 @@ app cfg cmds liveEvents currentlyLive = do
   log "Connected! Server active."
   st <- stateRef
   Sc.scottyApp do
-    -- Sc.middleware $ Wai.Static.staticPolicy $ Wai.Static.addBase cfg.assetPath
-    Sc.get "/" $ Sc.redirect "/index.html"
+    Sc.middleware $ Wai.Static.staticPolicy $ Wai.Static.addBase cfg.assetPath
+    Sc.get "/register" do
+      Sc.redirect "/register.html"
     Sc.get "/unauthorized" do
       Sc.status status401
       Sc.text $ mconcat
@@ -90,6 +92,14 @@ app cfg cmds liveEvents currentlyLive = do
         , "for example:\n"
         , "  curl https://secure.colonq.computer --cookie cookies.txt\n"
         ]
+    Sc.get "/api/register" $ authed cfg \auth -> do
+      let user = Text.toLower auth.name
+      LDAP.resetUserPassword cfg user auth.id >>= \case
+        Nothing -> do
+          Sc.status status500
+          Sc.text "failed to register"
+        Just pass -> do
+          Sc.text . Text.L.fromStrict $ user <> " " <> pass
     Sc.get "/api/check" $ authed cfg \auth -> do
       Sc.json @[Text] [auth.id, auth.name]
     Sc.put "/api/buffer" do
