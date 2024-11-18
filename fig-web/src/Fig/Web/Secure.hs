@@ -4,31 +4,19 @@ module Fig.Web.Secure where
 
 import Fig.Prelude
 
-import System.Random (randomRIO)
-
-import Control.Monad (unless)
-import Control.Lens (use, (^?), Ixed (..))
-import qualified Control.Concurrent.Chan as Chan
-import qualified Control.Concurrent.MVar as MVar
-
-import Data.Maybe (mapMaybe)
 import qualified Data.Text as Text
-import qualified Data.Text.Lazy as Text.L
 import qualified Data.ByteString.Base64 as BS.Base64
 import qualified Data.Set as Set
 
 import qualified Network.Wai as Wai
--- import qualified Network.Wai.Middleware.Static as Wai.Static
+import qualified Network.Wai.Middleware.Static as Wai.Static
 import qualified Network.Wai.Handler.Warp as Warp
-import qualified Network.WebSockets as WS
 
 import qualified Web.Scotty as Sc
 
 import Fig.Utils.SExpr
 import Fig.Bus.Client
 import Fig.Web.Utils
-import Fig.Web.Auth
-import Fig.Web.State
 import qualified Fig.Web.DB as DB
 
 data LiveEvent
@@ -55,10 +43,31 @@ sexprStr = SExprString . BS.Base64.encodeBase64 . encodeUtf8
 app :: Config -> Commands IO -> IO Wai.Application
 app cfg cmds = do
   log "Connecting to database..."
-  db <- DB.connect cfg
+  _db <- DB.connect cfg
   log "Connected! Secure server active."
   Sc.scottyApp do
+    Sc.middleware . Wai.Static.staticPolicy $ mconcat
+      [ Wai.Static.isNotAbsolute
+      , Wai.Static.only
+        [ ("menu", "menu.html")
+        , ("main.css", "main.css")
+        , ("main.js", "main.js")
+        ] Wai.Static.<|> Wai.Static.hasPrefix "assets"
+      , Wai.Static.addBase cfg.assetPath
+      ]
     Sc.get "/" do
       Sc.text "this is the secure endpoint"
+    Sc.post "/api/redeem" do
+      me <- Text.toLower <$> Sc.formParam "ayem"
+      name <- Sc.formParam "name"
+      input <- Sc.formParamMaybe "input"
+      liftIO $ cmds.publish [sexp|(frontend redeem incoming)|]
+        $ mconcat
+          [ [ sexprStr me
+            , sexprStr name
+            ]
+          , maybe [] ((:[]) . sexprStr) input
+          ]
+      Sc.text "it worked"
     Sc.notFound do
       Sc.text "not found"

@@ -73,9 +73,17 @@ app cfg cmds liveEvents currentlyLive = do
   log "Connected! Server active."
   st <- stateRef
   Sc.scottyApp do
-    Sc.middleware $ Wai.Static.staticPolicy $ Wai.Static.addBase cfg.assetPath
-    Sc.get "/register" do
-      Sc.redirect "/register.html"
+    Sc.middleware . Wai.Static.staticPolicy $ mconcat
+      [ Wai.Static.isNotAbsolute
+      , Wai.Static.only
+        [ ("register", "register.html")
+        , ("main.css", "main.css")
+        , ("main.js", "main.js")
+        ] Wai.Static.<|> Wai.Static.hasPrefix "assets"
+      , Wai.Static.addBase cfg.assetPath
+      ]
+    -- Sc.get "/register" do
+    --   Sc.redirect "/register.html"
     Sc.get "/unauthorized" do
       Sc.status status401
       Sc.text $ mconcat
@@ -137,18 +145,6 @@ app cfg cmds liveEvents currentlyLive = do
           Sc.status status404
           Sc.text "user not found"
         Just val -> Sc.text . Text.L.fromStrict $ decodeUtf8 val
-    Sc.post "/api/redeem" do
-      me <- Text.toLower <$> Sc.formParam "ayem"
-      name <- Sc.formParam "name"
-      input <- Sc.formParamMaybe "input"
-      liftIO $ cmds.publish [sexp|(frontend redeem incoming)|]
-        $ mconcat
-          [ [ sexprStr me
-            , sexprStr name
-            ]
-          , maybe [] ((:[]) . sexprStr) input
-          ]
-      Sc.text "it worked"
     Sc.get "/api/songs" do
       DB.hvals db "songnames" >>= \case
         Nothing -> do
