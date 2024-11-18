@@ -57,6 +57,8 @@ app cfg cmds = do
       ]
     Sc.get "/" do
       Sc.text "this is the secure endpoint"
+    Sc.get "/api/status" do
+      Sc.text "this is the secure endpoint"
     Sc.post "/api/redeem" do
       me <- Text.toLower <$> Sc.formParam "ayem"
       name <- Sc.formParam "name"
