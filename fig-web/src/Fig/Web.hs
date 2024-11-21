@@ -57,6 +57,7 @@ server cfg busAddr = do
                 old <- MVar.swapMVar currentlyLive new
                 let online = Set.difference new old
                 let offline = Set.difference old new
+                log $ "Newly online: " <> Text.intercalate " " (Set.toList online) <> ", newly offline: " <> Text.intercalate " " (Set.toList offline)
                 unless (Set.null online) . Chan.writeChan liveEvents $ LiveEventOnline online
                 unless (Set.null offline) . Chan.writeChan liveEvents $ LiveEventOnline offline
           _other -> log $ "Invalid event: " <> tshow d
