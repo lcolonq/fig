@@ -48,7 +48,7 @@ loginToMaybeUserId login = do
   let mid = flip Aeson.parseMaybe res \obj -> do
         obj .: "data" >>= \case
           Aeson.Array ((V.!? 0) -> Just (Aeson.Object d)) -> d .: "id"
-          _ -> mempty
+          _else -> mempty
   pure mid
 
 loginToUserId :: Text -> Authed Text
@@ -57,7 +57,7 @@ loginToUserId login = do
   let mid = flip Aeson.parseMaybe res \obj -> do
         obj .: "data" >>= \case
           Aeson.Array ((V.!? 0) -> Just (Aeson.Object d)) -> d .: "id"
-          _ -> mempty
+          _else -> mempty
   maybe (throwM $ FigMonitorTwitchException "Failed to extract user ID") pure mid
 
 usersAreLive :: [Text] -> Authed (Set.Set Text)
@@ -71,15 +71,15 @@ usersAreLive users = do
       ]
     )
     Nothing
-  let mos = flip Aeson.parseMaybe res \obj -> do
+  let mos = flip Aeson.parseEither res \obj -> do
         obj .: "data" >>= \case
           Aeson.Array os -> catMaybes . toList <$> forM os \case
             Aeson.Object o -> Just <$> o .: "user_login"
-            _ -> pure Nothing
-          _ -> mempty
+            _else -> pure Nothing
+          _else -> mempty
   case mos of
-    Nothing -> throwM $ FigMonitorTwitchException "Failed to check liveness"
-    Just os -> pure . Set.fromList $ filter (`elem` os) users
+    Left err -> throwM $ FigMonitorTwitchException $ "Failed to check liveness: " <> pack err
+    Right os -> pure . Set.fromList $ filter (`elem` os) users
 
 subscribe :: Text -> Text -> Text -> Authed ()
 subscribe sessionId event user = do
@@ -97,7 +97,7 @@ subscribe sessionId event user = do
     ]
   case Aeson.parseMaybe (.: "total_cost") res of
     Just (_ :: Int) -> pure ()
-    _ -> throwM $ FigMonitorTwitchException "Failed to subscribe to event"
+    _else -> throwM $ FigMonitorTwitchException "Failed to subscribe to event"
 
 subscribeFollows :: Text -> Text -> Authed ()
 subscribeFollows sessionId user = do
@@ -116,7 +116,7 @@ subscribeFollows sessionId user = do
     ]
   case Aeson.parseMaybe (.: "total_cost") res of
     Just (_ :: Int) -> pure ()
-    _ -> throwM $ FigMonitorTwitchException "Failed to subscribe to event"
+    _else -> throwM $ FigMonitorTwitchException "Failed to subscribe to event"
   
 subscribeRaids :: Text -> Text -> Authed ()
 subscribeRaids sessionId user = do
@@ -134,7 +134,7 @@ subscribeRaids sessionId user = do
     ]
   case Aeson.parseMaybe (.: "total_cost") res of
     Just (_ :: Int) -> pure ()
-    _ -> throwM $ FigMonitorTwitchException "Failed to subscribe to event"
+    _else -> throwM $ FigMonitorTwitchException "Failed to subscribe to event"
 
 poll :: Text -> [Text] -> Text -> Authed ()
 poll title choices user = do
@@ -150,7 +150,7 @@ poll title choices user = do
   let mid = flip Aeson.parseMaybe res \obj -> do
         obj .: "data" >>= \case
           Aeson.Array ((V.!? 0) -> Just (Aeson.Object d)) -> d .: "id"
-          _ -> mempty
+          _else -> mempty
   case mid of
     Just (_ :: Text) -> pure ()
     Nothing -> do
@@ -169,7 +169,7 @@ createPrediction title choices user = do
   let mid = flip Aeson.parseMaybe res \obj -> do
         obj .: "data" >>= \case
           Aeson.Array ((V.!? 0) -> Just (Aeson.Object d)) -> d .: "id"
-          _ -> mempty
+          _else -> mempty
   case mid of
     Just (_ :: Text) -> pure ()
     Nothing -> log "Failed to start prediction"
@@ -186,7 +186,7 @@ finishPrediction pid oid user = do
   let mid = flip Aeson.parseMaybe res \obj -> do
         obj .: "data" >>= \case
           Aeson.Array ((V.!? 0) -> Just (Aeson.Object d)) -> d .: "id"
-          _ -> mempty
+          _else -> mempty
   case mid of
     Just (_ :: Text) -> pure ()
     Nothing -> log "Failed to end prediction"
@@ -317,7 +317,7 @@ twitchEventClient cfg busAddr = do
                         log $ "Channel point reward \"" <> title <> "\" redeemed by: " <> nm
                         cmds.publish [sexp|(monitor twitch redeem incoming)|]
                           $ [SExprString nm, SExprString title] <> maybe [] ((:[]) . SExprString . BS.Base64.encodeBase64 . encodeUtf8) minput
-                      _ -> log "Failed to extract payload from channel point redeem event"
+                      _else -> log "Failed to extract payload from channel point redeem event"
                   Just ("channel.prediction.begin" :: Text) -> do
                     let parseEvent o = do
                           payload <- o .: "payload"
@@ -326,8 +326,8 @@ twitchEventClient cfg busAddr = do
                           oids <- event .: "outcomes" >>= \case
                             Aeson.Array os -> forM os $ \case
                               Aeson.Object out -> (,) <$> (out .: "title") <*> (out .: "id")
-                              _ -> mempty
-                            _ -> mempty
+                              _else -> mempty
+                            _else -> mempty
                           pure (pid, oids)
                     case Aeson.parseMaybe parseEvent res of
                       Just (pid, oids) -> do
@@ -336,7 +336,7 @@ twitchEventClient cfg busAddr = do
                           [ SExprString pid
                           , SExprList $ (\(title, oid) -> SExprList [SExprString title, SExprString oid]) <$> toList oids
                           ]
-                      _ -> log "Failed to extract ID from payload for prediction begin event"
+                      _else -> log "Failed to extract ID from payload for prediction begin event"
                   Just ("channel.prediction.end" :: Text) -> do
                     log "Prediction end"
                     cmds.publish [sexp|(monitor twitch prediction end)|] []
@@ -349,7 +349,7 @@ twitchEventClient cfg busAddr = do
                       Just nm -> do
                         log $ "Incoming raid from: " <> nm
                         cmds.publish [sexp|(monitor twitch raid)|] [SExprString nm]
-                      _ -> log "Failed to extract user from raid event"
+                      _else -> log "Failed to extract user from raid event"
                   Just ("channel.follow" :: Text) -> do
                     let parseEvent o = do
                           payload <- o .: "payload"
@@ -359,7 +359,7 @@ twitchEventClient cfg busAddr = do
                       Just nm -> do
                         log $ "New follower: " <> nm
                         cmds.publish [sexp|(monitor twitch follow)|] [SExprString nm]
-                      _ -> log "Failed to extract user from follow event"
+                      _else -> log "Failed to extract user from follow event"
                   Just ("channel.subscribe" :: Text) -> do
                     let parseEvent o = do
                           payload <- o .: "payload"
@@ -372,7 +372,7 @@ twitchEventClient cfg busAddr = do
                         log $ "New subscriber: " <> nm
                         cmds.publish [sexp|(monitor twitch subscribe)|] [SExprString nm]
                       Just _ -> log "Skipping gifted subscription"
-                      _ -> log "Failed to extract user from subscribe event"
+                      _else -> log "Failed to extract user from subscribe event"
                   Just ("channel.cheer" :: Text) -> do
                     let parseEvent o = do
                           payload <- o .: "payload"
@@ -384,7 +384,7 @@ twitchEventClient cfg busAddr = do
                       Just (nm, bits) -> do
                         log $ "New cheer: " <> nm <> " " <> tshow bits
                         cmds.publish [sexp|(monitor twitch cheer)|] [SExprString nm, SExprInteger bits]
-                      _ -> log "Failed to extract user from cheer event"
+                      _else -> log "Failed to extract user from cheer event"
                   Just ("channel.subscription.gift" :: Text) -> do
                     let parseEvent o = do
                           payload <- o .: "payload"
@@ -396,7 +396,7 @@ twitchEventClient cfg busAddr = do
                       Just (nm, num) -> do
                         log $ "User " <> nm <> " gifted subs: " <> tshow num
                         cmds.publish [sexp|(monitor twitch gift)|] [SExprString nm, SExprInteger num]
-                      _ -> log "Failed to extract user from gift sub event"
+                      _else -> log "Failed to extract user from gift sub event"
                   Just ("channel.poll.begin" :: Text) -> do
                     let parseEvent o = do
                           payload <- o .: "payload"
@@ -406,7 +406,7 @@ twitchEventClient cfg busAddr = do
                       Just pollid -> do
                         log $ "Poll begin: " <> pollid
                         cmds.publish [sexp|(monitor twitch poll begin)|] [SExprString pollid]
-                      _ -> log "Failed to extract ID from payload for poll begin event"
+                      _else -> log "Failed to extract ID from payload for poll begin event"
                   Just ("channel.poll.end" :: Text) -> do
                     let parseEvent o = do
                           payload <- o .: "payload"
@@ -419,29 +419,29 @@ twitchEventClient cfg busAddr = do
                                   t <- c .: "title"
                                   v <- c .: "votes"
                                   pure (t, v)
-                                _ -> mempty
+                                _else -> mempty
                               pure (pollid, toList choices)
-                            _ -> mempty
+                            _else -> mempty
                     case Aeson.parseMaybe parseEvent res of
                       Just (pollid, choices) -> do
                         let schoices = (\(t, v) -> SExprList [SExprString t, SExprInteger v]) <$> choices
                         log $ "Poll end: " <> pollid
                         cmds.publish [sexp|(monitor twitch poll end)|] [SExprString pollid, SExprList schoices]
-                      _ -> log "Failed to extract ID from payload for poll end event"
-                  _ -> log $ "Received unknown notification event: " <> tshow resp
+                      _else -> log "Failed to extract ID from payload for poll end event"
+                  _else -> log $ "Received unknown notification event: " <> tshow resp
                 Just "session_keepalive" -> pure ()
-                _ -> log $ "Received unknown response: " <> tshow resp
+                _else -> log $ "Received unknown response: " <> tshow resp
       )
       (\_cmds d -> do
           case d of
             SExprList [ev, SExprString title, SExprList schoices]
               | ev == [sexp|(monitor twitch poll create)|] -> do
-                  let choices = Maybe.mapMaybe (\case SExprString c -> Just c; _ -> Nothing) schoices
+                  let choices = Maybe.mapMaybe (\case SExprString c -> Just c; _else -> Nothing) schoices
                   runAuthed cfg do
                     user <- loginToUserId cfg.userLogin
                     poll title choices user
               | ev == [sexp|(monitor twitch prediction create)|] -> do
-                  let choices = Maybe.mapMaybe (\case SExprString c -> Just c; _ -> Nothing) schoices
+                  let choices = Maybe.mapMaybe (\case SExprString c -> Just c; _else -> Nothing) schoices
                   runAuthed cfg do
                     user <- loginToUserId cfg.userLogin
                     createPrediction title choices user
@@ -469,7 +469,7 @@ twitchEventClient cfg busAddr = do
                     loginToMaybeUserId u >>= \case
                       Nothing -> pure ()
                       Just souser -> shoutout souser user
-            _ -> log $ "Invalid incoming message: " <> tshow d
+            _else -> log $ "Invalid incoming message: " <> tshow d
       )
       (pure ())
 
@@ -492,10 +492,10 @@ twitchChannelLiveMonitor cfg busAddr = do
     (pure ())
 
 data IRCMessage = IRCMessage
-  { tags :: Map.Map Text Text
-  , prefix :: Maybe Text
-  , command :: Text
-  , params :: [Text]
+  { tags :: !(Map.Map Text Text)
+  , prefix :: !(Maybe Text)
+  , command :: !Text
+  , params :: ![Text]
   } deriving (Show, Eq, Ord)
 
 parseIRCMessage :: Text -> IRCMessage
@@ -574,7 +574,7 @@ twitchChatClient cfg busAddr = do
                   , " :"
                   , msg
                   ]
-              _ -> log $ "Invalid outgoing message: " <> tshow d
+              _else -> log $ "Invalid outgoing message: " <> tshow d
         )
         (pure ())
 
