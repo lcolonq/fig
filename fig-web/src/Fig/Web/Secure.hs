@@ -60,6 +60,8 @@ app cfg cmds = do
     Sc.get "/api/status" do
       Sc.text "this is the secure endpoint"
     Sc.post "/api/redeem" do
+      headers <- Sc.headers
+      log $ tshow headers
       me <- Text.toLower <$> Sc.formParam "ayem"
       name <- Sc.formParam "name"
       input <- Sc.formParamMaybe "input"
