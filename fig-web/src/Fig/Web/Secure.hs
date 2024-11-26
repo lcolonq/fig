@@ -5,6 +5,7 @@ module Fig.Web.Secure where
 import Fig.Prelude
 
 import qualified Data.Text as Text
+import qualified Data.Text.Lazy as Text.Lazy
 import qualified Data.ByteString.Base64 as BS.Base64
 import qualified Data.Set as Set
 
@@ -60,18 +61,22 @@ app cfg cmds = do
     Sc.get "/api/status" do
       Sc.text "this is the secure endpoint"
     Sc.post "/api/redeem" do
-      headers <- Sc.headers
-      log $ tshow headers
-      me <- Text.toLower <$> Sc.formParam "ayem"
-      name <- Sc.formParam "name"
-      input <- Sc.formParamMaybe "input"
-      liftIO $ cmds.publish [sexp|(frontend redeem incoming)|]
-        $ mconcat
-          [ [ sexprStr me
-            , sexprStr name
-            ]
-          , maybe [] ((:[]) . sexprStr) input
-          ]
-      Sc.text "it worked"
+      muser <- Sc.header "Remote-User"
+      memail <- Sc.header "Remote-Email"
+      case (muser, memail) of
+        (Just user, Just email) -> do
+          name <- Sc.formParam "name"
+          input <- Sc.formParamMaybe "input"
+          liftIO $ cmds.publish [sexp|(frontend redeem incoming)|]
+            $ mconcat
+              [ [ sexprStr $ Text.Lazy.toStrict user
+                , sexprStr name
+                ]
+              , maybe [] ((:[]) . sexprStr) input
+              ]
+          Sc.text "it worked"
+        _else -> do
+          Sc.status status401
+          Sc.text "you're not logged in buddy"
     Sc.notFound do
       Sc.text "not found"
