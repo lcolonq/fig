@@ -78,7 +78,7 @@ usersAreLive users = do
             _else -> pure Nothing
           _else -> mempty
   case mos of
-    Left err -> throwM $ FigMonitorTwitchException $ "Failed to check liveness: " <> pack err
+    Left err -> throwM $ FigMonitorTwitchException $ "Failed to check liveness: " <> pack err <> "\nResponse was: " <> tshow res
     Right os -> pure . Set.fromList $ filter (`elem` os) users
 
 subscribe :: Text -> Text -> Text -> Authed ()
