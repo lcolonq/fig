@@ -21,7 +21,7 @@ resetUserPassword cfg user uid = do
     [ "-H", cfg.lldapHost
     , "-D", cfg.lldapUser
     , "-w", cfg.lldapPassword
-    , "user", "add", login, login <> "@users.colonq.computer"
+    , "user", "add", login, uid <> "@users.colonq.computer"
     , "-p", password
     , "-f", uid
     ]
