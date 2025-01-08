@@ -31,6 +31,7 @@ import Fig.Web.Auth
 import Fig.Web.State
 import qualified Fig.Web.DB as DB
 import qualified Fig.Web.LDAP as LDAP
+import qualified Fig.Web.Exchange as Exchange
 
 data LiveEvent
   = LiveEventOnline !(Set.Set Text)
@@ -188,6 +189,9 @@ app cfg cmds liveEvents currentlyLive = do
     Sc.get "/api/circle" do
       live <- liftIO $ MVar.readMVar currentlyLive
       Sc.text . Text.L.fromStrict . pretty . SExprList @Void $ SExprString <$> Set.toList live
+    Sc.get "/api/exchange" do
+      listings <- Exchange.getOrders db
+      Sc.json listings
     websocket "/api/circle/events" \conn -> do
       c <- Chan.dupChan liveEvents
       forever do

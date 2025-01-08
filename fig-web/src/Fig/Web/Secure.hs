@@ -19,6 +19,7 @@ import Fig.Utils.SExpr
 import Fig.Bus.Client
 import Fig.Web.Utils
 import qualified Fig.Web.DB as DB
+import qualified Fig.Web.Exchange as Exchange
 
 data LiveEvent
   = LiveEventOnline !(Set.Set Text)
@@ -44,7 +45,7 @@ sexprStr = SExprString . BS.Base64.encodeBase64 . encodeUtf8
 app :: Config -> Commands IO -> IO Wai.Application
 app cfg cmds = do
   log "Connecting to database..."
-  _db <- DB.connect cfg
+  db <- DB.connect cfg
   log "Connected! Secure server active."
   Sc.scottyApp do
     Sc.middleware . Wai.Static.staticPolicy $ mconcat
@@ -64,7 +65,7 @@ app cfg cmds = do
       muser <- Sc.header "Remote-User"
       memail <- Sc.header "Remote-Email"
       case (muser, memail) of
-        (Just user, Just email) -> do
+        (Just user, Just _email) -> do
           name <- Sc.formParam "name"
           input <- Sc.formParamMaybe "input"
           liftIO $ cmds.publish [sexp|(frontend redeem incoming)|]
@@ -78,5 +79,39 @@ app cfg cmds = do
         _else -> do
           Sc.status status401
           Sc.text "you're not logged in buddy"
+    Sc.post "/api/exchange" do
+      Sc.header "Remote-Email" >>= \case
+        Nothing -> do
+          Sc.status status401
+          Sc.text "you're not logged in buddy"
+        Just creator -> do
+          haveCur <- Text.Lazy.toStrict <$> Sc.formParam "haveCur"
+          haveAmount <- Sc.formParam "haveAmount"
+          wantCur <- Text.Lazy.toStrict <$> Sc.formParam "wantCur"
+          wantAmount <- Sc.formParam "wantAmount"
+          key <- Exchange.createOrder db $ Exchange.Order
+            { creator = Text.Lazy.toStrict creator
+            , haveCur = haveCur
+            , haveAmount = haveAmount
+            , wantCur = wantCur
+            , wantAmount = wantAmount
+            }
+          Sc.text . Text.Lazy.fromStrict $ decodeUtf8 key
+    Sc.post "/api/exchange/:key" do
+      Sc.header "Remote-Email" >>= \case
+        Nothing -> do
+          Sc.status status401
+          Sc.text "you're not logged in buddy"
+        Just buyer -> do
+          key <- Sc.pathParam "key"
+          Exchange.satisfyOrder db key $ Text.Lazy.toStrict buyer
+    Sc.delete "/api/exchange/:key" do
+      Sc.header "Remote-Email" >>= \case
+        Nothing -> do
+          Sc.status status401
+          Sc.text "you're not logged in buddy"
+        Just _buyer -> do
+          key <- Sc.pathParam "key"
+          Exchange.cancelOrder db key
     Sc.notFound do
       Sc.text "not found"
