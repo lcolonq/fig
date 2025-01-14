@@ -61,6 +61,15 @@ app cfg cmds = do
       Sc.text "this is the secure endpoint"
     Sc.get "/api/status" do
       Sc.text "this is the secure endpoint"
+    Sc.get "/api/info" do
+      muser <- Sc.header "Remote-User"
+      memail <- Sc.header "Remote-Email"
+      case (muser, memail) of
+        (Just user, Just email) -> do
+          Sc.text $ user <> " " <> email
+        _else -> do
+          Sc.status status401
+          Sc.text "you're not logged in buddy"
     Sc.post "/api/redeem" do
       muser <- Sc.header "Remote-User"
       memail <- Sc.header "Remote-Email"
