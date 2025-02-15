@@ -91,7 +91,7 @@ ircBot cfg busAddr = do
                 | ev == [sexp|(monitor irc chat outgoing)|]
                 , Right user <- decodeUtf8 <$> BS.Base64.decodeBase64 (encodeUtf8 euser)
                 , Right msg <- decodeUtf8 <$> BS.Base64.decodeBase64 (encodeUtf8 emsg) -> do
-                    unless (user `elem` (["fabius"] :: [Text])) do
+                    unless (any (Text.isInfixOf user) (["fabius"] :: [Text])) do
                       Chan.writeChan outgoing OutgoingMessage { chan, user, msg = msg }
               _ -> log $ "Invalid outgoing message: " <> tshow d
         )
