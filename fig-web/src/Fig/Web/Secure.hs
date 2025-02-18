@@ -52,9 +52,12 @@ app cfg cmds = do
       [ Wai.Static.isNotAbsolute
       , Wai.Static.only
         [ ("menu", "menu.html")
+        , ("throwshade", "throwshade.html")
         , ("main.css", "main.css")
         , ("main.js", "main.js")
-        ] Wai.Static.<|> Wai.Static.hasPrefix "assets"
+        ]
+        Wai.Static.<|> Wai.Static.hasPrefix "assets"
+        Wai.Static.<|> Wai.Static.hasPrefix "newton"
       , Wai.Static.addBase cfg.assetPath
       ]
     Sc.get "/" do
