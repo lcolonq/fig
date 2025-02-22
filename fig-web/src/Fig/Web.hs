@@ -189,6 +189,12 @@ app cfg cmds liveEvents currentlyLive = do
     Sc.get "/api/circle" do
       live <- liftIO $ MVar.readMVar currentlyLive
       Sc.text . Text.L.fromStrict . pretty . SExprList @Void $ SExprString <$> Set.toList live
+    Sc.get "/api/shader" do
+      DB.get db "shader" >>= \case
+        Nothing -> do
+          Sc.status status404
+          Sc.text "no shader present"
+        Just sh -> Sc.text . Text.L.fromStrict $ decodeUtf8 sh
     Sc.get "/api/exchange" do
       listings <- Exchange.getOrders db
       Sc.json listings
