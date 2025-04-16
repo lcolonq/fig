@@ -30,6 +30,10 @@ hget c key hkey = liftIO $ Redis.runRedis c do
   v <- Redis.hget key hkey
   pure . join $ hush v
 
+hkeys :: MonadIO m => Redis.Connection -> ByteString -> m (Maybe [ByteString])
+hkeys c key = liftIO $ Redis.runRedis c do
+  hush <$> Redis.hkeys key
+
 hvals :: MonadIO m => Redis.Connection -> ByteString -> m (Maybe [ByteString])
 hvals c key = liftIO $ Redis.runRedis c do
   hush <$> Redis.hvals key

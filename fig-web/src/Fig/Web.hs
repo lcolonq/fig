@@ -38,16 +38,37 @@ data LiveEvent
   | LiveEventOffline !(Set.Set Text)
   deriving (Show, Eq, Ord)
 
+data Channels = Channels
+  { live :: !(Chan.Chan LiveEvent)
+  , gizmo :: !(Chan.Chan Text)
+  }
+
+newChannels :: IO Channels
+newChannels = do
+  live <- Chan.newChan
+  gizmo <- Chan.newChan
+  pure Channels {..}
+
+data Globals = Globals
+  { currentlyLive :: !(MVar.MVar (Set.Set Text))
+  }
+
+newGlobals :: IO Globals
+newGlobals = do
+  currentlyLive <- MVar.newMVar Set.empty
+  pure Globals {..}
+  
 server :: Config -> (Text, Text) -> IO ()
 server cfg busAddr = do
   log $ "Web server running on port " <> tshow cfg.port
-  liveEvents <- Chan.newChan @LiveEvent
-  currentlyLive <- MVar.newMVar Set.empty
+  chans <- newChannels
+  globs <- newGlobals
   busClient busAddr
     (\cmds -> do
         log "Connected to bus!"
         cmds.subscribe [sexp|(monitor twitch stream online)|]
-        Warp.run cfg.port =<< app cfg cmds liveEvents currentlyLive
+        cmds.subscribe [sexp|(gizmo buffer update)|]
+        Warp.run cfg.port =<< app cfg cmds chans globs.currentlyLive
     )
     (\_cmds d -> do
         case d of
@@ -55,12 +76,15 @@ server cfg busAddr = do
             | ev == [sexp|(monitor twitch stream online)|] -> do
                 let live = mapMaybe (\case SExprString s -> Just s; _other -> Nothing) rest
                 let new = Set.fromList live 
-                old <- MVar.swapMVar currentlyLive new
+                old <- MVar.swapMVar globs.currentlyLive new
                 let online = Set.difference new old
                 let offline = Set.difference old new
                 log $ "Newly online: " <> Text.intercalate " " (Set.toList online) <> ", newly offline: " <> Text.intercalate " " (Set.toList offline)
-                unless (Set.null online) . Chan.writeChan liveEvents $ LiveEventOnline online
-                unless (Set.null offline) . Chan.writeChan liveEvents $ LiveEventOnline offline
+                unless (Set.null online) . Chan.writeChan chans.live $ LiveEventOnline online
+                unless (Set.null offline) . Chan.writeChan chans.live $ LiveEventOnline offline
+            | ev == [sexp|(gizmo buffer update)|] -> do
+                let updates = mapMaybe (\case SExprString s -> Just s; _other -> Nothing) rest
+                forM_ updates $ Chan.writeChan chans.gizmo
           _other -> log $ "Invalid event: " <> tshow d
     )
     (pure ())
@@ -68,8 +92,8 @@ server cfg busAddr = do
 sexprStr :: Text -> SExpr
 sexprStr = SExprString . BS.Base64.encodeBase64 . encodeUtf8
 
-app :: Config -> Commands IO -> Chan.Chan LiveEvent -> MVar.MVar (Set.Set Text) -> IO Wai.Application
-app cfg cmds liveEvents currentlyLive = do
+app :: Config -> Commands IO -> Channels -> MVar.MVar (Set.Set Text) -> IO Wai.Application
+app cfg _cmds chans currentlyLive = do
   log "Connecting to database..."
   db <- DB.connect cfg
   log "Connected! Server active."
@@ -79,6 +103,7 @@ app cfg cmds liveEvents currentlyLive = do
       [ Wai.Static.isNotAbsolute
       , Wai.Static.only
         [ ("register", "register.html")
+        , ("gizmo", "gizmo.html")
         , ("main.css", "main.css")
         , ("main.js", "main.js")
         ] Wai.Static.<|> Wai.Static.hasPrefix "assets"
@@ -186,9 +211,6 @@ app cfg cmds liveEvents currentlyLive = do
       DB.incr db "sentiment"
     Sc.post "/api/sentiment/red" do
       DB.decr db "sentiment"
-    Sc.get "/api/circle" do
-      live <- liftIO $ MVar.readMVar currentlyLive
-      Sc.text . Text.L.fromStrict . pretty . SExprList @Void $ SExprString <$> Set.toList live
     Sc.get "/api/shader" do
       DB.get db "shader" >>= \case
         Nothing -> do
@@ -198,8 +220,26 @@ app cfg cmds liveEvents currentlyLive = do
     Sc.get "/api/exchange" do
       listings <- Exchange.getOrders db
       Sc.json listings
+    Sc.get "/api/gizmo" do
+      buf <- Sc.queryParam "buf"
+      DB.hget db "gizmos" buf >>= \case
+        Nothing -> do
+          Sc.status status404
+          Sc.text "gizmo does not exist"
+        Just html -> Sc.html . Text.L.fromStrict $ decodeUtf8 html
+    Sc.get "/api/gizmo/list" do
+      gizmos <- maybe [] (fmap decodeUtf8) <$> DB.hkeys db "gizmos"
+      Sc.text $ Text.L.fromStrict $ Text.unlines gizmos
+    websocket "/api/gizmo/events" \conn -> do
+      c <- Chan.dupChan chans.gizmo
+      forever do
+        ev <- liftIO $ Chan.readChan c
+        WS.sendTextData conn ev
+    Sc.get "/api/circle" do
+      live <- liftIO $ MVar.readMVar currentlyLive
+      Sc.text . Text.L.fromStrict . pretty . SExprList @Void $ SExprString <$> Set.toList live
     websocket "/api/circle/events" \conn -> do
-      c <- Chan.dupChan liveEvents
+      c <- Chan.dupChan chans.live
       forever do
         ev <- liftIO $ Chan.readChan c
         WS.sendTextData conn $ case ev of
