@@ -57,7 +57,7 @@ newGlobals :: IO Globals
 newGlobals = do
   currentlyLive <- MVar.newMVar Set.empty
   pure Globals {..}
-  
+
 server :: Config -> (Text, Text) -> IO ()
 server cfg busAddr = do
   log $ "Web server running on port " <> tshow cfg.port

@@ -57,5 +57,5 @@ websocket :: ByteString -> (WS.Connection -> IO ()) -> Sc.ScottyM ()
 websocket pat h = Sc.middleware $ Wai.WS.websocketsOr WS.defaultConnectionOptions handler
   where
     handler pending = if WS.requestPath (WS.pendingRequest pending) == pat
-      then WS.acceptRequest pending >>= h
+      then WS.acceptRequest pending >>= \c -> WS.withPingThread c 30 (pure ()) $ h c
       else WS.rejectRequest pending ""
