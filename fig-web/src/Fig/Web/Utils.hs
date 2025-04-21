@@ -53,9 +53,9 @@ loadConfig path = Toml.decodeFileEither configCodec path >>= \case
   Left err -> throwM . FigWebException $ tshow err
   Right config -> pure config
 
-websocket :: ByteString -> (WS.Connection -> IO ()) -> Sc.ScottyM ()
-websocket pat h = Sc.middleware $ Wai.WS.websocketsOr WS.defaultConnectionOptions handler
+websocket :: [(ByteString, WS.Connection -> IO ())] -> Sc.ScottyM ()
+websocket hs = Sc.middleware $ Wai.WS.websocketsOr WS.defaultConnectionOptions handler
   where
-    handler pending = if WS.requestPath (WS.pendingRequest pending) == pat
-      then WS.acceptRequest pending >>= \c -> WS.withPingThread c 30 (pure ()) $ h c
-      else WS.rejectRequest pending ""
+    handler pending = case lookup (WS.requestPath (WS.pendingRequest pending)) hs of
+      Nothing -> WS.rejectRequest pending ""
+      Just h -> WS.acceptRequest pending >>= \c -> WS.withPingThread c 30 (pure ()) $ h c

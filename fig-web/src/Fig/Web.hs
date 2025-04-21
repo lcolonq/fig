@@ -230,28 +230,32 @@ app cfg _cmds chans currentlyLive = do
     Sc.get "/api/gizmo/list" do
       gizmos <- maybe [] (fmap decodeUtf8) <$> DB.hkeys db "gizmos"
       Sc.text $ Text.L.fromStrict $ Text.unlines gizmos
-    websocket "/api/gizmo/events" \conn -> do
-      c <- Chan.dupChan chans.gizmo
-      forever do
-        ev <- liftIO $ Chan.readChan c
-        WS.sendTextData conn ev
     Sc.get "/api/circle" do
       live <- liftIO $ MVar.readMVar currentlyLive
       Sc.text . Text.L.fromStrict . pretty . SExprList @Void $ SExprString <$> Set.toList live
-    websocket "/api/circle/events" \conn -> do
-      c <- Chan.dupChan chans.live
-      forever do
-        ev <- liftIO $ Chan.readChan c
-        WS.sendTextData conn $ case ev of
-          LiveEventOnline online ->
-            pretty $ SExprList @Void
-            [ SExprString "online"
-            , SExprList $ SExprString <$> Set.toList online
-            ]
-          LiveEventOffline offline ->
-            pretty $ SExprList @Void
-            [ SExprString "offline"
-            , SExprList $ SExprString <$> Set.toList offline
-            ]
+    websocket
+      [ ( "/api/circle/events", \conn -> do
+            c <- Chan.dupChan chans.live
+            forever do
+              ev <- liftIO $ Chan.readChan c
+              WS.sendTextData conn $ case ev of
+                LiveEventOnline online ->
+                  pretty $ SExprList @Void
+                  [ SExprString "online"
+                  , SExprList $ SExprString <$> Set.toList online
+                  ]
+                LiveEventOffline offline ->
+                  pretty $ SExprList @Void
+                  [ SExprString "offline"
+                  , SExprList $ SExprString <$> Set.toList offline
+                  ]
+        )
+      , ( "/api/gizmo/events", \conn -> do
+            c <- Chan.dupChan chans.gizmo
+            forever do
+              ev <- liftIO $ Chan.readChan c
+              WS.sendTextData conn ev
+        )
+      ]
     Sc.notFound do
       Sc.text "not found"
