@@ -7,7 +7,7 @@ import Fig.Prelude
 import Options.Applicative
 
 import Fig.Web.Utils
-import qualified Fig.Web as Public
+import qualified Fig.Web.Public as Public
 import qualified Fig.Web.Secure as Secure
 
 data Command

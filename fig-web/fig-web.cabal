@@ -56,7 +56,7 @@ library
   import: deps
   hs-source-dirs: src
   exposed-modules:
-    Fig.Web
+    Fig.Web.Public
     Fig.Web.Secure
     Fig.Web.Utils
     Fig.Web.Auth
