@@ -1,6 +1,6 @@
 {-# Language QuasiQuotes #-}
 
-module Fig.Bus.Client (Commands(..), busClient) where
+module Fig.Bus.SExp.Client (Commands(..), busClient) where
 
 import Fig.Prelude
 

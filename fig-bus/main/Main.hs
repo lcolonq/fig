@@ -5,6 +5,7 @@ import Fig.Prelude
 import Options.Applicative
 
 import qualified Fig.Bus
+import qualified Fig.Bus.Binary
 
 data Opts = Opts
   { host :: Text
@@ -22,4 +23,5 @@ main = do
     ( fullDesc
     <> header "fig-bus - a pub/sub message bus"
     )
-  Fig.Bus.main (Just opts.host, opts.port)
+  -- Fig.Bus.main (Just opts.host, opts.port)
+  Fig.Bus.Binary.main (Just opts.host, opts.port)

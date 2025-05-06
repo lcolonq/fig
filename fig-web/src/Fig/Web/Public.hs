@@ -41,12 +41,14 @@ data LiveEvent
 data Channels = Channels
   { live :: !(Chan.Chan LiveEvent)
   , gizmo :: !(Chan.Chan Text)
+  , model :: !(Chan.Chan WS.DataMessage)
   }
 
 newChannels :: IO Channels
 newChannels = do
   live <- Chan.newChan
   gizmo <- Chan.newChan
+  model <- Chan.newChan
   pure Channels {..}
 
 data Globals = Globals
@@ -79,7 +81,8 @@ server cfg busAddr = do
                 old <- MVar.swapMVar globs.currentlyLive new
                 let online = Set.difference new old
                 let offline = Set.difference old new
-                log $ "Newly online: " <> Text.intercalate " " (Set.toList online) <> ", newly offline: " <> Text.intercalate " " (Set.toList offline)
+                unless (Set.null online && Set.null offline) do
+                  log $ "Newly online: " <> Text.intercalate " " (Set.toList online) <> ", newly offline: " <> Text.intercalate " " (Set.toList offline)
                 unless (Set.null online) . Chan.writeChan chans.live $ LiveEventOnline online
                 unless (Set.null offline) . Chan.writeChan chans.live $ LiveEventOnline offline
             | ev == [sexp|(gizmo buffer update)|] -> do
@@ -255,6 +258,17 @@ app cfg _cmds chans currentlyLive = do
             forever do
               ev <- liftIO $ Chan.readChan c
               WS.sendTextData conn ev
+        )
+      , ( "/api/model/broadcast", \conn -> do
+            forever do
+              msg <- liftIO $ WS.receiveDataMessage conn
+              Chan.writeChan chans.model msg
+        )
+      , ( "/api/model/events", \conn -> do
+            c <- Chan.dupChan chans.model
+            forever do
+              ev <- liftIO $ Chan.readChan c
+              WS.sendDataMessage conn ev
         )
       ]
     Sc.notFound do
