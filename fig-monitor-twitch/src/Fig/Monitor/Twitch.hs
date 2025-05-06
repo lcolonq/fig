@@ -39,7 +39,7 @@ import Network.HTTP.Client as HTTP
 import Network.HTTP.Types.Status as HTTP
 
 import Fig.Utils.SExpr
-import Fig.Bus.Client
+import Fig.Bus.SExp.Client
 import Fig.Monitor.Twitch.Utils
 
 loginToMaybeUserId :: Text -> Authed (Maybe Text)
