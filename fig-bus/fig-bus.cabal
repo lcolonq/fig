@@ -33,8 +33,9 @@ library
   hs-source-dirs: src
   exposed-modules:
     Fig.Bus.SExp
-    Fig.Bus.Binary
     Fig.Bus.SExp.Client
+    Fig.Bus.Binary
+    Fig.Bus.Binary.Utils
     Fig.Bus.Binary.Client
 
 executable fig-bus

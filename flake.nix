@@ -53,11 +53,11 @@
         overrides = haskellOverrides;
       };
 
-      figBusModule = { config, lib, ... }:
+      figBusSExpModule = { config, lib, ... }:
         let
-          cfg = config.colonq.services.fig-bus;
+          cfg = config.colonq.services.fig-bus-sexp;
         in {
-          options.colonq.services.fig-bus = {
+          options.colonq.services.fig-bus-sexp = {
             enable = lib.mkEnableOption "Enable the fig message bus";
             host = lib.mkOption {
               type = lib.types.str;
@@ -71,17 +71,51 @@
             };
           };
           config = lib.mkIf cfg.enable {
-            systemd.services."colonq.fig-bus" = {
+            systemd.services."colonq.fig-bus-sexp" = {
               wantedBy = ["network-online.target"];
               serviceConfig = {
                 Restart = "on-failure";
-                ExecStart = "${haskellPackages.fig-bus}/bin/fig-bus --host ${cfg.host} --port ${toString cfg.port}";
+                ExecStart = "${haskellPackages.fig-bus}/bin/fig-bus sexp --host ${cfg.host} --port ${toString cfg.port}";
                 DynamicUser = "yes";
-                RuntimeDirectory = "colonq.fig-bus";
+                RuntimeDirectory = "colonq.fig-bus-sexp";
                 RuntimeDirectoryMode = "0755";
-                StateDirectory = "colonq.fig-bus";
+                StateDirectory = "colonq.fig-bus-sexp";
                 StateDirectoryMode = "0700";
-                CacheDirectory = "colonq.fig-bus";
+                CacheDirectory = "colonq.fig-bus-sexp";
+                CacheDirectoryMode = "0750";
+              };
+            };
+          };
+        };
+      figBusBinaryModule = { config, lib, ... }:
+        let
+          cfg = config.colonq.services.fig-bus-binary;
+        in {
+          options.colonq.services.fig-bus-binary = {
+            enable = lib.mkEnableOption "Enable the fig message bus";
+            host = lib.mkOption {
+              type = lib.types.str;
+              default = "127.0.0.1";
+              description = "The host bound by the fig server";
+            };
+            port = lib.mkOption {
+              type = lib.types.port;
+              default = 32051;
+              description = "The port bound by the fig server";
+            };
+          };
+          config = lib.mkIf cfg.enable {
+            systemd.services."colonq.fig-bus-binary" = {
+              wantedBy = ["network-online.target"];
+              serviceConfig = {
+                Restart = "on-failure";
+                ExecStart = "${haskellPackages.fig-bus}/bin/fig-bus binary --host ${cfg.host} --port ${toString cfg.port}";
+                DynamicUser = "yes";
+                RuntimeDirectory = "colonq.fig-bus-binary";
+                RuntimeDirectoryMode = "0755";
+                StateDirectory = "colonq.fig-bus-binary";
+                StateDirectoryMode = "0700";
+                CacheDirectory = "colonq.fig-bus-binary";
                 CacheDirectoryMode = "0750";
               };
             };
@@ -401,7 +435,8 @@
         program = "${haskellPackages.fig-bus}/bin/fig-bus";
       };
       nixosModules = {
-        figBus = figBusModule;
+        figBusSExp = figBusSExpModule;
+        figBusBinary = figBusBinaryModule;
         figMonitorTwitchLiveWatcher = figMonitorTwitchLiveWatcherModule;
         figMonitorDiscord = figMonitorDiscordModule;
         figMonitorIRC = figMonitorIRCModule;

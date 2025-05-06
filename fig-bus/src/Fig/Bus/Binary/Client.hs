@@ -1,5 +1,3 @@
-{-# Language QuasiQuotes #-}
-
 module Fig.Bus.Binary.Client (Commands(..), busClient) where
 
 import Fig.Prelude
@@ -9,14 +7,14 @@ import System.Exit (exitFailure)
 import qualified Control.Concurrent as Conc
 import qualified Control.Concurrent.Async as Async
 
-import Data.ByteString (hPut, hGet)
+import Data.ByteString (hPut)
 
 import Fig.Utils.Net
-import Fig.Bus.Binary
+import Fig.Bus.Binary.Utils
 
 data Commands m = Commands
-  { subscribe :: EventType -> m ()
-  , publish :: EventType -> ByteString -> m ()
+  { subscribe :: !(ByteString -> m ())
+  , publish :: !(ByteString -> ByteString -> m ())
   }
 
 newtype FigBusClientException = FigBusClientException Text
@@ -27,16 +25,16 @@ busClient :: forall m.
   (MonadIO m, MonadThrow m, MonadMask m) =>
   (Text, Text) ->
   (Commands IO -> IO ()) ->
-  (Commands IO -> SExpr -> IO ()) ->
+  (Commands IO -> ByteString -> ByteString -> IO ()) ->
   IO () ->
   m ()
 busClient loc@(host, port) onConn onData onQuit = catchFailure . client loc $ pure \h ->
   let
     cmds = Commands
-      { subscribe = \(EventType ev) -> do
+      { subscribe = \ev -> do
           hPut h "s"
           writeLengthPrefixed h ev
-      , publish = \(EventType ev) d -> do
+      , publish = \ev d -> do
           hPut h "p"
           writeLengthPrefixed h ev
           writeLengthPrefixed h d
@@ -45,11 +43,9 @@ busClient loc@(host, port) onConn onData onQuit = catchFailure . client loc $ pu
     ( do
         liftIO $ Async.concurrently_ (onConn cmds) do
           forever do
-            
-            line <- throwLeft id . decodeUtf8' =<< liftIO (hGetLine h)
-            case parseSExpr line of
-              Nothing -> throwM . FigBusClientException $ "Server sent malformed s-expression: " <> line
-              Just x -> liftIO $ onData cmds x
+            (,) <$> readLengthPrefixed h <*> readLengthPrefixed h >>= \case
+              (Just ev, Just d) -> liftIO $ onData cmds ev d
+              _else -> throwM . FigBusClientException $ "Server sent malformed data"
     , liftIO onQuit
     )
   where
@@ -60,10 +56,10 @@ busClient loc@(host, port) onConn onData onQuit = catchFailure . client loc $ pu
 _testClient :: IO ()
 _testClient = busClient ("localhost", "32050")
   (\cmds -> do
-      cmds.subscribe [sexp|foo|]
+      cmds.subscribe "foo"
       forever do
         Conc.threadDelay 1000000
-        cmds.publish [sexp|bar|] [[sexp|42|]]
+        cmds.publish "bar" "42"
   )
-  (\_cmds d -> log $ "Received: " <> pretty d)
+  (\_cmds ev d -> log $ "Received: " <> tshow (ev, d))
   (pure ())
