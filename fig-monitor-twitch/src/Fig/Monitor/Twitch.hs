@@ -1,4 +1,3 @@
-{-# Language QuasiQuotes #-}
 {-# Language RecordWildCards #-}
 {-# Language ApplicativeDo #-}
 
@@ -18,7 +17,6 @@ import Control.Concurrent (threadDelay)
 import qualified Data.Maybe as Maybe
 import qualified Data.Text as Text
 import qualified Data.Text.Lazy as Text.Lazy
-import qualified Data.ByteString.Base64 as BS.Base64
 import qualified Data.Vector as V
 import qualified Data.Map.Strict as Map
 import qualified Data.Set as Set
@@ -38,8 +36,7 @@ import qualified Web.Scotty as Scotty
 import Network.HTTP.Client as HTTP
 import Network.HTTP.Types.Status as HTTP
 
-import Fig.Utils.SExpr
-import Fig.Bus.SExp.Client
+import Fig.Bus.Binary.Client
 import Fig.Monitor.Twitch.Utils
 
 loginToMaybeUserId :: Text -> Authed (Maybe Text)
@@ -291,12 +288,12 @@ twitchEventClient cfg busAddr = do
       subscribeRaids sessionId user
     busClient busAddr
       (\cmds -> do
-          cmds.subscribe [sexp|(monitor twitch poll create)|]
-          cmds.subscribe [sexp|(monitor twitch prediction create)|]
-          cmds.subscribe [sexp|(monitor twitch prediction finish)|]
-          cmds.subscribe [sexp|(monitor twitch vip add)|]
-          cmds.subscribe [sexp|(monitor twitch vip remove)|]
-          cmds.subscribe [sexp|(monitor twitch shoutout)|]
+          cmds.subscribe "monitor twitch poll create"
+          cmds.subscribe "monitor twitch prediction create"
+          cmds.subscribe "monitor twitch prediction finish"
+          cmds.subscribe "monitor twitch vip add"
+          cmds.subscribe "monitor twitch vip remove"
+          cmds.subscribe "monitor twitch shoutout"
           forever do
             resp <- WS.receiveData conn
             case Aeson.eitherDecodeStrict resp of
@@ -315,8 +312,9 @@ twitchEventClient cfg busAddr = do
                     case Aeson.parseMaybe parseEvent res of
                       Just (nm, title, minput) -> do
                         log $ "Channel point reward \"" <> title <> "\" redeemed by: " <> nm
-                        cmds.publish [sexp|(monitor twitch redeem incoming)|]
-                          $ [SExprString nm, SExprString title] <> maybe [] ((:[]) . SExprString . BS.Base64.encodeBase64 . encodeUtf8) minput
+                        cmds.publish "monitor twitch redeem incoming"
+                           . encodeUtf8 . Text.unwords $
+                           [nm, title] <> Maybe.maybeToList minput
                       _else -> log "Failed to extract payload from channel point redeem event"
                   Just ("channel.prediction.begin" :: Text) -> do
                     let parseEvent o = do
@@ -332,14 +330,13 @@ twitchEventClient cfg busAddr = do
                     case Aeson.parseMaybe parseEvent res of
                       Just (pid, oids) -> do
                         log $ "Prediction begin: " <> pid
-                        cmds.publish [sexp|(monitor twitch prediction begin)|]
-                          [ SExprString pid
-                          , SExprList $ (\(title, oid) -> SExprList [SExprString title, SExprString oid]) <$> toList oids
-                          ]
+                        cmds.publish "monitor twitch prediction begin"
+                           . encodeUtf8 . Text.unwords $
+                           [ pid ] <> ((\(title, oid) -> title <> "," <> oid) <$> toList oids)
                       _else -> log "Failed to extract ID from payload for prediction begin event"
                   Just ("channel.prediction.end" :: Text) -> do
                     log "Prediction end"
-                    cmds.publish [sexp|(monitor twitch prediction end)|] []
+                    cmds.publish "monitor twitch prediction end" ""
                   Just ("channel.raid" :: Text) -> do
                     let parseEvent o = do
                           payload <- o .: "payload"
@@ -348,7 +345,7 @@ twitchEventClient cfg busAddr = do
                     case Aeson.parseMaybe parseEvent res of
                       Just nm -> do
                         log $ "Incoming raid from: " <> nm
-                        cmds.publish [sexp|(monitor twitch raid)|] [SExprString nm]
+                        cmds.publish "monitor twitch raid" $ encodeUtf8 nm
                       _else -> log "Failed to extract user from raid event"
                   Just ("channel.follow" :: Text) -> do
                     let parseEvent o = do
@@ -358,7 +355,7 @@ twitchEventClient cfg busAddr = do
                     case Aeson.parseMaybe parseEvent res of
                       Just nm -> do
                         log $ "New follower: " <> nm
-                        cmds.publish [sexp|(monitor twitch follow)|] [SExprString nm]
+                        cmds.publish "monitor twitch follow" $ encodeUtf8 nm
                       _else -> log "Failed to extract user from follow event"
                   Just ("channel.subscribe" :: Text) -> do
                     let parseEvent o = do
@@ -370,7 +367,7 @@ twitchEventClient cfg busAddr = do
                     case Aeson.parseMaybe parseEvent res of
                       Just (nm, False) -> do
                         log $ "New subscriber: " <> nm
-                        cmds.publish [sexp|(monitor twitch subscribe)|] [SExprString nm]
+                        cmds.publish "monitor twitch subscribe" $ encodeUtf8 nm
                       Just _ -> log "Skipping gifted subscription"
                       _else -> log "Failed to extract user from subscribe event"
                   Just ("channel.cheer" :: Text) -> do
@@ -383,7 +380,9 @@ twitchEventClient cfg busAddr = do
                     case Aeson.parseMaybe parseEvent res of
                       Just (nm, bits) -> do
                         log $ "New cheer: " <> nm <> " " <> tshow bits
-                        cmds.publish [sexp|(monitor twitch cheer)|] [SExprString nm, SExprInteger bits]
+                        cmds.publish "monitor twitch cheer"
+                          . encodeUtf8 . Text.unwords $
+                          [nm, bits]
                       _else -> log "Failed to extract user from cheer event"
                   Just ("channel.subscription.gift" :: Text) -> do
                     let parseEvent o = do
@@ -395,7 +394,9 @@ twitchEventClient cfg busAddr = do
                     case Aeson.parseMaybe parseEvent res of
                       Just (nm, num) -> do
                         log $ "User " <> nm <> " gifted subs: " <> tshow num
-                        cmds.publish [sexp|(monitor twitch gift)|] [SExprString nm, SExprInteger num]
+                        cmds.publish "monitor twitch gift"
+                          . encodeUtf8 . Text.unwords $
+                          [nm, num]
                       _else -> log "Failed to extract user from gift sub event"
                   Just ("channel.poll.begin" :: Text) -> do
                     let parseEvent o = do
@@ -405,7 +406,7 @@ twitchEventClient cfg busAddr = do
                     case Aeson.parseMaybe parseEvent res of
                       Just pollid -> do
                         log $ "Poll begin: " <> pollid
-                        cmds.publish [sexp|(monitor twitch poll begin)|] [SExprString pollid]
+                        cmds.publish "monitor twitch poll begin" $ encodeUtf8 pollid
                       _else -> log "Failed to extract ID from payload for poll begin event"
                   Just ("channel.poll.end" :: Text) -> do
                     let parseEvent o = do
@@ -424,52 +425,50 @@ twitchEventClient cfg busAddr = do
                             _else -> mempty
                     case Aeson.parseMaybe parseEvent res of
                       Just (pollid, choices) -> do
-                        let schoices = (\(t, v) -> SExprList [SExprString t, SExprInteger v]) <$> choices
+                        let schoices = (\(t, v) -> t <> "," <> v) <$> choices
                         log $ "Poll end: " <> pollid
-                        cmds.publish [sexp|(monitor twitch poll end)|] [SExprString pollid, SExprList schoices]
+                        cmds.publish "monitor twitch poll end" . encodeUtf8 . Text.unwords $ [pollid] <> schoices
                       _else -> log "Failed to extract ID from payload for poll end event"
                   _else -> log $ "Received unknown notification event: " <> tshow resp
                 Just "session_keepalive" -> pure ()
                 _else -> log $ "Received unknown response: " <> tshow resp
       )
-      (\_cmds d -> do
-          case d of
-            SExprList [ev, SExprString title, SExprList schoices]
-              | ev == [sexp|(monitor twitch poll create)|] -> do
-                  let choices = Maybe.mapMaybe (\case SExprString c -> Just c; _else -> Nothing) schoices
-                  runAuthed cfg do
-                    user <- loginToUserId cfg.userLogin
-                    poll title choices user
-              | ev == [sexp|(monitor twitch prediction create)|] -> do
-                  let choices = Maybe.mapMaybe (\case SExprString c -> Just c; _else -> Nothing) schoices
-                  runAuthed cfg do
-                    user <- loginToUserId cfg.userLogin
-                    createPrediction title choices user
-            SExprList [ev, SExprString pid, SExprString oid]
-              | ev == [sexp|(monitor twitch prediction finish)|] -> do
-                  runAuthed cfg do
-                    user <- loginToUserId cfg.userLogin
-                    finishPrediction pid oid user
-            SExprList [ev, SExprString u]
-              | ev == [sexp|(monitor twitch vip add)|] -> do
-                  runAuthed cfg do
-                    user <- loginToUserId cfg.userLogin
-                    loginToMaybeUserId u >>= \case
-                      Nothing -> pure ()
-                      Just vipuser -> addVIP vipuser user
-              | ev == [sexp|(monitor twitch vip remove)|] -> do
-                  runAuthed cfg do
-                    user <- loginToUserId cfg.userLogin
-                    loginToMaybeUserId u >>= \case
-                      Nothing -> pure ()
-                      Just vipuser -> removeVIP vipuser user
-              | ev == [sexp|(monitor twitch shoutout)|] -> do
-                  runAuthed cfg do
-                    user <- loginToUserId cfg.userLogin
-                    loginToMaybeUserId u >>= \case
-                      Nothing -> pure ()
-                      Just souser -> shoutout souser user
-            _else -> log $ "Invalid incoming message: " <> tshow d
+      (\_cmds ev d -> do
+          let args = Text.splitOn " " $ decodeUtf8 d
+          case (ev, args) of
+            ("monitor twitch poll create", [title, schoices]) -> do
+              let choices = Text.splitOn "," schoices
+              runAuthed cfg do
+                user <- loginToUserId cfg.userLogin
+                poll title choices user
+            ("monitor twitch prediction create", [title, schoices]) -> do
+              let choices = Text.splitOn "," schoices
+              runAuthed cfg do
+                user <- loginToUserId cfg.userLogin
+                createPrediction title choices user
+            ("monitor twitch prediction finish", [pid, oid]) -> do
+              runAuthed cfg do
+                user <- loginToUserId cfg.userLogin
+                finishPrediction pid oid user
+            ("monitor twitch vip add", [u]) -> do
+              runAuthed cfg do
+                user <- loginToUserId cfg.userLogin
+                loginToMaybeUserId u >>= \case
+                  Nothing -> pure ()
+                  Just vipuser -> addVIP vipuser user
+            ("monitor twitch vip remove", [u]) -> do
+              runAuthed cfg do
+                user <- loginToUserId cfg.userLogin
+                loginToMaybeUserId u >>= \case
+                  Nothing -> pure ()
+                  Just vipuser -> removeVIP vipuser user
+            ("monitor twitch vip shoutout", [u]) -> do
+              runAuthed cfg do
+                user <- loginToUserId cfg.userLogin
+                loginToMaybeUserId u >>= \case
+                  Nothing -> pure ()
+                  Just souser -> shoutout souser user
+            _else -> log $ "Invalid incoming message: " <> tshow (ev, args)
       )
       (pure ())
 
@@ -483,12 +482,12 @@ twitchChannelLiveMonitor cfg busAddr = do
             log "Updating liveness..."
             live <- runAuthed cfg $ usersAreLive cfg.monitor
             log "Update complete!"
-            cmds.publish [sexp|(monitor twitch stream online)|] $ SExprString <$> Set.toList live
+            cmds.publish "monitor twitch stream online" . encodeUtf8 . Text.unwords $ Set.toList live
             threadDelay $ 5 * 60 * 1000000
             loop
         loop
     )
-    (\_cmds _d -> pure ())
+    (\_cmds _ev _d -> pure ())
     (pure ())
 
 data IRCMessage = IRCMessage
@@ -536,7 +535,7 @@ twitchChatClient cfg busAddr = do
       -- WS.sendTextData conn ("PRIVMSG #lcolonq :test the other direction" :: Text)
       busClient busAddr
         (\cmds -> do
-            cmds.subscribe [sexp|(monitor twitch chat outgoing)|]
+            cmds.subscribe "monitor twitch chat outgoing"
             forever do
               resp <- WS.receiveData conn
               forM (Text.lines resp) $ \line -> do
@@ -547,26 +546,26 @@ twitchChatClient cfg busAddr = do
                     WS.sendTextData conn $ "PONG :" <> mconcat msg.params
                   "CLEARCHAT" -> do
                     log "Received CLEARCHAT"
-                    cmds.publish [sexp|(monitor twitch chat clear-chat)|] $ SExprString <$> msg.params
+                    cmds.publish "monitor twitch chat clear-chat" . encodeUtf8 $ Text.unwords msg.params
                   "NOTICE" -> do
                     log "Received NOTICE"
-                    cmds.publish [sexp|(monitor twitch chat notice)|] $ SExprString <$> msg.params
+                    cmds.publish "monitor twitch chat notice" . encodeUtf8 $ Text.unwords msg.params
                   "USERNOTICE" -> do
                     log "Received USERNOTICE"
-                    cmds.publish [sexp|(monitor twitch chat user-notice)|] $ SExprString <$> msg.params
+                    cmds.publish "monitor twitch chat user-notice" . encodeUtf8 $ Text.unwords msg.params
                   "PRIVMSG"
                     | Just displaynm <- Map.lookup "display-name" msg.tags
                     , Nothing <- Map.lookup "custom-reward-id" msg.tags -> do
-                      cmds.publish [sexp|(monitor twitch chat incoming)|]
-                        [ SExprString . BS.Base64.encodeBase64 $ encodeUtf8 displaynm
-                        , SExprList $ (\(key, v) -> SExprList [SExprString key, SExprString v]) <$> Map.toList msg.tags
-                        , SExprString . BS.Base64.encodeBase64 . encodeUtf8 . Text.unwords $ drop 1 msg.params
-                        ]
+                      cmds.publish "monitor twitch chat incoming" . encodeUtf8 . Text.unwords $
+                        [ displaynm
+                        , Text.intercalate "," $ (\(key, v) -> key <> ":" <> v) <$> Map.toList msg.tags
+                        ] <> drop 1 msg.params
                   _ -> pure ()
         )
-        (\_cmds d -> do
-            case d of
-              SExprList [ev, SExprString msg] | ev == [sexp|(monitor twitch chat outgoing)|] -> do
+        (\_cmds ev d -> do
+            case ev of
+              "monitor twitch chat outgoing" -> do
+                let msg = decodeUtf8 d
                 log $ "Sending: " <> msg
                 WS.sendTextData conn $ mconcat
                   [ "PRIVMSG #"
@@ -574,7 +573,7 @@ twitchChatClient cfg busAddr = do
                   , " :"
                   , msg
                   ]
-              _else -> log $ "Invalid outgoing message: " <> tshow d
+              _else -> log $ "Invalid incoming event: " <> tshow ev
         )
         (pure ())
 

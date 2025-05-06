@@ -1,5 +1,3 @@
-{-# Language QuasiQuotes #-}
-
 module Fig.Web.Public where
 
 import Fig.Prelude
@@ -11,10 +9,8 @@ import Control.Lens (use, (^?), Ixed (..))
 import qualified Control.Concurrent.Chan as Chan
 import qualified Control.Concurrent.MVar as MVar
 
-import Data.Maybe (mapMaybe)
 import qualified Data.Text as Text
 import qualified Data.Text.Lazy as Text.L
-import qualified Data.ByteString.Base64 as BS.Base64
 import qualified Data.Set as Set
 
 import qualified Network.Wai as Wai
@@ -25,7 +21,7 @@ import qualified Network.WebSockets as WS
 import qualified Web.Scotty as Sc
 
 import Fig.Utils.SExpr
-import Fig.Bus.Client
+import Fig.Bus.Binary.Client
 import Fig.Web.Utils
 import Fig.Web.Auth
 import Fig.Web.State
@@ -51,8 +47,8 @@ newChannels = do
   model <- Chan.newChan
   pure Channels {..}
 
-data Globals = Globals
-  { currentlyLive :: !(MVar.MVar (Set.Set Text))
+newtype Globals = Globals
+  { currentlyLive :: MVar.MVar (Set.Set Text)
   }
 
 newGlobals :: IO Globals
@@ -68,32 +64,30 @@ server cfg busAddr = do
   busClient busAddr
     (\cmds -> do
         log "Connected to bus!"
-        cmds.subscribe [sexp|(monitor twitch stream online)|]
-        cmds.subscribe [sexp|(gizmo buffer update)|]
+        cmds.subscribe "monitor twitch stream online"
+        cmds.subscribe "gizmo buffer update"
         Warp.run cfg.port =<< app cfg cmds chans globs.currentlyLive
     )
-    (\_cmds d -> do
-        case d of
-          SExprList (ev:rest)
-            | ev == [sexp|(monitor twitch stream online)|] -> do
-                let live = mapMaybe (\case SExprString s -> Just s; _other -> Nothing) rest
-                let new = Set.fromList live 
-                old <- MVar.swapMVar globs.currentlyLive new
-                let online = Set.difference new old
-                let offline = Set.difference old new
-                unless (Set.null online && Set.null offline) do
-                  log $ "Newly online: " <> Text.intercalate " " (Set.toList online) <> ", newly offline: " <> Text.intercalate " " (Set.toList offline)
-                unless (Set.null online) . Chan.writeChan chans.live $ LiveEventOnline online
-                unless (Set.null offline) . Chan.writeChan chans.live $ LiveEventOnline offline
-            | ev == [sexp|(gizmo buffer update)|] -> do
-                let updates = mapMaybe (\case SExprString s -> Just s; _other -> Nothing) rest
-                forM_ updates $ Chan.writeChan chans.gizmo
+    (\_cmds ev d -> do
+        case ev of
+          "monitor twitch stream online" -> do
+            let dstr = decodeUtf8 d
+            let live = Text.splitOn " " dstr
+            let new = Set.fromList live 
+            old <- MVar.swapMVar globs.currentlyLive new
+            let online = Set.difference new old
+            let offline = Set.difference old new
+            unless (Set.null online && Set.null offline) do
+              log $ "Newly online: " <> Text.intercalate " " (Set.toList online) <> ", newly offline: " <> Text.intercalate " " (Set.toList offline)
+            unless (Set.null online) . Chan.writeChan chans.live $ LiveEventOnline online
+            unless (Set.null offline) . Chan.writeChan chans.live $ LiveEventOnline offline
+          "gizmo buffer update" -> do
+            let dstr = decodeUtf8 d
+            let updates = Text.splitOn " " dstr
+            forM_ updates $ Chan.writeChan chans.gizmo
           _other -> log $ "Invalid event: " <> tshow d
     )
     (pure ())
-
-sexprStr :: Text -> SExpr
-sexprStr = SExprString . BS.Base64.encodeBase64 . encodeUtf8
 
 app :: Config -> Commands IO -> Channels -> MVar.MVar (Set.Set Text) -> IO Wai.Application
 app cfg _cmds chans currentlyLive = do
@@ -188,23 +182,6 @@ app cfg _cmds chans currentlyLive = do
           Sc.status status404
           Sc.text "song not found"
         Just val -> Sc.text . Text.L.fromStrict $ decodeUtf8 val
-    Sc.get "/api/poke/:name" do
-      target <- encodeUtf8 . Text.toLower <$> Sc.pathParam "name"
-      inbox <- fromMaybe [] <$> DB.smembers db ("pokeinbox:" <> target)
-      Sc.text . Text.L.fromStrict . pretty . SExprList @Void $ sexprStr . decodeUtf8 <$> inbox
-    Sc.post "/api/poke/:name" do
-      me <- encodeUtf8 . Text.toLower <$> Sc.formParam "ayem"
-      target <- encodeUtf8 . Text.toLower <$> Sc.pathParam "name"
-      DB.sismember db ("pokeinbox:" <> me) target >>= \case
-        True -> do
-          log . tshow $ "handshake between " <> me <> " and " <> target <> " complete!"
-          DB.srem db ("pokeinbox:" <> target) [me]
-          DB.srem db ("pokeinbox:" <> me) [target]
-          Sc.text "complete"
-        False -> do
-          log . tshow $ "partial handshake from " <> me <> " to " <> target
-          DB.sadd db ("pokeinbox:" <> target) [me]
-          Sc.text "partial"
     Sc.get "/api/sentiment" do
       s <- DB.get db "sentiment" >>= \case
         Nothing -> pure "0"

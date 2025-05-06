@@ -1,12 +1,10 @@
-{-# Language QuasiQuotes #-}
-
 module Fig.Web.Secure where
 
 import Fig.Prelude
 
+import Data.Maybe (maybeToList)
 import qualified Data.Text as Text
 import qualified Data.Text.Lazy as Text.Lazy
-import qualified Data.ByteString.Base64 as BS.Base64
 import qualified Data.Set as Set
 
 import qualified Network.Wai as Wai
@@ -15,8 +13,7 @@ import qualified Network.Wai.Handler.Warp as Warp
 
 import qualified Web.Scotty as Sc
 
-import Fig.Utils.SExpr
-import Fig.Bus.Client
+import Fig.Bus.Binary.Client
 import Fig.Web.Utils
 import qualified Fig.Web.DB as DB
 import qualified Fig.Web.Exchange as Exchange
@@ -34,13 +31,10 @@ server cfg busAddr = do
         log "Connected to bus!"
         Warp.run cfg.port =<< app cfg cmds
     )
-    (\_cmds d -> do
-        log $ "Invalid event: " <> tshow d
+    (\_cmds ev _d -> do
+        log $ "Invalid event: " <> tshow ev
     )
     (pure ())
-
-sexprStr :: Text -> SExpr
-sexprStr = SExprString . BS.Base64.encodeBase64 . encodeUtf8
 
 app :: Config -> Commands IO -> IO Wai.Application
 app cfg cmds = do
@@ -80,13 +74,11 @@ app cfg cmds = do
         (Just user, Just _email) -> do
           name <- Sc.formParam "name"
           input <- Sc.formParamMaybe "input"
-          liftIO $ cmds.publish [sexp|(frontend redeem incoming)|]
-            $ mconcat
-              [ [ sexprStr $ Text.Lazy.toStrict user
-                , sexprStr name
-                ]
-              , maybe [] ((:[]) . sexprStr) input
-              ]
+          liftIO . cmds.publish "frontend redeem incoming"
+            . encodeUtf8 . Text.unwords $
+            [ Text.Lazy.toStrict user
+            , name
+            ] <> maybeToList input
           Sc.text "it worked"
         _else -> do
           Sc.status status401
