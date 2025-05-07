@@ -558,7 +558,7 @@ twitchChatClient cfg busAddr = do
                     , Nothing <- Map.lookup "custom-reward-id" msg.tags -> do
                       cmds.publish "monitor twitch chat incoming" . encodeUtf8 . Text.unwords $
                         [ displaynm
-                        , Text.intercalate "|" $ (\(key, v) -> key <> ":" <> v) <$> Map.toList msg.tags
+                        , Text.intercalate "\n" $ (\(key, v) -> key <> "\t" <> v) <$> Map.toList msg.tags
                         ] <> drop 1 msg.params
                   _ -> pure ()
         )
