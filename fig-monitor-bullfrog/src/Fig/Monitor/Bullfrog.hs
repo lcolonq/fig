@@ -14,7 +14,7 @@ import qualified Wuss as WS
 import qualified Network.WebSockets.Connection as WS
 
 import Fig.Utils.SExpr
-import Fig.Bus.Client
+import Fig.Bus.SExp.Client
 import Fig.Monitor.Bullfrog.Utils
 
 bullfrogClient :: Config -> (Text, Text) -> IO ()
