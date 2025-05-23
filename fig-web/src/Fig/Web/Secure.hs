@@ -75,7 +75,7 @@ app cfg cmds = do
           name <- Sc.formParam "name"
           input <- Sc.formParamMaybe "input"
           liftIO . cmds.publish "frontend redeem incoming"
-            . encodeUtf8 . Text.unwords $
+            . encodeUtf8 . Text.intercalate "\t" $
             [ Text.Lazy.toStrict user
             , name
             ] <> maybeToList input
