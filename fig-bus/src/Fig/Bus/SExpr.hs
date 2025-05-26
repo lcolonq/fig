@@ -1,4 +1,4 @@
-module Fig.Bus.SExp (main) where
+module Fig.Bus.SExpr (main) where
 
 import Fig.Prelude
 

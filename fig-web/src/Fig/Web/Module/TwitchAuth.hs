@@ -1,4 +1,6 @@
-module Fig.Web.Auth where
+module Fig.Web.Module.TwitchAuth
+  ( public
+  ) where
 
 import Fig.Prelude
 
@@ -6,17 +8,34 @@ import qualified Network.HTTP.Req as R
 
 import Data.Maybe (mapMaybe)
 import qualified Data.Text as Text
-import qualified Data.Text.Lazy as Text.Lazy
+import qualified Data.Text.Lazy as Text.L
 import qualified Data.Map.Strict as Map
 import qualified Data.Aeson as Aeson
 import qualified Data.Aeson.Types as Aeson
 
+import qualified Web.Scotty as Sc
+
 import qualified Jose.Jwk as Jwk
 import qualified Jose.Jwt as Jwt
 
-import qualified Web.Scotty as Sc
-
 import Fig.Web.Utils
+import Fig.Web.Types
+
+public :: Module
+public a = do
+  onGet "/api/register" $ twitchAuthed a.cfg \auth -> do
+    log "Authenticated with Twitch, trying to register..."
+    let user = Text.toLower auth.name
+    resetUserPassword a.cfg user auth.id >>= \case
+      Nothing -> do
+        log "Failed to register user"
+        status status500
+        respondText "failed to register"
+      Just pass -> do
+        log "Successfully registered user, responding..."
+        respondText $ user <> " " <> pass
+  onGet "/api/check" $ twitchAuthed a.cfg \auth -> do
+    respondJSON @[Text] [auth.id, auth.name]
 
 data TokenContents = TokenContents
   { aud :: !Text
@@ -60,7 +79,7 @@ checkAuth cfg =
   Sc.header "Authorization"
   >>= \case
     Just authstrLazy -> do
-      let authstr = drop 1 $ Text.splitOn " " $ Text.Lazy.toStrict authstrLazy
+      let authstr = drop 1 $ Text.splitOn " " $ Text.L.toStrict authstrLazy
       let pairs = Map.fromList $ flip mapMaybe authstr \s ->
             case Text.splitOn "=" s of
               [k, v] -> Just (k, Text.takeWhile (/='"') $ Text.drop 1 v)
@@ -72,8 +91,7 @@ checkAuth cfg =
               | tc.aud == cfg.clientId
               , tc.nonce == nonce
                 -> do
-                  pure . Just $ Auth
-                    { name = tc.preferred_username
+                  pure . Just $ Auth { name = tc.preferred_username
                     , id = tc.sub
                     }
             _else -> do
@@ -81,9 +99,9 @@ checkAuth cfg =
         _else -> pure Nothing
     _else -> pure Nothing
 
-authed :: Config -> (Auth -> Sc.ActionM ()) -> Sc.ActionM ()
-authed cfg f = checkAuth cfg >>= \case
+twitchAuthed :: Config -> (Auth -> Sc.ActionM ()) -> Sc.ActionM ()
+twitchAuthed cfg f = checkAuth cfg >>= \case
   Nothing -> do
-    Sc.status status401
-    Sc.text "unauthorized"
+    status status401
+    respondText "unauthorized"
   Just auth -> f auth

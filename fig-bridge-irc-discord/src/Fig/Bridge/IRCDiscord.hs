@@ -8,7 +8,7 @@ import qualified Data.List as List
 
 import Fig.Bridge.IRCDiscord.Utils
 import Fig.Utils.SExpr
-import Fig.Bus.SExp.Client
+import Fig.Bus.SExpr.Client
 
 bridge :: Config -> (Text, Text) -> IO ()
 bridge cfg busAddr = do

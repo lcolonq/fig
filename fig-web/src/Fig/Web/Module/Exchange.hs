@@ -1,4 +1,9 @@
-module Fig.Web.Exchange where
+module Fig.Web.Module.Exchange
+  ( public
+  , secure
+  ) where
+
+import Fig.Prelude
 
 import Control.Error.Util (hush)
 
@@ -11,7 +16,36 @@ import qualified Data.ByteString.Lazy as BS.Lazy
 import qualified Data.UUID as UUID
 import qualified Data.UUID.V4 as UUID
 
-import Fig.Prelude
+import Fig.Web.Utils
+import Fig.Web.Types
+
+public :: Module
+public a = do
+  onGet "/api/exchange" do
+    listings <- getOrders a.db.conn
+    respondJSON listings
+
+secure :: Module
+secure a = do
+  onPost "/api/exchange" $ authed \creds -> do
+    haveCur <- formParam "haveCur"
+    haveAmount <- formParam "haveAmount"
+    wantCur <- formParam "wantCur"
+    wantAmount <- formParam "wantAmount"
+    key <- createOrder a.db.conn $ Order
+      { creator = creds.email
+      , haveCur = haveCur
+      , haveAmount = haveAmount
+      , wantCur = wantCur
+      , wantAmount = wantAmount
+      }
+    respondText $ decodeUtf8 key
+  onPost "/api/exchange/:key" $ authed \creds -> do
+    key <- pathParam "key"
+    satisfyOrder a.db.conn key creds.email
+  onDelete "/api/exchange/:key" $ authed \_creds -> do
+    key <- pathParam "key"
+    cancelOrder a.db.conn key
 
 adjustUserCurrency :: Text -> Text -> Integer -> Redis.Redis ()
 adjustUserCurrency user cur amt = do
@@ -64,4 +98,3 @@ satisfyOrder c key buyer = liftIO $ Redis.runRedis c do
         adjustUserCurrency buyer order.haveCur order.haveAmount
         adjustUserCurrency order.creator order.haveCur (-order.haveAmount)
     _else -> pure ()
-        

@@ -39,7 +39,7 @@ main :: IO ()
 main = do
   opts <- execParser $ info (parseOpts <**> helper)
     ( fullDesc
-    <> header "fig-web - public-facing web applications"
+    <> Options.Applicative.header "fig-web - public-facing web applications"
     )
   cfg <- loadConfig opts.config
   case opts.cmd of

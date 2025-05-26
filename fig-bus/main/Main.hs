@@ -4,14 +4,14 @@ import Fig.Prelude
 
 import Options.Applicative
 
-import qualified Fig.Bus.SExp as SExp
+import qualified Fig.Bus.SExpr as SExpr
 import qualified Fig.Bus.Binary as Binary
 
-data Command = SExp | Binary
+data Command = SExpr | Binary
 
 parseCommand :: Parser Command
 parseCommand = subparser $ mconcat
-  [ command "sexp" $ info (pure SExp) (progDesc "Launch the s-expression bus")
+  [ command "sexp" $ info (pure SExpr) (progDesc "Launch the s-expression bus")
   , command "binary" $ info (pure Binary) (progDesc "Launch the binary bus")
   ]
 
@@ -34,5 +34,5 @@ main = do
     <> header "fig-bus - a pub/sub message bus"
     )
   case opts.cmd of
-    SExp -> SExp.main (Just opts.host, opts.port)
+    SExpr -> SExpr.main (Just opts.host, opts.port)
     Binary -> Binary.main (Just opts.host, opts.port)

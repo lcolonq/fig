@@ -32,8 +32,8 @@ library
   import: deps
   hs-source-dirs: src
   exposed-modules:
-    Fig.Bus.SExp
-    Fig.Bus.SExp.Client
+    Fig.Bus.SExpr
+    Fig.Bus.SExpr.Client
     Fig.Bus.Binary
     Fig.Bus.Binary.Utils
     Fig.Bus.Binary.Client

@@ -23,7 +23,7 @@ import qualified Discord.Requests as Dis
 import qualified Discord.Interactions as Dis
 
 import Fig.Utils.SExpr
-import Fig.Bus.SExp.Client
+import Fig.Bus.SExpr.Client
 import Fig.Monitor.Discord.Utils
 
 data OutgoingMessage = OutgoingMessage

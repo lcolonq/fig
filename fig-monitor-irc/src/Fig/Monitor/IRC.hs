@@ -19,7 +19,7 @@ import qualified Control.Concurrent.Chan as Chan
 import qualified Network.IRC.Client as IRC
 
 import Fig.Utils.SExpr
-import Fig.Bus.SExp.Client
+import Fig.Bus.SExpr.Client
 import Fig.Monitor.IRC.Utils
 
 data OutgoingMessage = OutgoingMessage

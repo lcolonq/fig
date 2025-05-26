@@ -56,14 +56,22 @@ library
   import: deps
   hs-source-dirs: src
   exposed-modules:
+    Fig.Web.Utils
+    Fig.Web.Types
+    Fig.Web.DB
     Fig.Web.Public
     Fig.Web.Secure
-    Fig.Web.Utils
-    Fig.Web.Auth
-    Fig.Web.State
-    Fig.Web.DB
-    Fig.Web.LDAP
-    Fig.Web.Exchange
+    Fig.Web.Module.Misc
+    Fig.Web.Module.TwitchAuth
+    Fig.Web.Module.Exchange
+    Fig.Web.Module.Gizmo
+    Fig.Web.Module.Sentiment
+    Fig.Web.Module.Circle
+    Fig.Web.Module.Model
+    Fig.Web.Module.Bells
+    Fig.Web.Module.User
+    Fig.Web.Module.Shader
+    Fig.Web.Module.Redeem
 
 executable fig-web
   import: defaults

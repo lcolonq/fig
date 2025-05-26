@@ -90,7 +90,7 @@ import Text.Show (Show(..))
 import Text.Read (readMaybe)
 
 import Control.Applicative (Applicative(..), (<*), (*>))
-import Control.Monad (Monad(..), join, forever, mapM, forM, foldM, void, (>>=), (=<<), (>=>), (<=<))
+import Control.Monad (Monad(..), join, forever, mapM, forM, foldM, void, when, unless, (>>=), (=<<), (>=>), (<=<))
 import Control.Monad.IO.Class (MonadIO(..))
 import Control.Monad.State.Class (MonadState(..), get, put, modify)
 import Control.Monad.Reader.Class (MonadReader(..), ask)
