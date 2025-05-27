@@ -15,6 +15,7 @@ import qualified Fig.Web.DB as DB
 public :: Module
 public a = do
   onGet "/api/motd" do
+    log "getting motd"
     DB.get a.db "motd" >>= \case
       Nothing -> respondText ""
       Just val -> respondText $ decodeUtf8 val

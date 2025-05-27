@@ -15,7 +15,7 @@ import Fig.Web.Types
 import Fig.Web.Utils
 import qualified Fig.Web.DB as DB
 import qualified Fig.Web.Module.Exchange as Exchange
-import qualified Fig.Web.Module.Exchange as Redeem
+import qualified Fig.Web.Module.Redeem as Redeem
 
 allBusEvents :: ModuleArgs -> BusEventHandlers
 allBusEvents args = busEvents . mconcat $ fmap ($ args)

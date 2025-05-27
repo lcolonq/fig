@@ -116,10 +116,10 @@ onPost :: Sc.RoutePattern -> Sc.ActionM () -> Sc.ScottyM ()
 onPost = Sc.post
 
 onPut :: Sc.RoutePattern -> Sc.ActionM () -> Sc.ScottyM ()
-onPut = Sc.post
+onPut = Sc.put
 
 onDelete :: Sc.RoutePattern -> Sc.ActionM () -> Sc.ScottyM ()
-onDelete = Sc.post
+onDelete = Sc.delete
 
 status :: Status -> Sc.ActionM ()
 status = Sc.status

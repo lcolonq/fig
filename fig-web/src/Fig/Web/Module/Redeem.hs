@@ -12,6 +12,8 @@ import Fig.Web.Types
 
 secure :: Module
 secure a = do
+  onGet "/api/redeeminfo" do
+    respondText "hiiiiiii"
   onPost "/api/redeem" $ authed \creds -> do
     name <- formParam "name"
     input <- formParamMaybe "input"
