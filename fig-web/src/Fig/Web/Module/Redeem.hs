@@ -15,6 +15,7 @@ secure a = do
   onPost "/api/redeem" $ authed \creds -> do
     name <- formParam "name"
     input <- formParamMaybe "input"
+    log $ creds.user <> " redeemed: " <> name
     liftIO . a.cmds.publish "frontend redeem incoming"
       . encodeUtf8 . Text.intercalate "\t" $
       [ creds.user
