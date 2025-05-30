@@ -17,13 +17,13 @@ import qualified Fig.Web.DB as DB
 import qualified Fig.Web.Module.Exchange as Exchange
 import qualified Fig.Web.Module.Redeem as Redeem
 
-allBusEvents :: ModuleArgs -> BusEventHandlers
+allBusEvents :: SecureModuleArgs -> BusEventHandlers
 allBusEvents args = busEvents . mconcat $ fmap ($ args)
   [ 
   ]
 
-server :: Config -> (Text, Text) -> IO ()
-server cfg busAddr = do
+server :: SecureOptions -> Config -> (Text, Text) -> IO ()
+server options cfg busAddr = do
   log $ "Web server running on port " <> tshow cfg.port
   log "Connecting to database..."
   db <- DB.connect cfg
@@ -42,7 +42,7 @@ server cfg busAddr = do
     )
     (pure ())
 
-app :: ModuleArgs -> IO Wai.Application
+app :: SecureModuleArgs -> IO Wai.Application
 app args = do
   log "Connected! Secure server active."
   Sc.scottyApp do

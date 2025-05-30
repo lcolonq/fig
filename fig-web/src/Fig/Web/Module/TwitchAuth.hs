@@ -21,7 +21,7 @@ import qualified Jose.Jwt as Jwt
 import Fig.Web.Utils
 import Fig.Web.Types
 
-public :: Module
+public :: PublicModule
 public a = do
   onGet "/api/register" $ twitchAuthed a.cfg \auth -> do
     log "Authenticated with Twitch, trying to register..."

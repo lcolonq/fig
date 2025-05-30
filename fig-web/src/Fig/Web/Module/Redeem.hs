@@ -10,7 +10,7 @@ import qualified Data.Text as Text
 import Fig.Web.Utils
 import Fig.Web.Types
 
-secure :: Module
+secure :: SecureModule
 secure a = do
   onGet "/api/redeeminfo" do
     respondText "hiiiiiii"

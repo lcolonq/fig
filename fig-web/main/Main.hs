@@ -6,18 +6,28 @@ import Fig.Prelude
 
 import Options.Applicative
 
+import Fig.Web.Types
 import Fig.Web.Utils
 import qualified Fig.Web.Public as Public
 import qualified Fig.Web.Secure as Secure
 
+parsePublicOptions :: Parser PublicOptions
+parsePublicOptions = do
+  pure PublicOptions{}
+
+parseSecureOptions :: Parser SecureOptions
+parseSecureOptions = do
+  simAuth <- switch (long "sim-auth" <> help "Simulate authentication instead of actually requiring authentication proxy headers")
+  pure SecureOptions{..}
+
 data Command
-  = Public
-  | Secure
+  = Public PublicOptions
+  | Secure SecureOptions
 
 parseCommand :: Parser Command
 parseCommand = subparser $ mconcat
-  [ command "public" $ info (pure Public) (progDesc "Launch the public web server")
-  , command "secure" $ info (pure Secure) (progDesc "Launch the private web server (intended to be run behind authentication proxy)")
+  [ command "public" $ info (Public <$> parsePublicOptions) (progDesc "Launch the public web server")
+  , command "secure" $ info (Secure <$> parseSecureOptions) (progDesc "Launch the private web server (intended to be run behind authentication proxy)")
   ]
 
 data Opts = Opts
@@ -43,5 +53,5 @@ main = do
     )
   cfg <- loadConfig opts.config
   case opts.cmd of
-    Public -> Public.server cfg (opts.busHost, opts.busPort)
-    Secure -> Secure.server cfg (opts.busHost, opts.busPort)
+    Public o -> Public.server o cfg (opts.busHost, opts.busPort)
+    Secure o -> Secure.server o cfg (opts.busHost, opts.busPort)

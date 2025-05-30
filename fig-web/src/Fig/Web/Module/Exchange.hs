@@ -19,13 +19,13 @@ import qualified Data.UUID.V4 as UUID
 import Fig.Web.Utils
 import Fig.Web.Types
 
-public :: Module
+public :: PublicModule
 public a = do
   onGet "/api/exchange" do
     listings <- getOrders a.db.conn
     respondJSON listings
 
-secure :: Module
+secure :: SecureModule
 secure a = do
   onPost "/api/exchange" $ authed \creds -> do
     haveCur <- formParam "haveCur"

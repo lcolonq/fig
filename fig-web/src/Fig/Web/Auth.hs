@@ -1,0 +1,27 @@
+module Fig.Web.Auth
+  ( Credentials(..)
+  , authed
+  ) where
+
+import Fig.Prelude
+
+import qualified Web.Scotty as Sc
+
+import Fig.Web.Types
+import Fig.Web.Utils
+
+data Credentials = Credentials
+  { user :: Text
+  , email :: Text
+  }
+authed :: SecureModuleArgs -> (Credentials -> Sc.ActionM ()) -> Sc.ActionM ()
+authed args h = do
+  muser <- header "Remote-User"
+  memail <- header "Remote-Email"
+  case (muser, memail) of
+    (Just user, Just email) -> do
+      let auth = Credentials{..}
+      h auth
+    _else -> do
+      status status401
+      respondText "you're not logged in buddy (this is probably a bug, go message clonk)"

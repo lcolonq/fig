@@ -58,6 +58,7 @@ library
   exposed-modules:
     Fig.Web.Utils
     Fig.Web.Types
+    Fig.Web.Auth
     Fig.Web.DB
     Fig.Web.Public
     Fig.Web.Secure

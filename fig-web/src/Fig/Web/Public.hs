@@ -25,14 +25,14 @@ import qualified Fig.Web.Module.Bells as Bells
 import qualified Fig.Web.Module.User as User
 import qualified Fig.Web.Module.Shader as Shader
 
-allBusEvents :: ModuleArgs -> BusEventHandlers
+allBusEvents :: PublicModuleArgs -> BusEventHandlers
 allBusEvents args = busEvents . mconcat $ fmap ($ args)
   [ Gizmo.publicBusEvents
   , Circle.publicBusEvents
   ]
 
-server :: Config -> (Text, Text) -> IO ()
-server cfg busAddr = do
+server :: PublicOptions -> Config -> (Text, Text) -> IO ()
+server options cfg busAddr = do
   log $ "Web server running on port " <> tshow cfg.port
   log "Connecting to database..."
   db <- DB.connect cfg
@@ -51,7 +51,7 @@ server cfg busAddr = do
     )
     (pure ())
 
-app :: ModuleArgs -> IO Wai.Application
+app :: PublicModuleArgs -> IO Wai.Application
 app args = do
   log "Connected! Server active."
   Sc.scottyApp do

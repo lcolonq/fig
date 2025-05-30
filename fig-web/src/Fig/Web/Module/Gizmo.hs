@@ -16,7 +16,7 @@ import Fig.Web.Utils
 import Fig.Web.Types
 import qualified Fig.Web.DB as DB
 
-public :: Module
+public :: PublicModule
 public a = do
   onGet "/api/gizmo" do
     buf <- queryParam "buf"
@@ -29,7 +29,7 @@ public a = do
     gizmos <- maybe [] (fmap decodeUtf8) <$> DB.hkeys a.db "gizmos"
     respondText $ Text.unlines gizmos
 
-publicWebsockets :: Websockets
+publicWebsockets :: PublicWebsockets
 publicWebsockets a =
   [ ( "/api/gizmo/events", \conn -> do
         c <- Chan.dupChan a.channels.gizmo
@@ -39,7 +39,7 @@ publicWebsockets a =
     )
   ]
 
-publicBusEvents :: BusEvents
+publicBusEvents :: PublicBusEvents
 publicBusEvents a =
   [ ("gizmo buffer update", \d -> do
         let dstr = decodeUtf8 d

@@ -12,8 +12,6 @@ module Fig.Web.Utils
   , queryParam, queryParamMaybe, formParam, formParamMaybe, pathParam
   , header
   , respondText, respondJSON, respondHTML
-  , Credentials(..)
-  , authed
   , WebsocketHandler
   , websocket
   , BusEventHandler, BusEventHandlers
@@ -150,22 +148,6 @@ respondJSON = Sc.json
 
 respondHTML :: Text -> Sc.ActionM ()
 respondHTML = Sc.html . Text.L.fromStrict
-
-data Credentials = Credentials
-  { user :: Text
-  , email :: Text
-  }
-authed :: (Credentials -> Sc.ActionM ()) -> Sc.ActionM ()
-authed h = do
-  muser <- header "Remote-User"
-  memail <- header "Remote-Email"
-  case (muser, memail) of
-    (Just user, Just email) -> do
-      let auth = Credentials{..}
-      h auth
-    _else -> do
-      status status401
-      respondText "you're not logged in buddy (this is probably a bug, go message clonk)"
 
 type WebsocketHandler = (ByteString, WS.Connection -> IO ())
 websocket :: [WebsocketHandler] -> Sc.ScottyM ()

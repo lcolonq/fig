@@ -10,7 +10,7 @@ import qualified Network.WebSockets as WS
 
 import Fig.Web.Types
 
-publicWebsockets :: Websockets
+publicWebsockets :: PublicWebsockets
 publicWebsockets a =
   [ ( "/api/model/broadcast", \conn -> do
         forever do

@@ -8,7 +8,7 @@ import Fig.Web.Utils
 import Fig.Web.Types
 import qualified Fig.Web.DB as DB
 
-public :: Module
+public :: PublicModule
 public a = do
   onGet "/api/sentiment" do
     s <- DB.get a.db "sentiment" >>= \case

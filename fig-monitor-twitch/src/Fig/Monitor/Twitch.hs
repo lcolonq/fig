@@ -11,7 +11,6 @@ module Fig.Monitor.Twitch
 
 import Fig.Prelude
 
-import Control.Monad (unless)
 import Control.Concurrent (threadDelay)
 
 import qualified Data.Maybe as Maybe

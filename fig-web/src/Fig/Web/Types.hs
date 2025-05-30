@@ -7,9 +7,11 @@ module Fig.Web.Types
   , newGlobals
   , DB(..)
   , ModuleArgs(..)
-  , Module
-  , Websockets
-  , BusEvents
+  , PublicOptions(..), SecureOptions(..)
+  , PublicModuleArgs, SecureModuleArgs
+  , PublicModule, SecureModule
+  , PublicWebsockets, SecureWebsockets
+  , PublicBusEvents, SecureBusEvents
   ) where
 
 import Fig.Prelude
@@ -57,14 +59,31 @@ newGlobals = do
 
 newtype DB = DB { conn :: Redis.Connection }
 
-data ModuleArgs = ModuleArgs
+data ModuleArgs o = ModuleArgs
   { cfg :: Config
   , cmds :: Commands IO
   , db :: DB
   , globals :: Globals
   , channels :: Channels
+  , options :: o
   }
 
-type Module = ModuleArgs -> Sc.ScottyM ()
-type Websockets = ModuleArgs -> [WebsocketHandler]
-type BusEvents = ModuleArgs -> [BusEventHandler]
+data PublicOptions = PublicOptions
+  {
+  }
+
+newtype SecureOptions = SecureOptions
+  { simAuth :: Bool
+  }
+
+type PublicModuleArgs = ModuleArgs PublicOptions
+type SecureModuleArgs = ModuleArgs SecureOptions 
+
+type PublicModule = PublicModuleArgs -> Sc.ScottyM ()
+type SecureModule = SecureModuleArgs -> Sc.ScottyM ()
+
+type PublicWebsockets = PublicModuleArgs -> [WebsocketHandler]
+type SecureWebsockets = SecureModuleArgs -> [WebsocketHandler]
+
+type PublicBusEvents = PublicModuleArgs -> [BusEventHandler]
+type SecureBusEvents = SecureModuleArgs -> [BusEventHandler]

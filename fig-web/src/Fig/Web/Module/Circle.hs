@@ -18,13 +18,13 @@ import Fig.Utils.SExpr
 import Fig.Web.Utils
 import Fig.Web.Types
 
-public :: Module
+public :: PublicModule
 public a = do
   onGet "/api/circle" do
     live <- liftIO $ MVar.readMVar a.globals.currentlyLive
     respondText $ pretty . SExprList @Void $ SExprString <$> Set.toList live
 
-publicWebsockets :: Websockets
+publicWebsockets :: PublicWebsockets
 publicWebsockets a =
   [ ( "/api/circle/events", \conn -> do
         c <- Chan.dupChan a.channels.live
@@ -44,11 +44,11 @@ publicWebsockets a =
     )
   ]
 
-publicBusEvents :: BusEvents
+publicBusEvents :: PublicBusEvents
 publicBusEvents a =
   [ ("monitor twitch stream online", \d -> do
         let dstr = decodeUtf8 d
-        let live = Text.splitOn " " dstr
+        let live = Text.words dstr
         let new = Set.fromList live 
         old <- MVar.swapMVar a.globals.currentlyLive new
         let online = Set.difference new old
