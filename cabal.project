@@ -8,5 +8,4 @@ packages:
   fig-bridge-irc-discord/
   fig-web/
   fig-bless/
-  fig-emulator-gb/
 optimization: 2
