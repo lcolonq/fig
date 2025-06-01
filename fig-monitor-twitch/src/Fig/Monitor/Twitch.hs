@@ -274,7 +274,6 @@ twitchEventClient cfg busAddr = do
     log $ "Connected to Twitch API, session ID is: " <> sessionId
     runAuthed cfg do
       user <- loginToUserId cfg.userLogin
-      log "got user id"
       subscribe sessionId "channel.channel_points_custom_reward_redemption.add" user
       subscribe sessionId "channel.prediction.begin" user
       subscribe sessionId "channel.prediction.end" user
@@ -282,7 +281,6 @@ twitchEventClient cfg busAddr = do
       subscribe sessionId "channel.poll.end" user
       subscribe sessionId "channel.subscribe" user
       subscribe sessionId "channel.subscription.gift" user
-      log "finished subscribing"
       subscribeFollows sessionId user
       subscribeRaids sessionId user
     busClient busAddr
@@ -480,9 +478,9 @@ twitchChannelLiveMonitor cfg busAddr = do
           loop = do
             log "Updating liveness..."
             live <- runAuthed cfg $ usersAreLive cfg.monitor
-            log "Update complete!"
+            log $ "Update complete! Live users: " <> Text.unwords (Set.toList live)
             cmds.publish "monitor twitch stream online" . encodeUtf8 . Text.unwords $ Set.toList live
-            threadDelay $ 5 * 60 * 1000000
+            threadDelay $ 5 * 60 * 1000000 -- wait 5 minutes
             loop
         loop
     )
@@ -555,17 +553,18 @@ twitchChatClient cfg busAddr = do
                   "PRIVMSG"
                     | Just displaynm <- Map.lookup "display-name" msg.tags
                     , Nothing <- Map.lookup "custom-reward-id" msg.tags -> do
-                      cmds.publish "monitor twitch chat incoming" . encodeUtf8 . Text.unwords $
-                        [ displaynm
-                        , Text.intercalate "\n" $ (\(key, v) -> key <> "\t" <> v) <$> Map.toList msg.tags
-                        ] <> drop 1 msg.params
+                        log $ "Received chat message from: " <> displaynm
+                        cmds.publish "monitor twitch chat incoming" . encodeUtf8 . Text.unwords $
+                          [ displaynm
+                          , Text.intercalate "\n" $ (\(key, v) -> key <> "\t" <> v) <$> Map.toList msg.tags
+                          ] <> drop 1 msg.params
                   _ -> pure ()
         )
         (\_cmds ev d -> do
             case ev of
               "monitor twitch chat outgoing" -> do
                 let msg = decodeUtf8 d
-                log $ "Sending: " <> msg
+                log $ "Sending chat message: " <> msg
                 WS.sendTextData conn $ mconcat
                   [ "PRIVMSG #"
                   , chan
