@@ -13,6 +13,7 @@ import qualified Web.Scotty as Sc
 import Fig.Bus.Binary.Client
 import Fig.Web.Types
 import Fig.Web.Utils
+import Fig.Web.Auth
 import qualified Fig.Web.DB as DB
 import qualified Fig.Web.Module.Exchange as Exchange
 import qualified Fig.Web.Module.Redeem as Redeem
@@ -62,7 +63,7 @@ app args = do
       respondText "this is the secure endpoint"
     onGet "/api/status" do
       respondText "this is the secure endpoint"
-    onGet "/api/info" $ authed \creds -> do
+    onGet "/api/info" $ authed args \creds -> do
       respondText $ creds.user <> " " <> creds.email
     Exchange.secure args
     Redeem.secure args

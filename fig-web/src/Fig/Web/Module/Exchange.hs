@@ -18,6 +18,7 @@ import qualified Data.UUID.V4 as UUID
 
 import Fig.Web.Utils
 import Fig.Web.Types
+import Fig.Web.Auth
 
 public :: PublicModule
 public a = do
@@ -27,7 +28,7 @@ public a = do
 
 secure :: SecureModule
 secure a = do
-  onPost "/api/exchange" $ authed \creds -> do
+  onPost "/api/exchange" $ authed a \creds -> do
     haveCur <- formParam "haveCur"
     haveAmount <- formParam "haveAmount"
     wantCur <- formParam "wantCur"
@@ -40,10 +41,10 @@ secure a = do
       , wantAmount = wantAmount
       }
     respondText $ decodeUtf8 key
-  onPost "/api/exchange/:key" $ authed \creds -> do
+  onPost "/api/exchange/:key" $ authed a \creds -> do
     key <- pathParam "key"
     satisfyOrder a.db.conn key creds.email
-  onDelete "/api/exchange/:key" $ authed \_creds -> do
+  onDelete "/api/exchange/:key" $ authed a \_creds -> do
     key <- pathParam "key"
     cancelOrder a.db.conn key
 
