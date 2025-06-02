@@ -318,7 +318,7 @@
             };
             busPort = lib.mkOption {
               type = lib.types.port;
-              default = 32050;
+              default = 32051;
               description = "Address of message bus";
             };
             configFile = lib.mkOption {
@@ -363,7 +363,7 @@
             };
             busPort = lib.mkOption {
               type = lib.types.port;
-              default = 32050;
+              default = 32051;
               description = "Address of message bus";
             };
             configFile = lib.mkOption {
