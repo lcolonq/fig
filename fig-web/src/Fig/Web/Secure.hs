@@ -64,7 +64,7 @@ app args = do
     onGet "/api/status" do
       respondText "this is the secure endpoint"
     onGet "/api/info" $ authed args \creds -> do
-      respondText $ creds.user <> " " <> creds.email
+      respondText $ creds.user <> " " <> creds.twitchId
     Exchange.secure args
     Redeem.secure args
     Sc.notFound do

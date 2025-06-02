@@ -34,7 +34,7 @@ secure a = do
     wantCur <- formParam "wantCur"
     wantAmount <- formParam "wantAmount"
     key <- createOrder a.db.conn $ Order
-      { creator = creds.email
+      { creator = creds.twitchId
       , haveCur = haveCur
       , haveAmount = haveAmount
       , wantCur = wantCur
@@ -43,7 +43,7 @@ secure a = do
     respondText $ decodeUtf8 key
   onPost "/api/exchange/:key" $ authed a \creds -> do
     key <- pathParam "key"
-    satisfyOrder a.db.conn key creds.email
+    satisfyOrder a.db.conn key creds.twitchId
   onDelete "/api/exchange/:key" $ authed a \_creds -> do
     key <- pathParam "key"
     cancelOrder a.db.conn key
