@@ -5,6 +5,7 @@ module Fig.Web.Auth
 
 import Fig.Prelude
 
+import qualified Data.Text as Text
 import qualified Web.Scotty as Sc
 
 import Fig.Web.Types
@@ -12,14 +13,17 @@ import Fig.Web.Utils
 
 data Credentials = Credentials
   { user :: Text
-  , email :: Text
+  , twitchId :: Text
   }
 authed :: SecureModuleArgs -> (Credentials -> Sc.ActionM ()) -> Sc.ActionM ()
-authed args h = do
+authed args h | args.options.simAuth = do
+  let auth = Credentials { user = "fake_test_user", twitchId = "69" }
+  h auth
+authed _ h = do
   muser <- header "Remote-User"
   memail <- header "Remote-Email"
   case (muser, memail) of
-    (Just user, Just email) -> do
+    (Just user, Just email) | twitchId:_ <- Text.splitOn "@" email -> do
       let auth = Credentials{..}
       h auth
     _else -> do

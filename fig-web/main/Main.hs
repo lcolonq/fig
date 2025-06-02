@@ -25,7 +25,7 @@ data Command
   | Secure SecureOptions
 
 parseCommand :: Parser Command
-parseCommand = subparser $ mconcat
+parseCommand = hsubparser $ mconcat
   [ command "public" $ info (Public <$> parsePublicOptions) (progDesc "Launch the public web server")
   , command "secure" $ info (Secure <$> parseSecureOptions) (progDesc "Launch the private web server (intended to be run behind authentication proxy)")
   ]
@@ -49,7 +49,7 @@ main :: IO ()
 main = do
   opts <- execParser $ info (parseOpts <**> helper)
     ( fullDesc
-    <> Options.Applicative.header "fig-web - public-facing web applications"
+    <> Options.Applicative.header "fig-web - web backends"
     )
   cfg <- loadConfig opts.config
   case opts.cmd of
