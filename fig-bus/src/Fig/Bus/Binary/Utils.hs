@@ -23,7 +23,6 @@ readLengthPrefixed h = do
       x <- hGet h len
       pure $ Just x
 
-
 readEvent :: Handle -> IO (Maybe EventType)
 readEvent h = do
   mb <- readLengthPrefixed h

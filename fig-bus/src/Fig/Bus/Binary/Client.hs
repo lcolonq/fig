@@ -45,7 +45,7 @@ busClient loc@(host, port) onConn onData onQuit = catchFailure . client loc $ pu
           forever do
             (,) <$> readLengthPrefixed h <*> readLengthPrefixed h >>= \case
               (Just ev, Just d) -> liftIO $ onData cmds ev d
-              _else -> throwM . FigBusClientException $ "Server sent malformed data"
+              _else -> throwM . FigBusClientException $ "Connection to bus closed"
     , liftIO onQuit
     )
   where
