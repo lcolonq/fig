@@ -19,7 +19,6 @@ import Control.Monad.Reader (ReaderT, runReaderT)
 
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BS.Lazy
-import qualified Data.Map.Strict as Map
 
 import qualified Toml
 

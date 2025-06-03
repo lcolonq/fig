@@ -4,8 +4,6 @@ module Fig.Monitor.IRC where
 
 import Fig.Prelude
 
-import Control.Monad (unless)
-
 import Data.Functor ((<&>))
 import qualified Data.Text as Text
 import qualified Data.ByteString.Base64 as BS.Base64
