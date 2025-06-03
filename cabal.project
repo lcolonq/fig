@@ -4,7 +4,6 @@ packages:
   fig-monitor-twitch/
   fig-monitor-discord/
   fig-monitor-irc/
-  fig-monitor-bullfrog/
   fig-bridge-irc-discord/
   fig-web/
 optimization: 2

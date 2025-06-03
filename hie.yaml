@@ -18,10 +18,6 @@ cradle:
       config: { cradle: { cabal: { component: "fig-monitor-irc:lib:fig-monitor-irc" } } }
     - path: "./fig-monitor-irc/main/"
       config: { cradle: { cabal: { component: "fig-monitor-irc:exe:fig-monitor-irc" } } }
-    - path: "./fig-monitor-bullfrog/src/"
-      config: { cradle: { cabal: { component: "fig-monitor-bullfrog:lib:fig-monitor-bullfrog" } } }
-    - path: "./fig-monitor-bullfrog/main/"
-      config: { cradle: { cabal: { component: "fig-monitor-bullfrog:exe:fig-monitor-bullfrog" } } }
     - path: "./fig-bridge-irc-discord/src/"
       config: { cradle: { cabal: { component: "fig-bridge-irc-discord:lib:fig-bridge-irc-discord" } } }
     - path: "./fig-bridge-irc-discord/main/"
