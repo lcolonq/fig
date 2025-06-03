@@ -2,7 +2,6 @@ module Fig.Bus.Binary (main) where
 
 import Fig.Prelude
 
-import Control.Monad (when)
 import Control.Concurrent.MVar as MVar
 
 import qualified Data.List as List
@@ -56,14 +55,14 @@ main bind = do
                       IORef.modifyIORef' subs (ev:)
                       MVar.modifyMVar_ st (pure . subscribe ev h)
                       go
-                    _else -> log "malformed subscription"
+                    _else -> log "Malformed subscription"
                   112 -> (,) <$> readEvent h <*> readLengthPrefixed h >>= \case
                     (Just ev@(EventType e), Just d) -> do
                       log $ tshow peer <> " publishing to: " <> tshow e
                       publish ev d =<< MVar.readMVar st
                       go
-                    _else -> log "malformed publish"
-                  w -> log $ "unknown command code: " <> tshow w
+                    _else -> log "Malformed publish"
+                  w -> log $ "Unknown command code: " <> tshow w
           go
       , do
           ss <- IORef.readIORef subs
