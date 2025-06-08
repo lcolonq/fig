@@ -56,13 +56,13 @@ main bind = do
                       IORef.modifyIORef' subs (ev:)
                       MVar.modifyMVar_ st (pure . subscribe ev h)
                       go
-                    _else -> log "Malformed subscription"
+                    p -> log $ "Malformed subscription from " <> tshow peer <> ": " <> tshow p
                   112 -> (,) <$> readEvent h <*> readLengthPrefixed h >>= \case
                     (Just ev@(EventType e), Just d) -> do
                       log $ tshow peer <> " publishing to: " <> tshow e
                       publish ev d =<< MVar.readMVar st
                       go
-                    _else -> log "Malformed publish"
+                    p -> log $ "Malformed publish from " <> tshow peer <> ": " <> tshow p
                   w -> log $ "Unknown command code: " <> tshow w
           go
       , do
