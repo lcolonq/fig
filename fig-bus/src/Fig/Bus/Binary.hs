@@ -44,6 +44,7 @@ main bind = do
     subs <- IORef.newIORef ([] :: [EventType])
     pure \h peer ->
       ( do
+          log $ "Connected: " <> tshow peer
           let
             go = do
               c <- hGet h 1
@@ -65,6 +66,7 @@ main bind = do
                   w -> log $ "Unknown command code: " <> tshow w
           go
       , do
+          log $ "Disconnected: " <> tshow peer
           ss <- IORef.readIORef subs
           MVar.modifyMVar_ st \bs -> pure $ foldr (`unsubscribe` h) bs ss
       )
