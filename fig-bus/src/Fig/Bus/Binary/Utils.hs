@@ -18,7 +18,7 @@ readLengthPrefixed :: Handle -> IO (Maybe ByteString)
 readLengthPrefixed h = do
   n <- hGet h 4
   case intFromLEBytes (BS.unpack n) of
-    0 -> pure Nothing
+    0 -> pure $ Just ""
     len -> do
       x <- hGet h len
       pure $ Just x
