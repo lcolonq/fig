@@ -478,7 +478,9 @@ twitchChannelLiveMonitor cfg busAddr = do
           loop = do
             log "Updating liveness..."
             live <- runAuthed cfg $ usersAreLive cfg.monitor
-            log $ "Update complete! Live users: " <> Text.unwords (Set.toList live)
+            if null live
+              then log "Update complete! No users live"
+              else log $ "Update complete! Live users: " <> Text.unwords (Set.toList live)
             cmds.publish "monitor twitch stream online" . encodeUtf8 . Text.unwords $ Set.toList live
             threadDelay $ 5 * 60 * 1000000 -- wait 5 minutes
             loop
