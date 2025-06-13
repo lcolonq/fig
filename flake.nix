@@ -43,10 +43,7 @@
         fig-monitor-twitch = self.callCabal2nix "fig-monitor-twitch" ./fig-monitor-twitch {};
         fig-monitor-discord = self.callCabal2nix "fig-monitor-discord" ./fig-monitor-discord {};
         fig-monitor-irc = self.callCabal2nix "fig-monitor-irc" ./fig-monitor-irc {};
-        fig-monitor-bullfrog = self.callCabal2nix "fig-monitor-bullfrog" ./fig-monitor-bullfrog {};
         fig-bridge-irc-discord = self.callCabal2nix "fig-bridge-irc-discord" ./fig-bridge-irc-discord {};
-        fig-bless = self.callCabal2nix "fig-bless" ./fig-bless {};
-        fig-emulator-gb = self.callCabal2nix "fig-emulator-gb" ./fig-emulator-gb {};
         fig-web = self.callCabal2nix "fig-web" ./fig-web {};
         };
       haskellPackages = pkgs.haskell.packages.ghc94.override {
@@ -152,8 +149,13 @@
             systemd.services."colonq.fig-monitor-twitch-live-watcher" = {
               wantedBy = ["multi-user.target"];
               after = ["colonq.fig-bus.service"];
+              unitConfig = {
+                StartLimitInterval = "3600";
+                StartLimitBurst = "5";
+              };
               serviceConfig = {
                 Restart = "on-failure";
+                RestartSec = "300";
                 ExecStart = "${haskellPackages.fig-monitor-twitch}/bin/fig-monitor-twitch live-checker --bus-host ${cfg.busHost} --bus-port ${toString cfg.busPort} --config ${cfg.configFile}";
                 DynamicUser = "yes";
                 RuntimeDirectory = "colonq.fig-monitor-twitch-live-watcher";
@@ -403,11 +405,8 @@
           fig-monitor-twitch
           fig-monitor-discord
           fig-monitor-irc
-          fig-monitor-bullfrog
           fig-bridge-irc-discord
-          fig-bless
           fig-web
-          fig-emulator-gb
         ];
         withHoogle = true;
         buildInputs = [
@@ -424,10 +423,7 @@
         figMonitorTwitch = haskellPackages.fig-monitor-twitch;
         figMonitorDiscord = haskellPackages.fig-monitor-discord;
         figMonitorIRC = haskellPackages.fig-monitor-irc;
-        figMonitorBullfrog = haskellPackages.fig-monitor-bullfrog;
         figBridgeIRCDiscord = haskellPackages.fig-bridge-irc-discord;
-        figBless = haskellPackages.fig-bless;
-        figEmulatorGB = haskellPackages.fig-emulator-gb;
         figWeb = haskellPackages.fig-web;
       };
       apps.x86_64-linux.default = {

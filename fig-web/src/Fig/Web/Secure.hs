@@ -57,6 +57,7 @@ app args = do
         ]
         Wai.Static.<|> Wai.Static.hasPrefix "assets"
         Wai.Static.<|> Wai.Static.hasPrefix "newton"
+        Wai.Static.<|> Wai.Static.hasPrefix "ranch"
       , Wai.Static.addBase args.cfg.assetPath
       ]
     onGet "/" do

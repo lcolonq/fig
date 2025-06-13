@@ -15,13 +15,14 @@ intFromLEBytes [] = 0
 intFromLEBytes (x:xs) = shiftL (intFromLEBytes xs) 8 .|. fromIntegral x
 
 readLengthPrefixed :: Handle -> IO (Maybe ByteString)
-readLengthPrefixed h = do
-  n <- hGet h 4
-  case intFromLEBytes (BS.unpack n) of
-    0 -> pure $ Just ""
-    len -> do
-      x <- hGet h len
-      pure $ Just x
+readLengthPrefixed h = hGet h 4 >>= \case
+  n | BS.null n -> pure Nothing
+  n ->
+    case intFromLEBytes (BS.unpack n) of
+      0 -> pure $ Just ""
+      len -> do
+        x <- hGet h len
+        pure $ Just x
 
 readEvent :: Handle -> IO (Maybe EventType)
 readEvent h = do
