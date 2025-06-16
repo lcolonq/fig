@@ -73,6 +73,7 @@ library
     Fig.Web.Module.User
     Fig.Web.Module.Shader
     Fig.Web.Module.Redeem
+    Fig.Web.Module.Puzzle
 
 executable fig-web
   import: defaults

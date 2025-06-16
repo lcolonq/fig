@@ -10,11 +10,14 @@ common defaults
 library
   import: defaults
   hs-source-dirs: src
+  c-sources: csrc/fig.c
+  pkgconfig-depends: guile-3.0
   exposed-modules:
     Fig.Prelude
     Fig.Utils
     Fig.Utils.Net
     Fig.Utils.SExpr
+    Fig.Utils.FFI
   build-depends:
       base
     , aeson

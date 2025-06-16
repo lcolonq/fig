@@ -8,6 +8,7 @@ import Options.Applicative
 
 import Fig.Web.Types
 import Fig.Web.Utils
+import qualified Fig.Utils.FFI as FFI
 import qualified Fig.Web.Public as Public
 import qualified Fig.Web.Secure as Secure
 
@@ -23,11 +24,13 @@ parseSecureOptions = do
 data Command
   = Public PublicOptions
   | Secure SecureOptions
+  | TestFFI
 
 parseCommand :: Parser Command
 parseCommand = hsubparser $ mconcat
   [ command "public" $ info (Public <$> parsePublicOptions) (progDesc "Launch the public web server")
   , command "secure" $ info (Secure <$> parseSecureOptions) (progDesc "Launch the private web server (intended to be run behind authentication proxy)")
+  , command "testffi" $ info (pure TestFFI) (progDesc "Test the FFI")
   ]
 
 data Opts = Opts
@@ -55,3 +58,8 @@ main = do
   case opts.cmd of
     Public o -> Public.server o cfg (opts.busHost, opts.busPort)
     Secure o -> Secure.server o cfg (opts.busHost, opts.busPort)
+    TestFFI -> do
+      log "testing FFI"
+      res <- FFI.checkAnswer "(lambda (d) (define (loop) (loop)) (loop) (string-length d))"
+        "hello computer"
+      log $ "result: " <> tshow res

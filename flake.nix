@@ -414,6 +414,8 @@
           haskellPackages.cabal-install
           haskellPackages.haskell-language-server
           pkgs.nodejs
+          pkgs.guile
+          pkgs.pkg-config
         ];
       };
       packages.x86_64-linux = {
