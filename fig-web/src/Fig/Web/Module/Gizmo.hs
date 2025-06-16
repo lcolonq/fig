@@ -24,7 +24,7 @@ public a = do
       Nothing -> do
         status status404
         respondText "gizmo does not exist"
-      Just html -> respondHTML $ decodeUtf8 html
+      Just html -> respondHTMLText $ decodeUtf8 html
   onGet "/api/gizmo/list" do
     gizmos <- maybe [] (fmap decodeUtf8) <$> DB.hkeys a.db "gizmos"
     respondText $ Text.unlines gizmos

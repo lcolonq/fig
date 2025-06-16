@@ -11,13 +11,14 @@ module Fig.Web.Utils
   , status
   , queryParam, queryParamMaybe, formParam, formParamMaybe, pathParam
   , header
-  , respondText, respondJSON, respondHTML
+  , respondText, respondJSON, respondHTMLText, respondHTML, redirect
   , WebsocketHandler
   , websocket
   , BusEventHandler, BusEventHandlers
   , busEvents
   , handleBusEvent
   , subscribeBusEvents
+  , module Lucid.Html5
   ) where
 
 import Fig.Prelude
@@ -37,6 +38,9 @@ import qualified Network.Wai.Handler.WebSockets as Wai.WS
 import qualified Network.WebSockets as WS
 
 import qualified Web.Scotty as Sc
+
+import qualified Lucid as L
+import Lucid.Html5
 
 import qualified Toml
 
@@ -146,8 +150,14 @@ respondText = Sc.text . Text.L.fromStrict
 respondJSON :: Aeson.ToJSON a => a -> Sc.ActionM ()
 respondJSON = Sc.json
 
-respondHTML :: Text -> Sc.ActionM ()
-respondHTML = Sc.html . Text.L.fromStrict
+respondHTMLText :: Text -> Sc.ActionM ()
+respondHTMLText = Sc.html . Text.L.fromStrict
+
+respondHTML :: L.Html () -> Sc.ActionM ()
+respondHTML = Sc.html . L.renderText . html_
+
+redirect :: Text -> Sc.ActionM ()
+redirect = Sc.redirect . Text.L.fromStrict
 
 type WebsocketHandler = (ByteString, WS.Connection -> IO ())
 websocket :: [WebsocketHandler] -> Sc.ScottyM ()

@@ -9,6 +9,11 @@ import qualified Data.Aeson as Aeson
 import qualified Data.UUID as UUID
 import qualified Data.UUID.V4 as UUID
 
+import qualified Web.Scotty as Sc
+import qualified Lucid as L
+import Text.HTML.SanitizeXSS (sanitize)
+
+import Fig.Utils.FFI (checkAnswer)
 import Fig.Web.Utils
 import Fig.Web.Types
 import Fig.Web.Auth
@@ -68,34 +73,107 @@ deletePuzzle db p = do
   srem db "puzzleids" [encodeUtf8 p]
   del db [puzzlePidKey p]
 
-allPuzzles :: MonadIO m => DB -> m [Text]
-allPuzzles db = smembers db "puzzleids" >>= \case
+allPuzzlePids :: MonadIO m => DB -> m [Text]
+allPuzzlePids db = smembers db "puzzleids" >>= \case
   Nothing -> pure []
   Just xs -> pure $ decodeUtf8 <$> xs
 
+allPuzzles :: MonadIO m => DB -> m [Puzzle]
+allPuzzles db = do
+  pids <- allPuzzlePids db
+  catMaybes <$> forM pids \pid -> do
+    loadPuzzle db pid
+
+puzzleUrl :: Puzzle -> Text
+puzzleUrl p = "/2d2p/" <> p.pid
+
+authorUrl :: Text -> Text
+authorUrl a = "/2d2p/author/" <> a
+
+puzzleNameAuthorLinks :: Puzzle -> L.Html ()
+puzzleNameAuthorLinks p = do
+  a_ [href_ $ puzzleUrl p] $ L.toHtml p.name
+  " by "
+  a_ [href_ $ authorUrl p.author] $ L.toHtml p.author
+
+page :: L.Html () -> Sc.ActionM ()
+page b = do
+  respondHTML do
+    head_ do
+      title_ "today: to puzzle!"
+    body_ do
+      h1_ "today: to puzzle!"
+      b
+
 secure :: SecureModule
 secure a = do
-  onGet "/api/puzzle" do
+  onGet "/2d2p" $ authed a \creds -> do
     puzzles <- allPuzzles a.db
-    respondJSON puzzles
-  onGet "/api/puzzle/:pid" do
+    page do
+      h2_ "all puzzles"
+      ul_ $ forM_ puzzles \p -> do
+        li_ do
+          puzzleNameAuthorLinks p
+          when (creds.twitchId == p.authorid) $ input_
+            [ type_ "button"
+            , value_ "delete"
+            , onclick_ $ mconcat
+              [ "fetch('", puzzleUrl p
+              , "', { method: 'DELETE' }).then(() => window.location.reload());"
+              ]
+            ]
+      h2_ "create new puzzle"
+      form_ [method_ "post"] do
+        label_ "name: "
+        input_ [type_ "text", name_ "name"]
+        br_ []
+        label_ "body: "
+        textarea_ [name_ "body"] $ pure ()
+        br_ []
+        label_ "checker: "
+        textarea_ [name_ "checker"] $ pure ()
+        br_ []
+        input_ [type_ "submit", value_ "submit"]
+  onPost "/2d2p" $ authed a \creds -> do
+    let author = creds.user
+    let authorid = creds.twitchId
+    pid <- newPuzzlePid
+    log $ "Creating new puzzle with PID: " <> tshow pid
+    name <- formParam "name"
+    body <- formParam "body"
+    checker <- formParam "checker"
+    let p = Puzzle {..}
+    savePuzzle a.db p
+    redirect $ puzzleUrl p
+  onGet "/2d2p/:pid" do
     pid <- pathParam "pid"
     loadPuzzle a.db pid >>= \case
       Nothing -> do
         status status404
-        respondText "no such puzzle"
-      Just p -> respondJSON p
-  onDelete "/api/puzzle/:pid" do
+        page $ h2_ "no such puzzle!"
+      Just p -> page do
+        h2_ $ puzzleNameAuthorLinks p
+        p_ $ L.toHtmlRaw $ sanitize p.body
+        form_ [method_ "post"] do
+          input_ [type_ "text", name_ "answer"]
+          input_ [type_ "submit", value_ "answer"]
+  onPost "/2d2p/:pid" do
     pid <- pathParam "pid"
+    answer <- formParam "answer"
+    loadPuzzle a.db pid >>= \case
+      Nothing -> do
+        status status404
+        page $ h2_ "no such puzzle!"
+      Just p -> do
+        checkAnswer p.checker answer >>= \case
+          Left err -> do
+            status status500
+            page do
+              h2_ "error running checker:"
+              pre_ $ L.toHtml err
+          Right res -> page do
+            h2_ $ if res then "congratulations! that's right!" else "sorry, wrong answer!"
+  onDelete "/2d2p/:pid" do
+    pid <- pathParam "pid"
+    log $ "Deleting puzzle with PID: " <> tshow pid
     deletePuzzle a.db pid
-  onPost "/api/puzzle" $ authed a \creds -> do
-    log "Creating puzzle"
-    let author = creds.user
-    let authorid = creds.twitchId
-    pid <- newPuzzlePid
-    log $ "pid: " <> tshow pid
-    name <- formParam "name"
-    body <- formParam "body"
-    checker <- formParam "checker"
-    savePuzzle a.db Puzzle {..}
-    respondText pid

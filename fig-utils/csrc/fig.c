@@ -33,9 +33,9 @@ int check_answer(char **failure, char *code, char *data) {
         check_answer_catch_body, &args,
         check_answer_catch_handler, NULL,
         check_answer_catch_handler, NULL);
-    if (scm_is_integer(res)) {
+    if (scm_is_bool(res)) {
         *failure = NULL;
-        return scm_to_int(res);
+        return scm_to_bool(res);
     } else {
         *failure = scm_to_utf8_stringn(res, NULL);
         return 0;

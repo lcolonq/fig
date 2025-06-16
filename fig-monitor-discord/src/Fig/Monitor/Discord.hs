@@ -4,7 +4,6 @@ module Fig.Monitor.Discord where
 
 import Fig.Prelude
 
-import Control.Monad (unless)
 import Control.Monad.Reader (runReaderT)
 import qualified Control.Concurrent.Async as Async
 import qualified Control.Concurrent.Chan as Chan

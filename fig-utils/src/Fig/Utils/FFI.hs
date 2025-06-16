@@ -9,8 +9,8 @@ import Foreign.Marshal.Alloc
 
 foreign import ccall "check_answer" c_check_answer :: Ptr CString -> CString -> CString -> IO Int
 
-checkAnswer :: Text -> Text -> IO (Either Text Bool)
-checkAnswer tcode tanswer =
+checkAnswer :: MonadIO m => Text -> Text -> m (Either Text Bool)
+checkAnswer tcode tanswer = liftIO $
   withCString (unpack tcode) $ \code ->
   withCString (unpack tanswer) $ \answer ->
   alloca $ \rerr -> do

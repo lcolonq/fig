@@ -48,6 +48,7 @@ common deps
     , warp
     , websockets
     , wuss
+    , xss-sanitize
     , fig-utils
     , fig-bus
 
