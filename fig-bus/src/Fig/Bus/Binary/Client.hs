@@ -35,16 +35,14 @@ busClient loc@(host, port) onConn onData onQuit = do
     let
       cmds = Commands
         { subscribe = \ev -> do
-            () <- MVar.takeMVar lock
-            hPut h "s"
-            writeLengthPrefixed h ev
-            MVar.putMVar lock ()
+            MVar.withMVar lock \_ -> do
+              hPut h "s"
+              writeLengthPrefixed h ev
         , publish = \ev d -> do
-            () <- MVar.takeMVar lock
-            hPut h "p"
-            writeLengthPrefixed h ev
-            writeLengthPrefixed h d
-            MVar.putMVar lock ()
+            MVar.withMVar lock \_ -> do
+              hPut h "p"
+              writeLengthPrefixed h ev
+              writeLengthPrefixed h d
         }
     in
       ( do

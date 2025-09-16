@@ -8,6 +8,7 @@ import System.Exit (exitFailure)
 
 import qualified Control.Concurrent as Conc
 import qualified Control.Concurrent.Async as Async
+import qualified Control.Concurrent.MVar as MVar
 
 import Data.ByteString (hPut, hGetLine)
 
@@ -31,24 +32,26 @@ busClient :: forall m.
   (Commands IO -> SExpr -> IO ()) ->
   IO () ->
   m ()
-busClient loc@(host, port) onConn onData onQuit = catchFailure . client loc $ pure \h ->
-  let
-    sendSexpr x = liftIO . hPut h . encodeUtf8 $ pretty x <> "\n"
-    cmds = Commands
-      { ping = sendSexpr [sexp|(ping)|]
-      , subscribe = \ev -> sendSexpr [sexp|(sub ,ev)|]
-      , publish = \ev d -> sendSexpr [sexp|(pub ,ev ,@d)|]
-      }
-  in
-    ( do
-        liftIO $ Async.concurrently_ (onConn cmds) do
-          forever do
-            line <- throwLeft id . decodeUtf8' =<< liftIO (hGetLine h)
-            case parseSExpr line of
-              Nothing -> throwM . FigBusClientException $ "Server sent malformed s-expression: " <> line
-              Just x -> liftIO $ onData cmds x
-    , liftIO onQuit
-    )
+busClient loc@(host, port) onConn onData onQuit = do
+  lock <- liftIO $ MVar.newMVar ()
+  catchFailure . client loc $ pure \h ->
+    let
+      sendSexpr x = liftIO $ MVar.withMVar lock \_ -> hPut h . encodeUtf8 $ pretty x <> "\n"
+      cmds = Commands
+        { ping = sendSexpr [sexp|(ping)|]
+        , subscribe = \ev -> sendSexpr [sexp|(sub ,ev)|]
+        , publish = \ev d -> sendSexpr [sexp|(pub ,ev ,@d)|]
+        }
+    in
+      ( do
+          liftIO $ Async.concurrently_ (onConn cmds) do
+            forever do
+              line <- throwLeft id . decodeUtf8' =<< liftIO (hGetLine h)
+              case parseSExpr line of
+                Nothing -> throwM . FigBusClientException $ "Server sent malformed s-expression: " <> line
+                Just x -> liftIO $ onData cmds x
+      , liftIO onQuit
+      )
   where
     catchFailure body = catch body \(e :: IOException) -> do
       log $ "Failed to connect to bus at " <> host <> ":" <> port <> ": " <> tshow e
