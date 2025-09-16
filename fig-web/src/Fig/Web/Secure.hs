@@ -52,6 +52,7 @@ app args = do
       [ Wai.Static.isNotAbsolute
       , Wai.Static.only
         [ ("menu", "menu.html")
+        , ("soundboard", "soundboard.html")
         , ("throwshade", "throwshade.html")
         , ("main.css", "main.css")
         , ("main.js", "main.js")
