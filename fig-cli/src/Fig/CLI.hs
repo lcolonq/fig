@@ -23,5 +23,6 @@ main = do
     ( fullDesc
     <> Options.Applicative.header "fig-cli - assorted tools"
     )
-  let sexp = parseSExpr opts.sexpr
-  log $ tshow (sexp, pretty <$> sexp)
+  let x = parseSExpr opts.sexpr
+  log $ tshow (opts.sexpr, x, pretty <$> x, parseSExpr . pretty =<< x)
+  log $ tshow $ (pretty <$> x) == Just opts.sexpr

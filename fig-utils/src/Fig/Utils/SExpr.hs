@@ -35,11 +35,13 @@ deriving instance Data a => Data (SExprWith a)
 deriving instance Functor SExprWith
 
 escapeStr :: Char -> [Char]
+escapeStr '\n' = ['\\', 'n']
 escapeStr c
   | elem @[] c ['\\', '"'] || isSpace c = ['\\', c]
   | otherwise = [c]
 
 escapeSym :: Char -> [Char]
+escapeSym '\n' = ['\\', 'n']
 escapeSym c
   | elem @[] c ['\\', '"', '.', '(', ')'] || isSpace c = ['\\', c]
   | otherwise = [c]
@@ -59,27 +61,35 @@ type Parser = Parsec Void Text
 sexprWith :: forall a. Parser a -> Parser (SExprWith a)
 sexprWith ext = spaces *>
   ( SExprExt <$> ext
-    <|> SExprString . pack <$> (char '"' *> manyTill ((char '\\' *> anySingle) <|> strchar) (char '"'))
+    <|> SExprString . pack <$> (char '"' *> manyTill (escapedNewline <|> (char '\\' *> anyNonNewline) <|> strchar) (char '"'))
     <|> parseNumber
-    <|> SExprSymbol . pack <$> some ((char '\\' *> anySingle) <|> symchar)
+    <|> SExprSymbol . pack <$> some (escapedNewline <|> (char '\\' *> anyNonNewline) <|> symchar)
     <|> SExprList <$> (char '(' *> spaces *> many (spaces *> sexprWith ext <* spaces) <* char ')')
   )
   where
+    escapedNewline = string "\\n" $> '\n'
+    anyNonNewline = satisfy (/='\n')
     spaces = many spaceChar
     symchar = satisfy $ \c -> not (isSpace c || c `elem` special)
-    strchar = satisfy (/='"')
+    strchar = satisfy (\x -> x /= '"' && x /= '\n')
     special :: [Char]
     special = "\".()"
-    classifyNumber :: [Char] -> Parser (SExprWith a)
-    classifyNumber str = do
+    classifyNumber :: Bool -> [Char] -> Parser (SExprWith a)
+    classifyNumber neg str = do
       let
-        res = if '.' `elem` str then SExprFloat <$> readMaybe str else SExprInteger <$> readMaybe str
+        maybeNeg :: forall n. Num n => n -> n
+        maybeNeg = if neg then negate else id
+        res =
+          if '.' `elem` str
+          then SExprFloat . maybeNeg <$> readMaybe str
+          else SExprInteger . maybeNeg <$> readMaybe str
       maybe mzero pure res
     parseNumber :: Parser (SExprWith a)
     parseNumber = do
+      neg <- option False $ char '-' $> True
       leading <- many digitChar
       trailing <- optional $ char '.' *> many digitChar
-      classifyNumber $ leading <> maybe "" (\x -> if null x then "" else "." <> x) trailing
+      classifyNumber neg $ leading <> maybe "" (\x -> if null x then "" else "." <> x) trailing
 
 parseSExprWith :: Parser a -> Text -> Maybe (SExprWith a)
 parseSExprWith ext inp = case runParser (sexprWith ext) "" inp of

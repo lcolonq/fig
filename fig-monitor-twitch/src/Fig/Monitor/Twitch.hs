@@ -425,7 +425,7 @@ twitchEventClient cfg busAddr = do
                         let schoices = (\(t, v) -> t <> "," <> v) <$> choices
                         log $ "Poll end: " <> pollid
                         cmds.publish "monitor twitch poll end" . encodeUtf8 . Text.unwords $ [pollid] <> schoices
-                      _else -> log "Failed to extract ID from payload for poll end event"
+                      _else -> log $ "Failed to extract ID from payload for poll end event: " <> tshow res
                   _else -> log $ "Received unknown notification event: " <> tshow resp
                 Just "session_keepalive" -> pure ()
                 _else -> log $ "Received unknown response: " <> tshow resp
