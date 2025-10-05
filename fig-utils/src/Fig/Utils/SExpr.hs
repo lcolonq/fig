@@ -13,14 +13,13 @@ import qualified Language.Haskell.TH.Syntax as Q
 
 import Fig.Prelude
 
-import Control.Monad (fail)
+import Control.Monad (fail, mzero)
 
 import Data.Data (Data, cast)
 import Data.Char (isSpace)
 
 import Text.Megaparsec
 import Text.Megaparsec.Char
-import Text.Megaparsec.Char.Lexer
 
 data SExprWith :: Type -> Type where
   SExprExt :: forall a. a -> SExprWith a
@@ -35,10 +34,20 @@ deriving instance Ord a => Ord (SExprWith a)
 deriving instance Data a => Data (SExprWith a)
 deriving instance Functor SExprWith
 
+escapeStr :: Char -> [Char]
+escapeStr c
+  | elem @[] c ['\\', '"'] || isSpace c = ['\\', c]
+  | otherwise = [c]
+
+escapeSym :: Char -> [Char]
+escapeSym c
+  | elem @[] c ['\\', '"', '.', '(', ')'] || isSpace c = ['\\', c]
+  | otherwise = [c]
+
 instance Pretty a => Pretty (SExprWith a) where
   pretty (SExprExt x) = pretty x
-  pretty (SExprSymbol s) = s
-  pretty (SExprString s) = tshow s
+  pretty (SExprSymbol s) = pack . mconcat $ escapeSym <$> unpack s
+  pretty (SExprString s) = mconcat ["\"", pack . mconcat $ escapeStr <$> unpack s, "\""]
   pretty (SExprInteger i) = tshow i
   pretty (SExprFloat f) = tshow f
   pretty (SExprList xs) = "(" <> unwords (pretty <$> xs) <> ")"
@@ -50,17 +59,27 @@ type Parser = Parsec Void Text
 sexprWith :: forall a. Parser a -> Parser (SExprWith a)
 sexprWith ext = spaces *>
   ( SExprExt <$> ext
-    <|> SExprString . pack <$> (char '"' *> manyTill charLiteral (char '"'))
-    <|> SExprInteger <$> decimal
-    <|> SExprFloat <$> float
-    <|> SExprSymbol . pack <$> some symchar
+    <|> SExprString . pack <$> (char '"' *> manyTill ((char '\\' *> anySingle) <|> strchar) (char '"'))
+    <|> parseNumber
+    <|> SExprSymbol . pack <$> some ((char '\\' *> anySingle) <|> symchar)
     <|> SExprList <$> (char '(' *> spaces *> many (spaces *> sexprWith ext <* spaces) <* char ')')
   )
   where
     spaces = many spaceChar
     symchar = satisfy $ \c -> not (isSpace c || c `elem` special)
+    strchar = satisfy (/='"')
     special :: [Char]
-    special = "()"
+    special = "\".()"
+    classifyNumber :: [Char] -> Parser (SExprWith a)
+    classifyNumber str = do
+      let
+        res = if '.' `elem` str then SExprFloat <$> readMaybe str else SExprInteger <$> readMaybe str
+      maybe mzero pure res
+    parseNumber :: Parser (SExprWith a)
+    parseNumber = do
+      leading <- many digitChar
+      trailing <- optional $ char '.' *> many digitChar
+      classifyNumber $ leading <> maybe "" (\x -> if null x then "" else "." <> x) trailing
 
 parseSExprWith :: Parser a -> Text -> Maybe (SExprWith a)
 parseSExprWith ext inp = case runParser (sexprWith ext) "" inp of

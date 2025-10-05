@@ -26,3 +26,7 @@ cradle:
       config: { cradle: { cabal: { component: "fig-web:lib:fig-web" } } }
     - path: "./fig-web/main/"
       config: { cradle: { cabal: { component: "fig-web:exe:fig-web" } } }
+    - path: "./fig-cli/src/"
+      config: { cradle: { cabal: { component: "fig-cli:lib:fig-cli" } } }
+    - path: "./fig-cli/main/"
+      config: { cradle: { cabal: { component: "fig-cli:exe:fig-cli" } } }

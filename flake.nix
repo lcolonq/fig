@@ -45,6 +45,7 @@
         fig-monitor-irc = self.callCabal2nix "fig-monitor-irc" ./fig-monitor-irc {};
         fig-bridge-irc-discord = self.callCabal2nix "fig-bridge-irc-discord" ./fig-bridge-irc-discord {};
         fig-web = self.callCabal2nix "fig-web" ./fig-web {};
+        fig-cli = self.callCabal2nix "fig-cli" ./fig-cli {};
         };
       haskellPackages = pkgs.haskell.packages.ghc94.override {
         overrides = haskellOverrides;
@@ -407,6 +408,7 @@
           fig-monitor-irc
           fig-bridge-irc-discord
           fig-web
+          fig-cli
         ];
         withHoogle = true;
         buildInputs = [

@@ -6,4 +6,5 @@ packages:
   fig-monitor-irc/
   fig-bridge-irc-discord/
   fig-web/
+  fig-cli/
 optimization: 2
