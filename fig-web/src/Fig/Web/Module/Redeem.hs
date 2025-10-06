@@ -19,7 +19,7 @@ secure a = do
     name <- formParam "name"
     input <- formParamMaybe "input"
     log $ creds.user <> " redeemed: " <> name
-    liftIO . a.cmds.publish "frontend redeem incoming"
+    liftIO . a.cmds.publish "fig web redeem incoming"
       . encodeUtf8 . Text.intercalate "\t" $
       [ creds.user
       , name
