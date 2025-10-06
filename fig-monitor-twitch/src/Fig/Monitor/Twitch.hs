@@ -431,7 +431,7 @@ twitchEventClient cfg busAddr = do
                 _else -> log $ "Received unknown response: " <> tshow resp
       )
       (\_cmds ev d -> do
-          let args = Text.splitOn " " $ decodeUtf8 d
+          let args = Text.splitOn "\t" $ decodeUtf8 d
           case (ev, args) of
             ("fig monitor twitch poll create", [title, schoices]) -> do
               let choices = Text.splitOn "," schoices
