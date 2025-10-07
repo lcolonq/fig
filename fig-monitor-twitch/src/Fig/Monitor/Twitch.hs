@@ -409,6 +409,7 @@ twitchEventClient cfg busAddr = do
                     let parseEvent o = do
                           payload <- o .: "payload"
                           event <- payload .: "event"
+                          status <- event .: "status"
                           pollid <- event .: "id"
                           event .: "choices" >>= \case
                             Aeson.Array cs -> do
@@ -418,14 +419,16 @@ twitchEventClient cfg busAddr = do
                                   v <- c .: "votes"
                                   pure (t, v)
                                 _else -> mempty
-                              pure (pollid, toList choices)
+                              pure (status, pollid, toList choices)
                             _else -> mempty
-                    case Aeson.parseMaybe parseEvent res of
-                      Just (pollid, choices) -> do
-                        let schoices = (\(t, v) -> t <> "," <> v) <$> choices
-                        log $ "Poll end: " <> pollid
-                        cmds.publish "fig monitor twitch poll end" . encodeUtf8 . Text.unwords $ [pollid] <> schoices
-                      _else -> log $ "Failed to extract ID from payload for poll end event: " <> tshow res
+                    case Aeson.parseEither parseEvent res of
+                      Right (status :: Text, pollid, choices :: [(Text, Integer)]) -> do
+                        when (status /= "archived") do
+                          let schoices = (\(t, v) -> t <> "\t" <> tshow v) <$> choices
+                          log $ "Poll end: " <> pollid
+                          cmds.publish "fig monitor twitch poll end" . encodeUtf8 . Text.intercalate "\n"
+                           $ [pollid] <> schoices
+                      Left err -> log $ "Failed to extract ID from payload for poll end event: " <> pack err
                   _else -> log $ "Received unknown notification event: " <> tshow resp
                 Just "session_keepalive" -> pure ()
                 _else -> log $ "Received unknown response: " <> tshow resp
@@ -434,12 +437,12 @@ twitchEventClient cfg busAddr = do
           let args = Text.splitOn "\t" $ decodeUtf8 d
           case (ev, args) of
             ("fig monitor twitch poll create", [title, schoices]) -> do
-              let choices = Text.splitOn "," schoices
+              let choices = Text.splitOn "\n" schoices
               runAuthed cfg do
                 user <- loginToUserId cfg.userLogin
                 poll title choices user
             ("fig monitor twitch prediction create", [title, schoices]) -> do
-              let choices = Text.splitOn "," schoices
+              let choices = Text.splitOn "\n" schoices
               runAuthed cfg do
                 user <- loginToUserId cfg.userLogin
                 createPrediction title choices user
