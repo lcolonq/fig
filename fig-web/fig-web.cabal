@@ -75,6 +75,7 @@ library
     Fig.Web.Module.Shader
     Fig.Web.Module.Redeem
     Fig.Web.Module.Puzzle
+    Fig.Web.Module.HLS
 
 executable fig-web
   import: defaults

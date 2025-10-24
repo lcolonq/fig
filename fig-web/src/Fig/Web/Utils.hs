@@ -11,7 +11,7 @@ module Fig.Web.Utils
   , status
   , queryParam, queryParamMaybe, formParam, formParamMaybe, pathParam
   , header
-  , respondText, respondJSON, respondHTMLText, respondHTML, redirect
+  , respondBytes, respondText, respondJSON, respondHTMLText, respondHTML, redirect
   , WebsocketHandler
   , websocket
   , BusEventHandler, BusEventHandlers
@@ -30,6 +30,7 @@ import qualified Data.UUID as UUID
 import qualified Data.UUID.V4 as UUID
 import qualified Data.Text as Text
 import qualified Data.Text.Lazy as Text.L
+import qualified Data.ByteString.Lazy as BS.L
 import qualified Data.Aeson as Aeson
 import qualified Data.Map.Strict as Map
 
@@ -143,6 +144,9 @@ header :: Text -> Sc.ActionM (Maybe Text)
 header h = Sc.header (Text.L.fromStrict h) >>= \case
   Nothing -> pure Nothing
   Just t -> pure . Just $ Text.L.toStrict t
+
+respondBytes :: ByteString -> Sc.ActionM ()
+respondBytes = Sc.raw . BS.L.fromStrict
 
 respondText :: Text -> Sc.ActionM ()
 respondText = Sc.text . Text.L.fromStrict

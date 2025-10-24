@@ -96,3 +96,11 @@ rpush :: MonadIO m => DB -> ByteString -> ByteString -> m ()
 rpush (DB c) key val = liftIO $ Redis.runRedis c do
   _ <- Redis.rpush key [val]
   pure ()
+
+llen :: MonadIO m => DB -> ByteString -> m (Maybe Integer)
+llen (DB c) key = liftIO $ Redis.runRedis c do
+  hush <$> Redis.llen key
+
+lindex :: MonadIO m => DB -> ByteString -> Integer -> m (Maybe ByteString)
+lindex (DB c) key idx = liftIO $ Redis.runRedis c do
+  join . hush <$> Redis.lindex key idx

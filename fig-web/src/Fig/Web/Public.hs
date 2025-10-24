@@ -24,6 +24,7 @@ import qualified Fig.Web.Module.Model as Model
 import qualified Fig.Web.Module.Bells as Bells
 import qualified Fig.Web.Module.User as User
 import qualified Fig.Web.Module.Shader as Shader
+import qualified Fig.Web.Module.HLS as HLS
 
 allBusEvents :: PublicModuleArgs -> BusEventHandlers
 allBusEvents args = busEvents . mconcat $ fmap ($ args)
@@ -90,6 +91,7 @@ app args = do
     Bells.public args
     User.public args
     Shader.public args
+    HLS.public args
     websocket $ mconcat
       [ Gizmo.publicWebsockets args
       , Circle.publicWebsockets args
