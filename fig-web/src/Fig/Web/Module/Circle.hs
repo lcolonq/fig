@@ -46,7 +46,7 @@ publicWebsockets a =
 
 publicBusEvents :: PublicBusEvents
 publicBusEvents a =
-  [ ("monitor twitch stream online", \d -> do
+  [ ("fig monitor twitch stream online", \d -> do
         let dstr = decodeUtf8 d
         let live = Text.words dstr
         let new = Set.fromList live 
