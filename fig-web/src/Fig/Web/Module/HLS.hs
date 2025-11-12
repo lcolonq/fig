@@ -21,10 +21,10 @@ public a = do
         respondText $ mconcat
           [ "#EXTM3U\n"
           , "#EXT-X-VERSION: 4\n"
-          , "#EXT-X-TARGETDURATION:5\n"
+          , "#EXT-X-TARGETDURATION:10\n"
           , "#EXT-X-MEDIA-SEQUENCE:", tshow startingSeq, "\n"
           , mconcat $ reverse [0,1..len] <&> \idx -> mconcat
-            [ "#EXTINF:3.0,\n"
+            [ "#EXTINF:4.8,\n"
             , "http://localhost:8080/api/hls/", tshow idx, "/sample.aac\n"
             ]
           ]
