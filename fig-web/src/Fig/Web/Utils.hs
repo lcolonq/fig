@@ -10,7 +10,7 @@ module Fig.Web.Utils
   , onGet, onPost, onPut, onDelete
   , status
   , queryParam, queryParamMaybe, formParam, formParamMaybe, pathParam
-  , header
+  , header, addHeader
   , respondBytes, respondText, respondJSON, respondHTMLText, respondHTML, redirect
   , WebsocketHandler
   , websocket
@@ -144,6 +144,9 @@ header :: Text -> Sc.ActionM (Maybe Text)
 header h = Sc.header (Text.L.fromStrict h) >>= \case
   Nothing -> pure Nothing
   Just t -> pure . Just $ Text.L.toStrict t
+
+addHeader :: Text -> Text -> Sc.ActionM ()
+addHeader h v = Sc.addHeader (Text.L.fromStrict h) (Text.L.fromStrict v)
 
 respondBytes :: ByteString -> Sc.ActionM ()
 respondBytes = Sc.raw . BS.L.fromStrict

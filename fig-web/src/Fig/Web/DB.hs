@@ -97,6 +97,10 @@ rpush (DB c) key val = liftIO $ Redis.runRedis c do
   _ <- Redis.rpush key [val]
   pure ()
 
+lrange :: MonadIO m => DB -> ByteString -> Integer -> Integer -> m [ByteString]
+lrange (DB c) key start end = liftIO $ Redis.runRedis c do
+  fromMaybe [] . hush <$> Redis.lrange key start end
+
 llen :: MonadIO m => DB -> ByteString -> m (Maybe Integer)
 llen (DB c) key = liftIO $ Redis.runRedis c do
   hush <$> Redis.llen key
