@@ -27,7 +27,7 @@ public a = do
           respondBytes image
   onGet "/api/tcg/binder/:userid" do
     userid <- pathParam "userid"
-    cards <- DB.lrange a.db ("tcg-inventory:" <> userid) 0 (-1)
+    cards <- take 20 <$> DB.lrange a.db ("tcg-inventory:" <> userid) 0 (-1)
     respondHTML do
       head_ do
         title_ "LCOLONQ: The Game"
