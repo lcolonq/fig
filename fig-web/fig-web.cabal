@@ -74,7 +74,7 @@ library
     Fig.Web.Module.User
     Fig.Web.Module.Shader
     Fig.Web.Module.Redeem
-    Fig.Web.Module.Puzzle
+    Fig.Web.Module.Advent
     Fig.Web.Module.HLS
     Fig.Web.Module.TCG
 

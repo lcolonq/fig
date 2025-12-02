@@ -17,7 +17,7 @@ import Fig.Web.Auth
 import qualified Fig.Web.DB as DB
 import qualified Fig.Web.Module.Exchange as Exchange
 import qualified Fig.Web.Module.Redeem as Redeem
-import qualified Fig.Web.Module.Puzzle as Puzzle
+import qualified Fig.Web.Module.Advent as Advent
 
 allBusEvents :: SecureModuleArgs -> BusEventHandlers
 allBusEvents args = busEvents . mconcat $ fmap ($ args)
@@ -54,6 +54,7 @@ app args = do
         [ ("menu", "menu.html")
         , ("soundboard", "soundboard.html")
         , ("throwshade", "throwshade.html")
+        , ("advent", "advent.html")
         , ("main.css", "main.css")
         , ("main.js", "main.js")
         ]
@@ -70,6 +71,6 @@ app args = do
       respondText $ creds.user <> " " <> creds.twitchId
     Exchange.secure args
     Redeem.secure args
-    Puzzle.secure args
+    Advent.secure args
     Sc.notFound do
       respondText "not found"

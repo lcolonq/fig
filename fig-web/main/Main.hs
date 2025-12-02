@@ -60,6 +60,7 @@ main = do
     Secure o -> Secure.server o cfg (opts.busHost, opts.busPort)
     TestFFI -> do
       log "testing FFI"
-      res <- FFI.checkAnswer "(lambda (d) (define (loop) (loop)) (loop) (string-length d))"
-        "hello computer"
+      res <- FFI.checkAnswer "(lambda (d e) (equal? d e))" "hello computer" "hello computer"
       log $ "result: " <> tshow res
+      inpa <- FFI.genInputAnswer "(lambda (x) (cons x x))" "hello computer"
+      log $ "input/answer: " <> tshow inpa
