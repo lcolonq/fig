@@ -39,6 +39,24 @@ SCM default_bindings() {
             scm_from_utf8_symbol("interaction-environment")),
         bindings
     );
+    bindings = scm_cons(
+        scm_list_2(
+            scm_list_1(scm_from_utf8_symbol("guile")),
+            scm_from_utf8_symbol("read")),
+        bindings
+    );
+    bindings = scm_cons(
+        scm_list_2(
+            scm_list_1(scm_from_utf8_symbol("guile")),
+            scm_from_utf8_symbol("open-input-string")),
+        bindings
+    );
+    bindings = scm_cons(
+        scm_list_2(
+            scm_list_2(scm_from_utf8_symbol("ice-9"), scm_from_utf8_symbol("format")),
+            scm_from_utf8_symbol("format")),
+        bindings
+    );
     return bindings;
 }
 
