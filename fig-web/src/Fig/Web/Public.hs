@@ -64,6 +64,7 @@ app args = do
         [ ("register", "register.html")
         , ("gizmo", "gizmo.html")
         , ("advent", "advent.html")
+        , ("debt", "debtclock.html")
         , ("main.css", "main.css")
         , ("main.js", "main.js")
         ] Wai.Static.<|> Wai.Static.hasPrefix "assets"
