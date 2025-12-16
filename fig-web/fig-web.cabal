@@ -77,6 +77,7 @@ library
     Fig.Web.Module.Advent
     Fig.Web.Module.HLS
     Fig.Web.Module.TCG
+    Fig.Web.Module.Debt
 
 executable fig-web
   import: defaults
