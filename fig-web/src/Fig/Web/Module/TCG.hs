@@ -31,8 +31,10 @@ public a = do
               status status404
               respondText "card does not exist"
             Just image -> do
+              liftIO $ Dir.createDirectoryIfMissing True cardDir
               log $ "Deleting card from Redis: " <> uuid
               liftIO $ BS.writeFile cardPath image
+              log $ "Deleting card from Redis: " <> uuid
               DB.hdel a.db "tcg:cards" $ encodeUtf8 uuid
               addHeader "Content-Type" "image/png"
               respondBytes image
