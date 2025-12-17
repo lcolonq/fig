@@ -338,18 +338,16 @@
             };
           };
           config = lib.mkIf cfg.enable {
+            users.users.fig = {
+              isSystemUser = true;
+              group = "fig";
+            };
             systemd.services."colonq.fig-web" = {
               wantedBy = ["multi-user.target"];
               serviceConfig = {
+                User = "fig";
                 Restart = "on-failure";
                 ExecStart = "${haskellPackages.fig-web}/bin/fig-web public --bus-host ${cfg.busHost} --bus-port ${toString cfg.busPort} --config ${cfg.configFile}";
-                DynamicUser = "yes";
-                RuntimeDirectory = "colonq.fig-web";
-                RuntimeDirectoryMode = "0755";
-                StateDirectory = "colonq.fig-web";
-                StateDirectoryMode = "0700";
-                CacheDirectory = "colonq.fig-web";
-                CacheDirectoryMode = "0750";
               };
             };
           };
