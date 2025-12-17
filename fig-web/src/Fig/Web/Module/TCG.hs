@@ -6,6 +6,9 @@ import Fig.Prelude
 
 import qualified Data.Text as Text
 
+import qualified System.Directory as Dir
+import qualified Data.ByteString as BS
+
 import Fig.Web.Utils
 import Fig.Web.Types
 import qualified Fig.Web.DB as DB
@@ -18,13 +21,25 @@ public a = do
       Nothing -> do
         status status400
         respondText "malformed card path"
-      Just uuid -> DB.hget a.db "tcg:cards" (encodeUtf8 uuid) >>= \case
-        Nothing -> do
-          status status404
-          respondText "card does not exist"
-        Just image -> do
-          addHeader "Content-Type" "image/png"
-          respondBytes image
+      Just uuid -> do
+        let cardDir = a.cfg.dataPath <> "/cards"
+        -- liftIO $ Dir.createDirectoryIfMissing True cardDir
+        let cardPath = cardDir <> unpack uuid <> ".png"
+        liftIO (Dir.doesFileExist cardPath) >>= \case
+          False -> DB.hget a.db "tcg:cards" (encodeUtf8 uuid) >>= \case
+            Nothing -> do
+              status status404
+              respondText "card does not exist"
+            Just image -> do
+              log $ "Deleting card from Redis: " <> uuid
+              liftIO $ BS.writeFile cardPath image
+              DB.hdel a.db "tcg:cards" $ encodeUtf8 uuid
+              addHeader "Content-Type" "image/png"
+              respondBytes image
+          True -> do
+            image <- liftIO $ BS.readFile cardPath
+            addHeader "Content-Type" "image/png"
+            respondBytes image
   onGet "/api/tcg/binder/:userid" do
     userid <- pathParam "userid"
     cards <- take 20 <$> DB.lrange a.db ("tcg-inventory:" <> userid) 0 (-1)

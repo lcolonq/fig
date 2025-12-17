@@ -330,6 +330,7 @@
               default = pkgs.writeText "fig-web.toml" ''
                 port = 8000
                 asset_path = "/var/lib/fig-web-assets"
+                data_path = "/var/lib/fig-web-data"
                 client_id = ""
                 auth_token = ""
                 db_host = ""

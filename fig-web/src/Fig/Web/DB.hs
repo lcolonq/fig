@@ -43,6 +43,11 @@ hget (DB c) key hkey = liftIO $ Redis.runRedis c do
   v <- Redis.hget key hkey
   pure . join $ hush v
 
+hdel :: MonadIO m => DB -> ByteString -> ByteString -> m ()
+hdel (DB c) key hkey = liftIO $ Redis.runRedis c do
+  _ <- Redis.hdel key [hkey]
+  pure ()
+
 hmset :: MonadIO m => DB -> ByteString -> [(ByteString, ByteString)] -> m ()
 hmset (DB c) key m = liftIO $ Redis.runRedis c do
   void $ Redis.hmset key m
