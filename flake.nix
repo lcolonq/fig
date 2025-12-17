@@ -342,6 +342,7 @@
               isSystemUser = true;
               group = "fig";
             };
+            users.groups.fig = {};
             systemd.services."colonq.fig-web" = {
               wantedBy = ["multi-user.target"];
               serviceConfig = {
