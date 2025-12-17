@@ -31,9 +31,7 @@ public a = do
               status status404
               respondText "card does not exist"
             Just image -> do
-              log $ "card dir: " <> pack cardDir
               liftIO $ Dir.createDirectoryIfMissing True cardDir
-              log $ "created directory"
               liftIO $ BS.writeFile cardPath image
               log $ "Deleting card from Redis: " <> uuid
               DB.hdel a.db "tcg:cards" $ encodeUtf8 uuid
