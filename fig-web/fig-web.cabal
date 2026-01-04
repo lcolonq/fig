@@ -78,6 +78,7 @@ library
     Fig.Web.Module.HLS
     Fig.Web.Module.TCG
     Fig.Web.Module.Debt
+    Fig.Web.Module.ShindigsSorting
 
 executable fig-web
   import: defaults

@@ -9,6 +9,7 @@ module Fig.Web.Utils
   , module Network.HTTP.Types.Status
   , onGet, onPost, onPut, onDelete
   , status
+  , body, bodyJSON
   , queryParam, queryParamMaybe, formParam, formParamMaybe, pathParam
   , header, addHeader
   , respondBytes, respondText, respondJSON, respondHTMLText, respondHTML, redirect
@@ -128,6 +129,12 @@ onDelete = Sc.delete
 
 status :: Status -> Sc.ActionM ()
 status = Sc.status
+
+body :: Sc.ActionM ByteString
+body = BS.L.toStrict <$> Sc.body
+
+bodyJSON :: Aeson.FromJSON a => Sc.ActionM a
+bodyJSON = Sc.jsonData
 
 queryParam :: Sc.Parsable a => Text -> Sc.ActionM a
 queryParam = Sc.queryParam . Text.L.fromStrict

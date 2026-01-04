@@ -1,5 +1,5 @@
 module Fig.Web.Types
-  ( LiveEvent(..)
+  ( LiveEvent(..), ShindigsSort(..)
   , Commands(..)
   , Channels(..)
   , newChannels
@@ -19,6 +19,7 @@ import Fig.Prelude
 import qualified Control.Concurrent.Chan as Chan
 import qualified Control.Concurrent.MVar as MVar
 
+import Data.Word (Word32)
 import qualified Data.Set as Set
 
 import qualified Network.WebSockets as WS
@@ -26,6 +27,8 @@ import qualified Network.WebSockets as WS
 import qualified Web.Scotty as Sc
 
 import qualified Database.Redis as Redis
+
+import qualified Data.Aeson as Aeson
 
 import Fig.Bus.Binary.Client
 import Fig.Web.Utils
@@ -35,10 +38,18 @@ data LiveEvent
   | LiveEventOffline !(Set.Set Text)
   deriving (Show, Eq, Ord)
 
+data ShindigsSort = ShindigsSort
+  { name :: Text
+  , numbers :: [Word32]
+  } deriving (Show, Eq, Ord, Generic)
+instance Aeson.FromJSON ShindigsSort where
+instance Aeson.ToJSON ShindigsSort where
+
 data Channels = Channels
   { live :: !(Chan.Chan LiveEvent)
   , gizmo :: !(Chan.Chan Text)
   , model :: !(Chan.Chan WS.DataMessage)
+  , shindigssort :: !(Chan.Chan ShindigsSort)
   }
 
 newChannels :: IO Channels
@@ -46,6 +57,7 @@ newChannels = do
   live <- Chan.newChan
   gizmo <- Chan.newChan
   model <- Chan.newChan
+  shindigssort <- Chan.newChan
   pure Channels {..}
 
 newtype Globals = Globals
