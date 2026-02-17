@@ -45,6 +45,7 @@ module Fig.Prelude
   , tshow
   , headMay, atMay
   , throwLeft
+  , eitherToMaybe
   , log
   , (>>>)
 
@@ -113,6 +114,10 @@ atMay (_:xs) n = atMay xs $ n - 1
 throwLeft :: (Exception e, MonadThrow m) => (b -> e) -> Either b a -> m a
 throwLeft f (Left x) = throwM $ f x
 throwLeft _ (Right x) = pure x
+
+eitherToMaybe :: Either l r -> Maybe r
+eitherToMaybe (Left _) = Nothing
+eitherToMaybe (Right x) = Just x
 
 (>>>) :: (a -> b) -> (b -> c) -> a -> c
 (>>>) = flip (.)

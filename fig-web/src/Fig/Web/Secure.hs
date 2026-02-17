@@ -55,7 +55,6 @@ app args = do
         , ("soundboard", "soundboard.html")
         , ("throwshade", "throwshade.html")
         , ("advent", "advent.html")
-        , ("main.css", "main.css")
         , ("main.js", "main.js")
         ]
         Wai.Static.<|> Wai.Static.hasPrefix "assets"
