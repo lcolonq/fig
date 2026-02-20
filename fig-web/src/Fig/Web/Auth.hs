@@ -17,7 +17,7 @@ data Credentials = Credentials
   }
 authed :: SecureModuleArgs -> (Credentials -> Sc.ActionM ()) -> Sc.ActionM ()
 authed args h | args.options.simAuth = do
-  let auth = Credentials { user = "fake_test_user", twitchId = "69" }
+  let auth = Credentials { user = "lcolonq", twitchId = "866686220" }
   h auth
 authed _ h = do
   muser <- header "Remote-User"

@@ -67,9 +67,21 @@ public a = do
         status status404
         respondText "user not found"
       Just val -> respondText $ decodeUtf8 val
+  onGet "/api/user-id/:name" do
+    name <- pathParam "name"
+    getText a.db ("user-id:" <> encodeUtf8 (Text.toLower name)) >>= \case
+      Nothing -> do
+        status status404
+        respondText "username not found"
+      Just val -> respondText val
   onGet "/api/user/info/:uid" do -- get everything bundled together
     uid <- pathParam "uid"
-    respondJSON =<< getUserInfo a.db uid
+    info <- getUserInfo a.db uid
+    case Map.lookup "name" info.properties of
+      Just _ -> respondJSON info
+      Nothing -> do
+        status status404
+        respondText "no such user"
   onGet "/api/user/stats/:uid" do
     uid <- pathParam "uid"
     respondJSON =<< getIntegerValuedMap a.db ("user:stats:" <> uid)
