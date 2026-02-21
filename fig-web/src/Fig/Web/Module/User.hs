@@ -57,9 +57,27 @@ getUserInfo db uid = do
   badges <- getTextList db $ "user:badges:" <> uid
   pure UserInfo{..}
 
+data TalentInfo = TalentInfo
+  { tid :: Text
+  , name :: Text
+  , desc :: Text
+  } deriving Generic
+instance Aeson.ToJSON TalentInfo 
+
+getTalentInfo :: MonadIO m => DB -> Text -> m (Maybe TalentInfo)
+getTalentInfo db tid = do
+  mnm <- DB.hget db "talent:name" $ encodeUtf8 tid
+  mdesc <- DB.hget db "talent:desc" $ encodeUtf8 tid
+  let mres = (,)
+        <$> (eitherToMaybe . decodeUtf8' =<< mnm)
+        <*> (eitherToMaybe . decodeUtf8' =<< mdesc)
+  case mres of
+    Just (name, desc) -> pure $ Just TalentInfo{..}
+    Nothing -> pure Nothing
+
 public :: PublicModule
 public a = do
-  -- users
+  -- legacy user API
   onGet "/api/user/:name" do
     name <- Text.toLower <$> pathParam "name"
     DB.get a.db ("user:" <> encodeUtf8 name) >>= \case
@@ -67,6 +85,7 @@ public a = do
         status status404
         respondText "user not found"
       Just val -> respondText $ decodeUtf8 val
+  -- username to id mapping
   onGet "/api/user-id/:name" do
     name <- pathParam "name"
     getText a.db ("user-id:" <> encodeUtf8 (Text.toLower name)) >>= \case
@@ -74,6 +93,7 @@ public a = do
         status status404
         respondText "username not found"
       Just val -> respondText val
+  -- users
   onGet "/api/user/info/:uid" do -- get everything bundled together
     uid <- pathParam "uid"
     info <- getUserInfo a.db uid
@@ -104,6 +124,34 @@ public a = do
         Nothing -> do
           addHeader "Content-Type" "image/png"
           respondBytes "\137PNG\r\n\SUB\n\NUL\NUL\NUL\rIHDR\NUL\NUL\NUL\STX\NUL\NUL\NUL\STX\b\ACK\NUL\NUL\NULr\182\r$\NUL\NUL\NUL\SOHsRGB\NUL\174\206\FS\233\NUL\NUL\NUL\SUBIDAT\b\153cd``\248\207T)\206\192\192T)\254\159\129\129\225?\NUL\RS\188\EOT#\137b%\ACK\NUL\NUL\NUL\NULIEND\174B`\130"
+        Just img -> do
+          addHeader "Content-Type" "image/png"
+          respondBytes img
+  -- talents
+  onGet "/api/talents" do
+    names <- DB.hgetall a.db "talent:name"
+    descs <- DB.hgetall a.db "talent:desc"
+    respondJSON $ Map.intersectionWithKey
+      (\tid name desc -> TalentInfo{..})
+      (Map.fromList $ bimap decodeUtf8 decodeUtf8 <$> Map.toList names)
+      (Map.fromList $ bimap decodeUtf8 decodeUtf8 <$> Map.toList descs)
+  onGet "/api/talent/:tid" do
+    tid <- pathParam "tid"
+    getTalentInfo a.db tid >>= \case
+      Nothing -> do
+        status status404
+        respondText "talent not found"
+      Just t -> respondJSON t
+  onGet "/api/talent/icon/:tid.png" do
+    tidpng <- pathParam "tid.png"
+    case Text.stripSuffix ".png" tidpng of
+      Nothing -> do
+        status status400
+        respondText "malformed talent icon path"
+      Just tid -> DB.hget a.db "talent:icon" (encodeUtf8 tid) >>= \case
+        Nothing -> do
+          status status404
+          respondText "talent not found"
         Just img -> do
           addHeader "Content-Type" "image/png"
           respondBytes img

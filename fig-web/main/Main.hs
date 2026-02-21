@@ -36,6 +36,7 @@ parseCommand = hsubparser $ mconcat
 data Opts = Opts
   { busHost :: !Text
   , busPort :: !Text
+  , port :: !(Maybe Int)
   , config :: !FilePath
   , cmd :: !Command
   }
@@ -44,6 +45,7 @@ parseOpts :: Parser Opts
 parseOpts = do
   busHost <- strOption (long "bus-host" <> metavar "HOST" <> help "Address of message bus" <> value "localhost")
   busPort <- strOption (long "bus-port" <> metavar "PORT" <> help "Message bus port" <> showDefault <> value "32050")
+  port <- optional $ option auto (long "port" <> metavar "PORT" <> help "Web server port")
   config <- strOption (long "config" <> metavar "PATH" <> help "Path to config file" <> showDefault <> value "fig-web.toml")
   cmd <- parseCommand
   pure Opts{..}
@@ -54,7 +56,10 @@ main = do
     ( fullDesc
     <> Options.Applicative.header "fig-web - web backends"
     )
-  cfg <- loadConfig opts.config
+  icfg <- loadConfig opts.config
+  let cfg = case opts.port of
+        Nothing -> icfg
+        Just p -> icfg { Fig.Web.Utils.port = p }
   case opts.cmd of
     Public o -> Public.server o cfg (opts.busHost, opts.busPort)
     Secure o -> Secure.server o cfg (opts.busHost, opts.busPort)
