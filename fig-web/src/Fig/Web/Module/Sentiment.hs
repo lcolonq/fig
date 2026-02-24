@@ -11,11 +11,11 @@ import qualified Fig.Web.DB as DB
 public :: PublicModule
 public a = do
   onGet "/api/sentiment" do
-    s <- DB.get a.db "sentiment" >>= \case
+    s <- DB.run a.db (DB.get "sentiment") >>= \case
       Nothing -> pure "0"
       Just x -> pure x
     respondText $ decodeUtf8 s
   onPost "/api/sentiment/green" do
-    DB.incr a.db "sentiment"
+    DB.run a.db $ DB.incr "sentiment"
   onPost "/api/sentiment/red" do
-    DB.decr a.db "sentiment"
+    DB.run a.db $ DB.decr "sentiment"

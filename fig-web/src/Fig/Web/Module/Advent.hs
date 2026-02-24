@@ -19,10 +19,12 @@ secure :: SecureModule
 secure a = do
   onGet "/advent/puzzle/:pid" $ authed a \creds -> do
     pid :: Integer <- pathParam "pid"
-    mpart1body <- fmap decodeUtf8 <$> DB.get a.db (keybase pid "part1" "body")
-    part1solved <- DB.sismember a.db (keybase pid "part1" "solvers") (encodeUtf8 creds.twitchId)
-    mpart2body <- fmap decodeUtf8 <$> DB.get a.db (keybase pid "part2" "body")
-    part2solved <- DB.sismember a.db (keybase pid "part2" "solvers") (encodeUtf8 creds.twitchId)
+    (mpart1body, part1solved, mpart2body, part2solved) <- DB.run a.db do
+      mpart1body <- fmap decodeUtf8 <$> DB.get (keybase pid "part1" "body")
+      part1solved <- DB.sismember (keybase pid "part1" "solvers") (encodeUtf8 creds.twitchId)
+      mpart2body <- fmap decodeUtf8 <$> DB.get (keybase pid "part2" "body")
+      part2solved <- DB.sismember (keybase pid "part2" "solvers") (encodeUtf8 creds.twitchId)
+      pure (mpart1body, part1solved, mpart2body, part2solved)
     case (mpart1body, mpart2body) of
       (Just part1body, Just part2body) -> do
         respondHTML do
@@ -63,11 +65,11 @@ secure a = do
     pid :: Integer <- pathParam "pid"
     part <- pathParam "part"
     let bstid = encodeUtf8 creds.twitchId
-    DB.hget a.db (keybase pid part "inputs") bstid >>= \case
+    DB.run a.db (DB.hget (keybase pid part "inputs") bstid) >>= \case
       Just inp ->
         respondText $ decodeUtf8 inp
       Nothing -> do
-        DB.get a.db (keybase pid part "generator") >>= \case
+        DB.run a.db (DB.get (keybase pid part "generator")) >>= \case
           Nothing -> do
             status status404
             respondText "the puzzle has no generator associated with it. tell clonk please!"
@@ -81,16 +83,19 @@ secure a = do
                   , err
                   ]
               Right (inp, ans) -> do
-                DB.hset a.db (keybase pid part "inputs") bstid $ encodeUtf8 inp
-                DB.hset a.db (keybase pid part "answers") bstid $ encodeUtf8 ans
+                DB.run a.db do
+                  DB.hset (keybase pid part "inputs") bstid $ encodeUtf8 inp
+                  DB.hset (keybase pid part "answers") bstid $ encodeUtf8 ans
                 respondText inp
   onPost "/advent/puzzle/:pid/:part/submit" $ authed a \creds -> do
     pid :: Integer <- pathParam "pid"
     part <- pathParam "part"
     let bstid = encodeUtf8 creds.twitchId
     actual <- formParam "answer"
-    mcheck <- fmap decodeUtf8 <$> DB.get a.db (keybase pid part "checker")
-    manswer <- DB.hget a.db (keybase pid part "answers") bstid
+    (mcheck, manswer) <- DB.run a.db do
+      mcheck <- fmap decodeUtf8 <$> DB.get (keybase pid part "checker")
+      manswer <- DB.hget (keybase pid part "answers") bstid
+      pure (mcheck, manswer)
     case (mcheck, manswer) of
       (Just check, Just expected) -> do
         FFI.checkAnswer check actual (decodeUtf8 expected) >>= \case
@@ -103,7 +108,7 @@ secure a = do
           Right False -> do
             respondText "that's the wrong answer, try again!"
           Right True -> do
-            DB.sadd a.db (keybase pid part "solvers") [encodeUtf8 creds.twitchId]
+            DB.run a.db $ DB.sadd (keybase pid part "solvers") [encodeUtf8 creds.twitchId]
             respondText "that's the right answer! nice work!"
       (Nothing, _) -> do
         status status500

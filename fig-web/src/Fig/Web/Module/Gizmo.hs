@@ -20,13 +20,13 @@ public :: PublicModule
 public a = do
   onGet "/api/gizmo" do
     buf <- queryParam "buf"
-    DB.hget a.db "gizmos" buf >>= \case
+    DB.run a.db (DB.hget "gizmos" buf) >>= \case
       Nothing -> do
         status status404
         respondText "gizmo does not exist"
       Just html -> respondHTMLText $ decodeUtf8 html
   onGet "/api/gizmo/list" do
-    gizmos <- maybe [] (fmap decodeUtf8) <$> DB.hkeys a.db "gizmos"
+    gizmos <- maybe [] (fmap decodeUtf8) <$> DB.run a.db (DB.hkeys "gizmos")
     respondText $ Text.unlines gizmos
 
 publicWebsockets :: PublicWebsockets

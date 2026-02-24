@@ -17,99 +17,98 @@ connect cfg = liftIO $ DB <$> Redis.checkedConnect Redis.defaultConnectInfo
   { Redis.connectHost = unpack cfg.dbHost
   }
 
-get :: MonadIO m => DB -> ByteString -> m (Maybe ByteString)
-get (DB c) key = liftIO $ Redis.runRedis c do
+run :: MonadIO m => DB -> Redis.Redis a -> m a
+run (DB c) f = liftIO $ Redis.runRedis c f
+
+get :: ByteString -> Redis.Redis (Maybe ByteString)
+get key = do
   v <- Redis.get key
   pure . join $ hush v
 
-del :: MonadIO m => DB -> [ByteString] -> m ()
-del (DB c) keys = liftIO $ Redis.runRedis c do
+del :: [ByteString] -> Redis.Redis ()
+del keys = do
   void $ Redis.del keys
 
-incr :: MonadIO m => DB -> ByteString -> m ()
-incr (DB c) key = liftIO $ Redis.runRedis c do
+incr :: ByteString -> Redis.Redis ()
+incr key = do
   void $ Redis.incr key
 
-decr :: MonadIO m => DB -> ByteString -> m ()
-decr (DB c) key = liftIO $ Redis.runRedis c do
+decr :: ByteString -> Redis.Redis ()
+decr key = do
   void $ Redis.decr key
 
-hset :: MonadIO m => DB -> ByteString -> ByteString -> ByteString -> m ()
-hset (DB c) key hkey val = liftIO $ Redis.runRedis c do
+hset :: ByteString -> ByteString -> ByteString -> Redis.Redis ()
+hset key hkey val = do
   void $ Redis.hset key hkey val
 
-hget :: MonadIO m => DB -> ByteString -> ByteString -> m (Maybe ByteString)
-hget (DB c) key hkey = liftIO $ Redis.runRedis c do
+hget :: ByteString -> ByteString -> Redis.Redis (Maybe ByteString)
+hget key hkey = do
   v <- Redis.hget key hkey
   pure . join $ hush v
 
-hdel :: MonadIO m => DB -> ByteString -> ByteString -> m ()
-hdel (DB c) key hkey = liftIO $ Redis.runRedis c do
-  _ <- Redis.hdel key [hkey]
-  pure ()
+hdel :: ByteString -> ByteString -> Redis.Redis ()
+hdel key hkey = do
+  void $ Redis.hdel key [hkey]
 
-hmset :: MonadIO m => DB -> ByteString -> [(ByteString, ByteString)] -> m ()
-hmset (DB c) key m = liftIO $ Redis.runRedis c do
+hmset :: ByteString -> [(ByteString, ByteString)] -> Redis.Redis ()
+hmset key m = do
   void $ Redis.hmset key m
 
-hmget :: MonadIO m => DB -> ByteString -> [ByteString] -> m (Map ByteString ByteString)
-hmget (DB c) key hk = liftIO $ Redis.runRedis c do
+hmget :: ByteString -> [ByteString] -> Redis.Redis (Map ByteString ByteString)
+hmget key hk = do
   Redis.hmget key hk >>= \case
     Left _ -> pure Map.empty
     Right vals -> do
       pure . Map.fromList . mapMaybe (\(a, mb) -> mb >>= \b -> Just (a, b)) $ zip hk vals 
 
-hgetall :: MonadIO m => DB -> ByteString -> m (Map ByteString ByteString)
-hgetall (DB c) key = liftIO $ Redis.runRedis c do
+hgetall :: ByteString -> Redis.Redis (Map ByteString ByteString)
+hgetall key = do
   Redis.hgetall key >>= \case
     Left _ -> pure Map.empty
     Right m -> pure $ Map.fromList m
 
-hkeys :: MonadIO m => DB -> ByteString -> m (Maybe [ByteString])
-hkeys (DB c) key = liftIO $ Redis.runRedis c do
+hkeys :: ByteString -> Redis.Redis (Maybe [ByteString])
+hkeys key = do
   hush <$> Redis.hkeys key
 
-hvals :: MonadIO m => DB -> ByteString -> m (Maybe [ByteString])
-hvals (DB c) key = liftIO $ Redis.runRedis c do
+hvals :: ByteString -> Redis.Redis (Maybe [ByteString])
+hvals key = do
   hush <$> Redis.hvals key
 
-sadd :: MonadIO m => DB -> ByteString -> [ByteString] -> m ()
-sadd (DB c) key skeys = liftIO $ Redis.runRedis c do
-  _ <- Redis.sadd key skeys
-  pure ()
+sadd :: ByteString -> [ByteString] -> Redis.Redis ()
+sadd key skeys = do
+  void $ Redis.sadd key skeys
 
-srem :: MonadIO m => DB -> ByteString -> [ByteString] -> m ()
-srem (DB c) key skeys = liftIO $ Redis.runRedis c do
-  _ <- Redis.srem key skeys
-  pure ()
+srem :: ByteString -> [ByteString] -> Redis.Redis ()
+srem key skeys = do
+  void $ Redis.srem key skeys
 
-smembers :: MonadIO m => DB -> ByteString -> m (Maybe [ByteString])
-smembers (DB c) key = liftIO $ Redis.runRedis c do
+smembers :: ByteString -> Redis.Redis (Maybe [ByteString])
+smembers key = do
   hush <$> Redis.smembers key
 
-sismember :: MonadIO m => DB -> ByteString -> ByteString -> m Bool
-sismember (DB c) key skey = liftIO $ Redis.runRedis c do
+sismember :: ByteString -> ByteString -> Redis.Redis Bool
+sismember key skey = do
   Redis.sismember key skey >>= hush >>> \case
     Just x -> pure x
     Nothing -> pure False
 
-lpop :: MonadIO m => DB -> ByteString -> m (Maybe ByteString)
-lpop (DB c) key = liftIO $ Redis.runRedis c do
+lpop :: ByteString -> Redis.Redis (Maybe ByteString)
+lpop key = do
   join . hush <$> Redis.lpop key
 
-rpush :: MonadIO m => DB -> ByteString -> ByteString -> m ()
-rpush (DB c) key val = liftIO $ Redis.runRedis c do
-  _ <- Redis.rpush key [val]
-  pure ()
+rpush :: ByteString -> ByteString -> Redis.Redis ()
+rpush key val = do
+  void $ Redis.rpush key [val]
 
-lrange :: MonadIO m => DB -> ByteString -> Integer -> Integer -> m [ByteString]
-lrange (DB c) key start end = liftIO $ Redis.runRedis c do
+lrange :: ByteString -> Integer -> Integer -> Redis.Redis [ByteString]
+lrange key start end = do
   fromMaybe [] . hush <$> Redis.lrange key start end
 
-llen :: MonadIO m => DB -> ByteString -> m (Maybe Integer)
-llen (DB c) key = liftIO $ Redis.runRedis c do
+llen :: ByteString -> Redis.Redis (Maybe Integer)
+llen key = do
   hush <$> Redis.llen key
 
-lindex :: MonadIO m => DB -> ByteString -> Integer -> m (Maybe ByteString)
-lindex (DB c) key idx = liftIO $ Redis.runRedis c do
+lindex :: ByteString -> Integer -> Redis.Redis (Maybe ByteString)
+lindex key idx = do
   join . hush <$> Redis.lindex key idx

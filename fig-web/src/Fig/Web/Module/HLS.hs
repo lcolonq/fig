@@ -13,8 +13,11 @@ import qualified Fig.Web.DB as DB
 public :: PublicModule
 public a = do
   onGet "/api/hls.m3u8" do
-    mseq :: Maybe Integer <- ((readMaybe . unpack . decodeUtf8)=<<) <$> DB.get a.db "hlssequence"
-    mlen <- DB.llen a.db "hlssamples"
+    (mseq, mlen) <- DB.run a.db do
+      mseq :: Maybe Integer <- ((readMaybe . unpack . decodeUtf8)=<<)
+        <$> DB.get "hlssequence"
+      mlen <- DB.llen "hlssamples"
+      pure (mseq, mlen)
     case (mseq, mlen) of
       (Just seq, Just len) -> do
         let startingSeq = seq - (len - 1)
@@ -34,7 +37,7 @@ public a = do
     pure ()
   onGet "/api/hls/:num/sample.aac" do
     num <- pathParam "num"
-    DB.lindex a.db "hlssamples" num >>= \case
+    DB.run a.db (DB.lindex "hlssamples" num) >>= \case
       Nothing -> do
         status status404
         respondText "sample not found"

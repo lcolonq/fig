@@ -3,7 +3,7 @@ name: fig-web
 version: 0.1.0.0
 
 common defaults
-  ghc-options: -Wall
+  ghc-options: -Wall -threaded
   default-language: GHC2021
   default-extensions: NoImplicitPrelude PackageImports LambdaCase MultiWayIf OverloadedStrings OverloadedLists OverloadedRecordDot DuplicateRecordFields RecordWildCards NoFieldSelectors BlockArguments ViewPatterns TypeFamilies DataKinds GADTs
 

@@ -16,7 +16,7 @@ public :: PublicModule
 public a = do
   onGet "/api/motd" do
     log "getting motd"
-    DB.get a.db "motd" >>= \case
+    DB.run a.db (DB.get "motd") >>= \case
       Nothing -> respondText ""
       Just val -> respondText $ decodeUtf8 val
   onGet "/api/catchphrase" do

@@ -26,7 +26,7 @@ public a = do
         -- liftIO $ Dir.createDirectoryIfMissing True cardDir
         let cardPath = cardDir <> unpack uuid <> ".png"
         liftIO (Dir.doesFileExist cardPath) >>= \case
-          False -> DB.hget a.db "tcg:cards" (encodeUtf8 uuid) >>= \case
+          False -> DB.run a.db (DB.hget "tcg:cards" $ encodeUtf8 uuid) >>= \case
             Nothing -> do
               status status404
               respondText "card does not exist"
@@ -34,7 +34,7 @@ public a = do
               liftIO $ Dir.createDirectoryIfMissing True cardDir
               liftIO $ BS.writeFile cardPath image
               log $ "Deleting card from Redis: " <> uuid
-              DB.hdel a.db "tcg:cards" $ encodeUtf8 uuid
+              DB.run a.db $ DB.hdel "tcg:cards" $ encodeUtf8 uuid
               addHeader "Content-Type" "image/png"
               respondBytes image
           True -> do
@@ -43,7 +43,7 @@ public a = do
             respondBytes image
   onGet "/api/tcg/binder/:userid" do
     userid <- pathParam "userid"
-    cards <- take 20 <$> DB.lrange a.db ("tcg-inventory:" <> userid) 0 (-1)
+    cards <- take 20 <$> DB.run a.db (DB.lrange ("tcg-inventory:" <> userid) 0 (-1))
     respondHTML do
       head_ do
         title_ "LCOLONQ: The Game"

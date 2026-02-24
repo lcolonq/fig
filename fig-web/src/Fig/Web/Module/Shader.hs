@@ -11,7 +11,7 @@ import qualified Fig.Web.DB as DB
 public :: PublicModule
 public a = do
   onGet "/api/shader" do
-    DB.get a.db "shader" >>= \case
+    DB.run a.db (DB.get "shader") >>= \case
       Nothing -> do
         status status404
         respondText "no shader present"
