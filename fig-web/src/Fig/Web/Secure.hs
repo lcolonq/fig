@@ -18,6 +18,7 @@ import qualified Fig.Web.DB as DB
 import qualified Fig.Web.Module.Exchange as Exchange
 import qualified Fig.Web.Module.Redeem as Redeem
 import qualified Fig.Web.Module.Advent as Advent
+import qualified Fig.Web.Module.User as User
 
 allBusEvents :: SecureModuleArgs -> BusEventHandlers
 allBusEvents args = busEvents . mconcat $ fmap ($ args)
@@ -72,5 +73,6 @@ app args = do
     Exchange.secure args
     Redeem.secure args
     Advent.secure args
+    User.secure args
     Sc.notFound do
       respondText "not found"

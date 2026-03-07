@@ -31,7 +31,7 @@ secure a = do
           head_ do
             title_ . L.toHtml $ "adventure of advent of code 2025: puzzle " <> tshow pid
             link_ [rel_ "icon", href_ "/assets/mrgreen.png"]
-            link_ [rel_ "stylesheet", type_ "text/css", href_ "/main.css"]
+            link_ [rel_ "stylesheet", type_ "text/css", href_ "/assets/main.css"]
           body_ [id_ "lcolonq-advent"] do
             div_ [class_ "lcolonq-advent-header"] do
               h1_ . L.toHtml $ "puzzle " <> tshow pid <> " (part 1)"

@@ -1,5 +1,6 @@
 module Fig.Web.Module.User
   ( public
+  , secure
   ) where
 
 import Fig.Prelude
@@ -14,6 +15,7 @@ import qualified Database.Redis as Redis
 
 import Fig.Web.Utils
 import Fig.Web.Types
+import Fig.Web.Auth
 import qualified Fig.Web.DB as DB
 
 getText :: MonadIO m => DB -> ByteString -> m (Maybe Text)
@@ -212,3 +214,40 @@ public a = do
         Just img -> do
           addHeader "Content-Type" "image/png"
           respondBytes img
+
+secure :: SecureModule
+secure a = do
+  onPost "/api/talent/reset" $ authed a \creds -> do
+    let buid = encodeUtf8 creds.twitchId
+    let skey = "user:stats:" <> buid
+    let tkey = "user:talents:" <> buid
+    DB.run a.db do
+      DB.hset skey "allocatedtalentpoints" "0"
+      DB.del [tkey]
+    respondText "talents reset!"
+  onPost "/api/talent/:tid/purchase" $ authed a \creds -> do
+    tid <- pathParam "tid"
+    let buid = encodeUtf8 creds.twitchId
+    let skey = "user:stats:" <> buid
+    let tkey = "user:talents:" <> buid
+    let parseToInt mbs = fromMaybe 0 do
+          bs <- mbs
+          (iv, _) <- BS.C8.readInteger bs
+          pure iv
+    (mtp, matp, mprev) <- DB.run a.db $ (,,)
+      <$> DB.hget skey "talentpoints"
+      <*> DB.hget skey "allocatedtalentpoints"
+      <*> DB.hget tkey tid
+    let tp = parseToInt mtp
+    let atp = parseToInt matp
+    let prev = parseToInt mprev
+    if atp < tp
+      then do
+      DB.run a.db do
+        DB.hset skey "allocatedtalentpoints" . encodeUtf8 . tshow $ atp + 1
+        DB.hset tkey tid . encodeUtf8 . tshow $ prev + 1
+      respondText "talent allocated!"
+      else do
+      status status403
+      respondText "no talent points"
+    
