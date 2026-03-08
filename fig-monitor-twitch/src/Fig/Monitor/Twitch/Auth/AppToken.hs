@@ -78,5 +78,4 @@ runAuthed :: Config -> Authed a -> IO a
 runAuthed config body = do
   manager <- HTTP.newManager HTTP.tlsManagerSettings
   appToken <- getAppToken manager config
-  log $ "got app token! " <> appToken
   runReaderT body.unAuthed RequestConfig{..}
