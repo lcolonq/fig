@@ -1,6 +1,4 @@
-module Fig.Web.DB where
-
-import Control.Error.Util (hush)
+module Fig.Utils.DB where
 
 import Data.Maybe (mapMaybe)
 import Data.Map.Strict (Map)
@@ -9,12 +7,12 @@ import qualified Data.Map.Strict as Map
 import qualified Database.Redis as Redis
 
 import Fig.Prelude
-import Fig.Web.Types
-import Fig.Web.Utils
 
-connect :: MonadIO m => Config -> m DB
-connect cfg = liftIO $ DB <$> Redis.checkedConnect Redis.defaultConnectInfo
-  { Redis.connectHost = unpack cfg.dbHost
+newtype DB = DB { conn :: Redis.Connection }
+
+connect :: MonadIO m => Text -> m DB
+connect host = liftIO $ DB <$> Redis.checkedConnect Redis.defaultConnectInfo
+  { Redis.connectHost = unpack host
   }
 
 run :: MonadIO m => DB -> Redis.Redis a -> m a

@@ -17,7 +17,7 @@ import Fig.Utils.FFI (checkAnswer)
 import Fig.Web.Utils
 import Fig.Web.Types
 import Fig.Web.Auth
-import Fig.Web.DB
+import Fig.Utils.DB
 
 data Puzzle = Puzzle
   { pid :: Text

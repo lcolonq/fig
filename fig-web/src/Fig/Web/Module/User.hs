@@ -16,7 +16,8 @@ import qualified Database.Redis as Redis
 import Fig.Web.Utils
 import Fig.Web.Types
 import Fig.Web.Auth
-import qualified Fig.Web.DB as DB
+import Fig.Utils.DB (DB)
+import qualified Fig.Utils.DB as DB
 
 getText :: MonadIO m => DB -> ByteString -> m (Maybe Text)
 getText db key = do

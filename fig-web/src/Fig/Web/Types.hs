@@ -5,7 +5,6 @@ module Fig.Web.Types
   , newChannels
   , Globals(..)
   , newGlobals
-  , DB(..)
   , ModuleArgs(..)
   , PublicOptions(..), SecureOptions(..)
   , PublicModuleArgs, SecureModuleArgs
@@ -26,10 +25,9 @@ import qualified Network.WebSockets as WS
 
 import qualified Web.Scotty as Sc
 
-import qualified Database.Redis as Redis
-
 import qualified Data.Aeson as Aeson
 
+import Fig.Utils.DB
 import Fig.Bus.Binary.Client
 import Fig.Web.Utils
 
@@ -68,8 +66,6 @@ newGlobals :: IO Globals
 newGlobals = do
   currentlyLive <- MVar.newMVar Set.empty
   pure Globals {..}
-
-newtype DB = DB { conn :: Redis.Connection }
 
 data ModuleArgs o = ModuleArgs
   { cfg :: Config

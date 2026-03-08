@@ -44,6 +44,7 @@ module Fig.Prelude
 
   , tshow
   , headMay, atMay
+  , hush
   , throwLeft
   , eitherToMaybe
   , log
@@ -110,6 +111,10 @@ atMay :: [a] -> Int -> Maybe a
 atMay [] _ = Nothing
 atMay (x:_) 0 = Just x
 atMay (_:xs) n = atMay xs $ n - 1
+
+hush :: Either a b -> Maybe b
+hush (Left _) = Nothing
+hush (Right x) = Just x
 
 throwLeft :: (Exception e, MonadThrow m) => (b -> e) -> Either b a -> m a
 throwLeft f (Left x) = throwM $ f x

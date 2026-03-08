@@ -12,7 +12,6 @@ data Command
   | Chatbot
   | LiveChecker
   | RedirectServer !Bool
-  | Validate
 
 parseCommand :: Parser Command
 parseCommand = subparser $ mconcat
@@ -21,7 +20,6 @@ parseCommand = subparser $ mconcat
   , command "live-checker" $ info (pure LiveChecker) (progDesc "Launch the Twitch live status checker")
   , command "user-token-server" $ info (pure $ RedirectServer True) (progDesc "Launch a web server to handle authentication redirects")
   , command "user-token-server-read-only" $ info (pure $ RedirectServer False) (progDesc "Launch a web server to handle authentication redirects")
-  , command "validate-endpoint" $ info (pure Validate) (progDesc "Test Twitch authentication")
   ]
 data Opts = Opts
   { busHost :: !Text
@@ -45,8 +43,7 @@ main = do
     )
   cfg <- loadConfig opts.config
   case opts.command of
-    Monitor -> twitchEventClient cfg (opts.busHost, opts.busPort)
-    Chatbot -> twitchChatClient cfg (opts.busHost, opts.busPort)
-    LiveChecker -> twitchChannelLiveMonitor cfg (opts.busHost, opts.busPort)
+    Monitor -> twitchEventMonitor cfg (opts.busHost, opts.busPort)
+    Chatbot -> twitchChatbot cfg (opts.busHost, opts.busPort)
+    LiveChecker -> twitchChannelLiveChecker cfg (opts.busHost, opts.busPort)
     RedirectServer rw -> userTokenRedirectServer cfg rw
-    Validate -> twitchEndpointTest cfg

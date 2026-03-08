@@ -10,11 +10,11 @@ import qualified Network.Wai.Handler.Warp as Warp
 
 import qualified Web.Scotty as Sc
 
+import qualified Fig.Utils.DB as DB
 import Fig.Bus.Binary.Client
 import Fig.Web.Types
 import Fig.Web.Utils
 import Fig.Web.Auth
-import qualified Fig.Web.DB as DB
 import qualified Fig.Web.Module.Exchange as Exchange
 import qualified Fig.Web.Module.Redeem as Redeem
 import qualified Fig.Web.Module.Advent as Advent
@@ -29,7 +29,7 @@ server :: SecureOptions -> Config -> (Text, Text) -> IO ()
 server options cfg busAddr = do
   log $ "Web server running on port " <> tshow cfg.port
   log "Connecting to database..."
-  db <- DB.connect cfg
+  db <- DB.connect cfg.dbHost
   channels <- newChannels
   globals <- newGlobals
   busClient busAddr

@@ -8,7 +8,7 @@ import Text.HTML.SanitizeXSS (sanitize)
 import Fig.Web.Utils
 import Fig.Web.Types
 import Fig.Web.Auth
-import Fig.Web.DB as DB
+import Fig.Utils.DB as DB
 import qualified Fig.Utils.FFI as FFI
 
 keybase :: Integer -> Text -> Text -> ByteString

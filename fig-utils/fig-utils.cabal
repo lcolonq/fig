@@ -15,6 +15,7 @@ library
   exposed-modules:
     Fig.Prelude
     Fig.Utils
+    Fig.Utils.DB
     Fig.Utils.Net
     Fig.Utils.SExpr
     Fig.Utils.FFI
@@ -28,6 +29,7 @@ library
     , containers
     , directory
     , filepath
+    , hedis
     , megaparsec
     , mtl
     , network

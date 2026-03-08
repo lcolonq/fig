@@ -140,6 +140,7 @@
               description = "Path to config file";
               default = pkgs.writeText "fig-monitor-twitch.toml" ''
                 client_id = ""
+                client_secret = ""
                 user_token = ""
                 user_login = ""
                 monitor = []

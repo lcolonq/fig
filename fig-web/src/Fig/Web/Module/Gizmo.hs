@@ -14,7 +14,7 @@ import qualified Network.WebSockets as WS
 
 import Fig.Web.Utils
 import Fig.Web.Types
-import qualified Fig.Web.DB as DB
+import qualified Fig.Utils.DB as DB
 
 public :: PublicModule
 public a = do

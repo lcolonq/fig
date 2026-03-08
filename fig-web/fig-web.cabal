@@ -17,7 +17,6 @@ common deps
     , containers
     , data-default-class
     , directory
-    , errors
     , filepath
     , hedis
     , http-types
@@ -60,7 +59,6 @@ library
     Fig.Web.Utils
     Fig.Web.Types
     Fig.Web.Auth
-    Fig.Web.DB
     Fig.Web.Public
     Fig.Web.Secure
     Fig.Web.Module.Misc

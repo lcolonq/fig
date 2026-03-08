@@ -45,9 +45,11 @@ library
   exposed-modules:
     Fig.Monitor.Twitch
     Fig.Monitor.Twitch.Utils
-    -- Fig.Monitor.Twitch.Chat
-    -- Fig.Monitor.Twitch.EventSub
-    -- Fig.Monitor.Twitch.UserTokenRedirectServer
+    Fig.Monitor.Twitch.Auth.UserToken
+    Fig.Monitor.Twitch.Auth.AppToken
+    Fig.Monitor.Twitch.LiveChecker
+    Fig.Monitor.Twitch.Chatbot
+    Fig.Monitor.Twitch.EventMonitor
 
 executable fig-monitor-twitch
   import: defaults

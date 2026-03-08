@@ -7,7 +7,7 @@ import Fig.Prelude
 import Fig.Utils.SExpr
 import Fig.Web.Utils
 import Fig.Web.Types
-import qualified Fig.Web.DB as DB
+import qualified Fig.Utils.DB as DB
 
 public :: PublicModule
 public a = do

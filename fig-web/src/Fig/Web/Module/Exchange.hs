@@ -5,8 +5,6 @@ module Fig.Web.Module.Exchange
 
 import Fig.Prelude
 
-import Control.Error.Util (hush)
-
 import qualified Database.Redis as Redis
 
 import Data.Maybe (mapMaybe)
@@ -19,6 +17,8 @@ import qualified Data.UUID.V4 as UUID
 import Fig.Web.Utils
 import Fig.Web.Types
 import Fig.Web.Auth
+
+import qualified Fig.Utils.DB as DB
 
 public :: PublicModule
 public a = do

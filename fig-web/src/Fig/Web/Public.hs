@@ -10,10 +10,10 @@ import qualified Network.Wai.Handler.Warp as Warp
 
 import qualified Web.Scotty as Sc
 
+import qualified Fig.Utils.DB as DB
 import Fig.Bus.Binary.Client
 import Fig.Web.Types
 import Fig.Web.Utils
-import qualified Fig.Web.DB as DB
 import qualified Fig.Web.Module.Misc as Misc
 import qualified Fig.Web.Module.TwitchAuth as TwitchAuth
 import qualified Fig.Web.Module.Exchange as Exchange
@@ -39,7 +39,7 @@ server :: PublicOptions -> Config -> (Text, Text) -> IO ()
 server options cfg busAddr = do
   log $ "Web server running on port " <> tshow cfg.port
   log "Connecting to database..."
-  db <- DB.connect cfg
+  db <- DB.connect cfg.dbHost
   channels <- newChannels
   globals <- newGlobals
   busClient busAddr
