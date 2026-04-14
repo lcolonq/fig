@@ -50,3 +50,7 @@ public a = do
       body_ do
         forM_ cards $ \c -> do
           img_ [src_ $ mconcat ["/api/tcg/card/", decodeUtf8 c, ".png"]]
+  onGet "/api/tcg/cards/:userid" do
+    userid <- pathParam "userid"
+    cards <- DB.run a.db (DB.lrange ("tcg-inventory:" <> userid) 0 (-1))
+    respondText . Text.unlines $ decodeUtf8 <$> cards
