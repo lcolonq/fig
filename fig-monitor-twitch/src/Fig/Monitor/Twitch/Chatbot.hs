@@ -50,7 +50,7 @@ twitchChatbot cfg busAddr = do
                     , Nothing <- Map.lookup "custom-reward-id" msg.tags -> do
                         log $ "Received chat message from: " <> displaynm
                         cmds.publish "fig monitor twitch chat incoming" . encodeUtf8 . Text.unwords $
-                          [ displaynm, "\t", fst $ Text.breakOn "!" pfx
+                          [ mconcat [displaynm, "\t", fst $ Text.breakOn "!" pfx]
                           , Text.intercalate "\n" $ (\(key, v) -> key <> "\t" <> v) <$> Map.toList msg.tags
                           ] <> drop 1 msg.params
                   _ -> pure ()
