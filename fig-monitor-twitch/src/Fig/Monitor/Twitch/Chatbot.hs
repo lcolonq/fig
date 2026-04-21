@@ -46,10 +46,11 @@ twitchChatbot cfg busAddr = do
                     cmds.publish "fig monitor twitch chat user-notice" . encodeUtf8 $ Text.unwords msg.params
                   "PRIVMSG"
                     | Just displaynm <- Map.lookup "display-name" msg.tags
+                    , Just pfx <- msg.prefix
                     , Nothing <- Map.lookup "custom-reward-id" msg.tags -> do
                         log $ "Received chat message from: " <> displaynm
                         cmds.publish "fig monitor twitch chat incoming" . encodeUtf8 . Text.unwords $
-                          [ displaynm
+                          [ displaynm, "\t", fst $ Text.breakOn "!" pfx
                           , Text.intercalate "\n" $ (\(key, v) -> key <> "\t" <> v) <$> Map.toList msg.tags
                           ] <> drop 1 msg.params
                   _ -> pure ()
