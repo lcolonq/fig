@@ -62,6 +62,23 @@ getUserInfo db uid = do
   badges <- getTextList db $ "user:badges:" <> uid
   pure UserInfo{..}
 
+getAllProfiledUserIds :: MonadIO m => DB -> m [Text]
+getAllProfiledUserIds db = DB.run db $ go Redis.cursor0
+  where
+    prefix :: ByteString
+    prefix = "user:properties:"
+    go cursor = Redis.scanOpts cursor Redis.defaultScanOpts
+      { Redis.scanMatch = Just (prefix <> "*") } >>= \case
+        Left _ -> pure []
+        Right (next, keys) -> do
+          here <- fmap catMaybes . forM keys $ \k ->
+            DB.hget k "name" >>= \case
+              Just _ -> pure . eitherToMaybe . decodeUtf8' $ BS.C8.drop (BS.C8.length prefix) k
+              Nothing -> pure Nothing
+          if next == Redis.cursor0
+            then pure here
+            else (here <>) <$> go next
+
 data TalentInfo = TalentInfo
   { tid :: Text
   , name :: Text
@@ -128,6 +145,8 @@ public a = do
         respondText "username not found"
       Just val -> respondText val
   -- users
+  onGet "/api/users" do
+    respondJSON =<< getAllProfiledUserIds a.db
   onGet "/api/user/info/:uid" do -- get everything bundled together
     uid <- pathParam "uid"
     info <- getUserInfo a.db uid
