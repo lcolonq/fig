@@ -18,6 +18,9 @@ connect host = liftIO $ DB <$> Redis.checkedConnect Redis.defaultConnectInfo
 run :: MonadIO m => DB -> Redis.Redis a -> m a
 run (DB c) f = liftIO $ Redis.runRedis c f
 
+keys :: ByteString -> Redis.Redis [ByteString]
+keys pat = fromMaybe [] . hush <$> Redis.keys pat
+
 get :: ByteString -> Redis.Redis (Maybe ByteString)
 get key = do
   v <- Redis.get key

@@ -128,6 +128,11 @@ public a = do
         respondText "username not found"
       Just val -> respondText val
   -- users
+  onGet "/api/users" do
+    let pfx = "user:stats:"
+    users <- DB.run a.db . DB.keys . encodeUtf8 $ pfx <> "*"
+    let strip x = fromMaybe x $ Text.stripPrefix pfx x
+    respondText . Text.unlines $ strip . decodeUtf8 <$> users
   onGet "/api/user/info/:uid" do -- get everything bundled together
     uid <- pathParam "uid"
     info <- getUserInfo a.db uid
