@@ -67,6 +67,7 @@ app args = do
         , ("advent", "advent.html")
         , ("debt", "debtclock.html")
         , ("charsheet", "charsheet-public.html")
+        , ("jam/2026", "jam2026.html")
         , ("main.js", "main.js")
         ] Wai.Static.<|> Wai.Static.hasPrefix "assets"
       , Wai.Static.addBase args.cfg.assetPath
