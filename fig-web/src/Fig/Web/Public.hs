@@ -69,7 +69,9 @@ app args = do
         , ("charsheet", "charsheet-public.html")
         , ("jam/2026", "jam2026.html")
         , ("main.js", "main.js")
-        ] Wai.Static.<|> Wai.Static.hasPrefix "assets"
+        ]
+        Wai.Static.<|> Wai.Static.hasPrefix "assets"
+        Wai.Static.<|> Wai.Static.hasPrefix "jam_assets"
       , Wai.Static.addBase args.cfg.assetPath
       ]
     onGet "/unauthorized" do
