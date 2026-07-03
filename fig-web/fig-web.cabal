@@ -61,6 +61,7 @@ library
     Fig.Web.Auth
     Fig.Web.Public
     Fig.Web.Secure
+    Fig.Web.MaudeCode
     Fig.Web.Module.Misc
     Fig.Web.Module.TwitchAuth
     Fig.Web.Module.Exchange

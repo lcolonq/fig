@@ -8,9 +8,9 @@ import Options.Applicative
 
 import Fig.Web.Types
 import Fig.Web.Utils
-import qualified Fig.Utils.FFI as FFI
 import qualified Fig.Web.Public as Public
 import qualified Fig.Web.Secure as Secure
+import qualified Fig.Web.MaudeCode as MaudeCode
 
 parsePublicOptions :: Parser PublicOptions
 parsePublicOptions = do
@@ -24,13 +24,13 @@ parseSecureOptions = do
 data Command
   = Public PublicOptions
   | Secure SecureOptions
-  | TestFFI
+  | MaudeCode
 
 parseCommand :: Parser Command
 parseCommand = hsubparser $ mconcat
   [ command "public" $ info (Public <$> parsePublicOptions) (progDesc "Launch the public web server")
   , command "secure" $ info (Secure <$> parseSecureOptions) (progDesc "Launch the private web server (intended to be run behind authentication proxy)")
-  , command "testffi" $ info (pure TestFFI) (progDesc "Test the FFI")
+  , command "maude-code" $ info (pure MaudeCode) (progDesc "Launch the Maude Code web server")
   ]
 
 data Opts = Opts
@@ -63,9 +63,4 @@ main = do
   case opts.cmd of
     Public o -> Public.server o cfg (opts.busHost, opts.busPort)
     Secure o -> Secure.server o cfg (opts.busHost, opts.busPort)
-    TestFFI -> do
-      log "testing FFI"
-      res <- FFI.checkAnswer "(lambda (d e) (equal? d e))" "hello computer" "hello computer"
-      log $ "result: " <> tshow res
-      inpa <- FFI.genInputAnswer "(lambda (x) (cons x x))" "hello computer"
-      log $ "input/answer: " <> tshow inpa
+    MaudeCode -> MaudeCode.server cfg (opts.busHost, opts.busPort)

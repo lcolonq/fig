@@ -399,6 +399,51 @@
             };
           };
         };
+      figWebMaudeCodeModule = { config, lib, ... }:
+        let
+          cfg = config.colonq.services.fig-web-maude-code;
+        in {
+          options.colonq.services.fig-web = {
+            enable = lib.mkEnableOption "Enable the Maude Code server";
+            busHost = lib.mkOption {
+              type = lib.types.str;
+              default = "127.0.0.1";
+              description = "Message bus port";
+            };
+            busPort = lib.mkOption {
+              type = lib.types.port;
+              default = 32050;
+              description = "Address of message bus";
+            };
+            configFile = lib.mkOption {
+              type = lib.types.path;
+              description = "Path to config file";
+              default = pkgs.writeText "fig-web.toml" ''
+                port = 8000
+                asset_path = "/var/lib/fig-web-assets"
+                data_path = "/var/lib/fig-web-data"
+                client_id = ""
+                auth_token = ""
+                db_host = ""
+              '';
+            };
+          };
+          config = lib.mkIf cfg.enable {
+            users.users.fig = {
+              isSystemUser = true;
+              group = "fig";
+            };
+            users.groups.fig = {};
+            systemd.services."colonq.fig-web-maude-code" = {
+              wantedBy = ["multi-user.target"];
+              serviceConfig = {
+                User = "fig";
+                Restart = "on-failure";
+                ExecStart = "${haskellPackages.fig-web}/bin/fig-web maude-code --bus-host ${cfg.busHost} --bus-port ${toString cfg.busPort} --config ${cfg.configFile}";
+              };
+            };
+          };
+        };
     in {
       devShells.x86_64-linux.default = haskellPackages.shellFor {
         packages = hspkgs: with hspkgs; [
@@ -444,6 +489,7 @@
         figBridgeIRCDiscord = figBridgeIRCDiscordModule;
         figWeb = figWebModule;
         figWebSecure = figWebSecureModule;
+        figWebMaudeCode = figWebMaudeCodeModule;
       };
       overlay = self: super: {
         fig = {
