@@ -403,7 +403,7 @@
         let
           cfg = config.colonq.services.fig-web-maude-code;
         in {
-          options.colonq.services.fig-web = {
+          options.colonq.services.fig-web-maude-code = {
             enable = lib.mkEnableOption "Enable the Maude Code server";
             busHost = lib.mkOption {
               type = lib.types.str;
