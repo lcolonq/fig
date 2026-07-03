@@ -418,7 +418,7 @@
             configFile = lib.mkOption {
               type = lib.types.path;
               description = "Path to config file";
-              default = pkgs.writeText "fig-web.toml" ''
+              default = pkgs.writeText "fig-web-maude-code.toml" ''
                 port = 8000
                 asset_path = "/var/lib/fig-web-assets"
                 data_path = "/var/lib/fig-web-data"
