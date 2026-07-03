@@ -10,9 +10,10 @@ import Prelude (round)
 
 import System.Timeout (timeout)
 
-import qualified Control.Concurrent.Chan as Chan
+import qualified Control.Concurrent.MVar as MVar
 
 import qualified Data.ByteString.Base64 as BS.Base64
+import qualified Data.Map.Strict as Map
 import qualified Data.Text as Text
 import qualified Data.Aeson as Aeson
 import qualified Data.UUID as UUID
@@ -24,7 +25,6 @@ import qualified Network.Wai as Wai
 import qualified Network.Wai.Handler.Warp as Warp
 
 import qualified Web.Scotty as Sc
-import qualified Lucid as L
 
 import Fig.Utils.SExpr
 import Fig.Bus.SExpr.Client
@@ -39,13 +39,15 @@ instance Aeson.FromJSON RequestChatCompletions where
     message :: Text <- Text.replace "\n" " " . Text.unwords <$> forM messages (Aeson..: "content")
     pure RequestChatCompletions{..}
 
-newtype Globals = Globals
-  { maudeMessages :: Chan.Chan Text
+data Globals = Globals
+  { responses :: !(MVar.MVar (Map.Map Integer (MVar.MVar Text)))
+  , nextIndex :: !(MVar.MVar Integer)
   }
 
 newGlobals :: IO Globals
 newGlobals = do
-  maudeMessages <- Chan.newChan
+  responses <- MVar.newMVar Map.empty
+  nextIndex <- MVar.newMVar 0
   pure Globals{..}
 
 server :: Config -> (Text, Text) -> IO ()
@@ -67,7 +69,17 @@ server cfg busAddr = do
             , user `elem` (["llll", "maude"] :: [Text])
             , Right msg <- decodeUtf8 <$> BS.Base64.decodeBase64 (encodeUtf8 emsg) -> do
                 log $ "Maude Code response from " <> user <> ": " <> msg
-                Chan.writeChan g.maudeMessages msg
+                responses <- MVar.readMVar g.responses
+                log $ "Active responses: " <> tshow (Map.keys responses)
+                next <- MVar.readMVar g.nextIndex
+                let (pre, _post) = Text.breakOn ":" msg
+                let idx = case readMaybe (unpack pre) :: Maybe Integer of
+                            Nothing -> next - 1
+                            Just i -> i
+                case Map.lookup idx responses of
+                  Nothing -> log $ "Responding to unknown message: " <> tshow idx
+                  Just mv -> MVar.putMVar mv msg
+                pure ()
           _ -> log $ "Invalid message: " <> tshow d
     )
     (pure ())
@@ -103,13 +115,17 @@ app g cmds = do
     onPost "/v1/chat/completions" do
       b :: RequestChatCompletions <- bodyJSON
       log $ "Responding to completion request: " <> b.message
+      index <- liftIO $ MVar.modifyMVar g.nextIndex $ \old -> pure (old + 1, old)
       liftIO $ cmds.publish [sexp|(monitor irc chat outgoing)|]
         [ SExprString "#maudecode"
-        , SExprString $ BS.Base64.encodeBase64 "maudecode"
+        , SExprString $ BS.Base64.encodeBase64 $ encodeUtf8 $ "maude " <> tshow index
         , SExprString $ BS.Base64.encodeBase64 $ encodeUtf8 b.message
         ]
       let tokens :: Int = 1000
-      response <- liftIO $ timeout 10_000_000 $ Chan.readChan g.maudeMessages
+      responder <- liftIO MVar.newEmptyMVar
+      liftIO $ MVar.modifyMVar_ g.responses $ pure . Map.insert index responder
+      response <- liftIO $ timeout 20_000_000 $ MVar.takeMVar responder
+      liftIO $ MVar.modifyMVar_ g.responses $ pure . Map.delete index
       uuid <- liftIO UUID.nextRandom
       timestamp :: Integer <- round <$> liftIO Time.getPOSIXTime
       respondJSON $ Aeson.object
