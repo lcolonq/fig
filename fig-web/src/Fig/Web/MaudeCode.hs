@@ -124,7 +124,7 @@ app g cmds = do
       let tokens :: Int = 1000
       responder <- liftIO MVar.newEmptyMVar
       liftIO $ MVar.modifyMVar_ g.responses $ pure . Map.insert index responder
-      response <- liftIO $ timeout 20_000_000 $ MVar.takeMVar responder
+      response <- liftIO $ timeout 60_000_000 $ MVar.takeMVar responder
       liftIO $ MVar.modifyMVar_ g.responses $ pure . Map.delete index
       uuid <- liftIO UUID.nextRandom
       timestamp :: Integer <- round <$> liftIO Time.getPOSIXTime
