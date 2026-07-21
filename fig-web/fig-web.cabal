@@ -78,6 +78,7 @@ library
     Fig.Web.Module.TCG
     Fig.Web.Module.Debt
     Fig.Web.Module.ShindigsSorting
+    Fig.Web.Module.Claim
 
 executable fig-web
   import: defaults
