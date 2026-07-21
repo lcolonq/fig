@@ -1,4 +1,4 @@
-module Fig.Web.Module.ShindigsSorting
+module Fig.Web.Module.Claim
   ( secure
   ) where
 
