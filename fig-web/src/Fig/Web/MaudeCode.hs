@@ -36,7 +36,8 @@ newtype RequestChatCompletions = RequestChatCompletions
 instance Aeson.FromJSON RequestChatCompletions where
   parseJSON = Aeson.withObject "RequestChatCompletions" \o -> do
     messages :: [Aeson.Object] <- o Aeson..: "messages"
-    message :: Text <- Text.replace "\n" " " . Text.unwords <$> forM messages (Aeson..: "content")
+    msg <- maybe (pure "") (Aeson..: "content") $ lastMaybe messages
+    let message = Text.replace "\n" " " msg
     pure RequestChatCompletions{..}
 
 data Globals = Globals
