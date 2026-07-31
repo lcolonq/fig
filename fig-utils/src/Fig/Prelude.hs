@@ -43,7 +43,7 @@ module Fig.Prelude
   , module Control.Exception.Safe
 
   , tshow
-  , headMay, atMay
+  , headMay, lastMay, atMay
   , hush
   , throwLeft
   , eitherToMaybe
@@ -106,6 +106,11 @@ tshow = pack . show
 headMay :: [a] -> Maybe a
 headMay [] = Nothing
 headMay (x:_) = Just x
+
+lastMay :: [a] -> Maybe a
+lastMay [] = Nothing
+lastMay [x] = Just x
+lastMay (_:xs) = lastMay xs
 
 atMay :: [a] -> Int -> Maybe a
 atMay [] _ = Nothing
