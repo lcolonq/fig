@@ -35,6 +35,11 @@
           ver = "0.21";
           sha256 = "sha256-coeQZJT7COSmoyA1eiykoMFv3+xNnxkF5tX4mlFcd84=";
         } {};
+        base16 = self.callHackageDirect {
+          pkg = "base16";
+          ver = "1.0";
+          sha256 = "sha256-pLnipLnF7YuQvCwgw7Lp7sbwhab63sdEpubeSpaoEmY=";
+        } {};
         discord-haskell = self.callCabal2nix "discord-haskell" ./deps/discord-haskell {};
         irc-conduit = self.callCabal2nix "irc-conduit" ./deps/irc-conduit {};
         irc-client = self.callCabal2nix "irc-client" ./deps/irc-client {};
