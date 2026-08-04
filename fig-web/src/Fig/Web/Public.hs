@@ -28,6 +28,7 @@ import qualified Fig.Web.Module.HLS as HLS
 import qualified Fig.Web.Module.TCG as TCG
 import qualified Fig.Web.Module.Debt as Debt
 import qualified Fig.Web.Module.ShindigsSorting as ShindigsSorting
+import qualified Fig.Web.Module.Leaderboard as Leaderboard
 
 allBusEvents :: PublicModuleArgs -> BusEventHandlers
 allBusEvents args = busEvents . mconcat $ fmap ($ args)
@@ -103,6 +104,7 @@ app args = do
     TCG.public args
     Debt.public args
     ShindigsSorting.public args
+    Leaderboard.public args
     websocket $ mconcat
       [ Gizmo.publicWebsockets args
       , Circle.publicWebsockets args

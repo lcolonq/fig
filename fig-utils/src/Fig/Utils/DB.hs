@@ -113,3 +113,11 @@ llen key = do
 lindex :: ByteString -> Integer -> Redis.Redis (Maybe ByteString)
 lindex key idx = do
   join . hush <$> Redis.lindex key idx
+
+zadd :: ByteString -> [(Double, ByteString)] -> Redis.Redis ()
+zadd key vals = do
+  void $ Redis.zadd key vals
+
+zrevrange :: ByteString -> Integer -> Integer -> Redis.Redis [(ByteString, Double)]
+zrevrange key start end = do
+  fromMaybe [] . hush <$> Redis.zrevrangeWithscores key start end

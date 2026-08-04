@@ -79,6 +79,7 @@ library
     Fig.Web.Module.Debt
     Fig.Web.Module.ShindigsSorting
     Fig.Web.Module.Claim
+    Fig.Web.Module.Leaderboard
 
 executable fig-web
   import: defaults
