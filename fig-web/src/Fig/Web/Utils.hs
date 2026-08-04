@@ -10,7 +10,7 @@ module Fig.Web.Utils
   , onGet, onPost, onPut, onDelete
   , status
   , body, bodyJSON
-  , queryParam, queryParamMaybe, formParam, formParamMaybe, pathParam
+  , queryParam, queryParamMaybe, formParam, formParamMaybe, pathParam, requestAddress
   , header, addHeader
   , respondBytes, respondText, respondJSON, respondHTMLText, respondHTML, redirect
   , WebsocketHandler
@@ -31,11 +31,14 @@ import qualified Data.UUID as UUID
 import qualified Data.UUID.V4 as UUID
 import qualified Data.Text as Text
 import qualified Data.Text.Lazy as Text.L
+import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BS.L
 import qualified Data.Aeson as Aeson
 import qualified Data.Map.Strict as Map
 
+import qualified Network.Socket as Sock
 import Network.HTTP.Types.Status
+import qualified Network.Wai as Wai
 import qualified Network.Wai.Handler.WebSockets as Wai.WS
 import qualified Network.WebSockets as WS
 
@@ -148,6 +151,13 @@ formParamMaybe = Sc.formParamMaybe . Text.L.fromStrict
 
 pathParam :: Sc.Parsable a => Text -> Sc.ActionM a
 pathParam = Sc.pathParam . Text.L.fromStrict
+
+requestAddress :: Sc.ActionM ByteString
+requestAddress = do
+  remote <- Wai.remoteHost <$> Sc.request
+  case remote of
+    Sock.SockAddrInet _ (Sock.hostAddressToTuple -> (b1, b2, b3, b4)) -> pure $ BS.pack [b1, b2, b3, b4]
+    _ -> throwM $ FigWebException "unknown request address"
 
 header :: Text -> Sc.ActionM (Maybe Text)
 header h = Sc.header (Text.L.fromStrict h) >>= \case

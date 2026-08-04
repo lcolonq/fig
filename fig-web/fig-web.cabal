@@ -11,10 +11,12 @@ common deps
   build-depends:
       base
     , aeson
+    , base16
     , base64
     , binary
     , bytestring
     , containers
+    , cryptohash-sha256
     , data-default-class
     , directory
     , filepath
@@ -80,6 +82,7 @@ library
     Fig.Web.Module.ShindigsSorting
     Fig.Web.Module.Claim
     Fig.Web.Module.Leaderboard
+    Fig.Web.Module.Jam
 
 executable fig-web
   import: defaults

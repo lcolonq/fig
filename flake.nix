@@ -461,7 +461,7 @@
           lldap-cli-wrapped
           haskellPackages.cabal-install
           haskellPackages.haskell-language-server
-          pkgs.nodejs
+          # pkgs.nodejs
           pkgs.guile
           pkgs.pkg-config
         ];
