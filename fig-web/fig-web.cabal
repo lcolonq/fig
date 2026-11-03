@@ -83,6 +83,7 @@ library
     Fig.Web.Module.Claim
     Fig.Web.Module.Leaderboard
     Fig.Web.Module.Jam
+    Fig.Web.Module.Gif
 
 executable fig-web
   import: defaults
