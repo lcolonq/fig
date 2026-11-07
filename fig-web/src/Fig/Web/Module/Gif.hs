@@ -69,5 +69,5 @@ public a = do
           respondText "gif does not exist"
         Just image -> do
           addHeader "Content-Type" "image/gif"
-          addHeader "Cache-Control" "public, no-transform"
+          addHeader "Cache-Control" "public, no-transform, max-age=31449600"
           respondBytes image
