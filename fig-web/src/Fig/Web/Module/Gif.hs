@@ -15,7 +15,13 @@ import Fig.Web.Types
 import qualified Fig.Utils.DB as DB
 
 queryMatches :: Text -> Text -> Bool
-queryMatches query tag = Text.isInfixOf (Text.toLower tag) $ Text.toLower query 
+queryMatches query tag = tag_in_query || query_in_tag
+  where
+    tlower = Text.toLower tag
+    qlower = Text.toLower query
+    tag_in_query = Text.isInfixOf tlower qlower
+    qwords = Text.words qlower
+    query_in_tag = any (`Text.isInfixOf` tlower) qwords
 
 data Gif = Gif
   { name :: Text
@@ -63,4 +69,5 @@ public a = do
           respondText "gif does not exist"
         Just image -> do
           addHeader "Content-Type" "image/gif"
+          addHeader "Cache-Control" "public, no-transform"
           respondBytes image
