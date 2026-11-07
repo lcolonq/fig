@@ -94,6 +94,11 @@ sismember key skey = do
     Just x -> pure x
     Nothing -> pure False
 
+sunion :: [ByteString] -> Redis.Redis [ByteString]
+sunion ks = Redis.sunion ks >>= hush >>> \case
+  Just xs -> pure xs
+  Nothing -> pure []
+
 lpop :: ByteString -> Redis.Redis (Maybe ByteString)
 lpop key = do
   join . hush <$> Redis.lpop key

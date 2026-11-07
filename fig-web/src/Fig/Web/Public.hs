@@ -71,6 +71,7 @@ app args = do
         , ("debt", "debtclock.html")
         , ("charsheet", "charsheet-public.html")
         , ("jam/2026", "jam2026.html")
+        , ("gifs", "gifs.html")
         , ("main.js", "main.js")
         ]
         Wai.Static.<|> Wai.Static.hasPrefix "assets"
